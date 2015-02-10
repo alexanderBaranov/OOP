@@ -41,3 +41,14 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
+*.filters
+*.user
+*.log
+lab2/crypt/ReadMe.txt
+lab2/fill/ReadMe.txt
+lab2/findtext/ReadMe.txt
+*.sdf
+*.suo
+lab2/multmatrix/ReadMe.txt
+lab2/rle/ReadMe.txt
+lab2/Solve/ReadMe.txt
