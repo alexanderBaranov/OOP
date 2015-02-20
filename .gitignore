@@ -52,3 +52,5 @@ lab2/findtext/ReadMe.txt
 lab2/multmatrix/ReadMe.txt
 lab2/rle/ReadMe.txt
 lab2/Solve/ReadMe.txt
+*.ipch
+*.opensdf

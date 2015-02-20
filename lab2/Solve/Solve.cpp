@@ -8,26 +8,36 @@
 #include <math.h>
 using namespace std;
 
-float X1(float a, float b, float c)
+double Discriminant(double a, double b, double c)
 {
-	float discriminant = powf(b, 2) - 4 * a * c;
-	if (discriminant < 0)
-	{
-		return 0;
-	}
-
-	return (-b + sqrtf(discriminant)) / (2 * a * c);
+	return pow(b, 2) - 4 * a * c;
 }
 
-float X2(float a, float b, float c)
+double X1(double a, double b, double c, double discriminant)
 {
-	float discriminant = powf(b, 2) - 4 * a * c;
-	if (discriminant < 0)
+	return (-b + sqrt(discriminant)) / (2 * a * c);
+}
+
+double X2(double a, double b, double c, double discriminant)
+{
+	return (-b - sqrt(discriminant)) / (2 * a * c);
+}
+
+void Roots(double a, double b, double c, double& x1, double& x2)
+{
+	if (!a)
 	{
-		return 0;
+		throw exception("A = 0 - the equation is not square");
 	}
 
-	return (-b - sqrtf(discriminant)) / (2 * a * c);
+	double discriminant = Discriminant(a, b, c);
+	if (discriminant < 0)
+	{
+		throw exception("D < 0");
+	}
+
+	x1 = X1(a, b, c, discriminant);
+	x2 = X2(a, b, c, discriminant);
 }
 
 int _tmain(int argc, _TCHAR* argv[])
@@ -42,19 +52,8 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	try
 	{
-		float a = stof(argv[1]);
-
-		if (!a)
-		{
-			cout << "A = 0 - the equation is not square";
-			return 1;
-		}
-
-		float b = stof(argv[2]);
-		float c = stof(argv[3]);
-
-		float x1 = X1(a, b, c);
-		float x2 = X2(a, b, c);
+		double x1, x2;
+		Roots(stod(argv[1]), stod(argv[2]), stod(argv[3]), x1, x2);
 
 		if (x1 == x2)
 		{
@@ -67,6 +66,11 @@ int _tmain(int argc, _TCHAR* argv[])
 		}
 	}
 	catch (const invalid_argument& error)
+	{
+		cout << error.what() << '\n';
+		return 1;
+	}
+	catch (const exception& error)
 	{
 		cout << error.what() << '\n';
 		return 1;
