@@ -8,26 +8,19 @@
 #include <math.h>
 using namespace std;
 
-float X1(float a, float b, float c)
+double CalculateDiscriminant(double& a, double& b, double& c)
 {
-	float discriminant = powf(b, 2) - 4 * a * c;
-	if (discriminant < 0)
-	{
-		return 0;
-	}
-
-	return (-b + sqrtf(discriminant)) / (2 * a * c);
+	return pow(b, 2) - 4 * a * c;
 }
 
-float X2(float a, float b, float c)
+double X1(double& a, double& b, double& c, double& discriminant)
 {
-	float discriminant = powf(b, 2) - 4 * a * c;
-	if (discriminant < 0)
-	{
-		return 0;
-	}
+	return (-b + sqrt(discriminant)) / (2 * a * c);
+}
 
-	return (-b - sqrtf(discriminant)) / (2 * a * c);
+double X2(double& a, double& b, double& c, double& discriminant)
+{
+	return (-b - sqrt(discriminant)) / (2 * a * c);
 }
 
 int _tmain(int argc, _TCHAR* argv[])
@@ -42,19 +35,26 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	try
 	{
-		float a = stof(argv[1]);
+		double a = stod(argv[1]);
 
 		if (!a)
 		{
-			cout << "A = 0 - the equation is not square";
+			cout << "A = 0 - the equation is not square" << endl;
 			return 1;
 		}
 
-		float b = stof(argv[2]);
-		float c = stof(argv[3]);
+		double b = stod(argv[2]);
+		double c = stod(argv[3]);
 
-		float x1 = X1(a, b, c);
-		float x2 = X2(a, b, c);
+		double discriminant = CalculateDiscriminant(a, b, c);
+		if (discriminant < 0)
+		{
+			cout << "No real numbers (D < 0)." << endl;
+			return 1;
+		}
+
+		double x1 = X1(a, b, c, discriminant);
+		double x2 = X2(a, b, c, discriminant);
 
 		if (x1 == x2)
 		{

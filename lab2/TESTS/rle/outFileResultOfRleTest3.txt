@@ -1,1 +1,1 @@
-Input file not found.
+ios_base::failbit set: iostream stream error

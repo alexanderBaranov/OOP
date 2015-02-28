@@ -10,7 +10,7 @@
 
 using namespace std;
 
-static size_t const kMaxFileSize = 1024 * 1024 * 1024 * 2;
+static size_t const kMaxFileSize = 1024u * 1024u * 1024u * 2u;
 
 char SwapBits(char ch, int t1, int t2)
 {
@@ -44,7 +44,7 @@ char Decrypt(char& symbol, int key)
 size_t FileSize(istream &inputfile)
 {
 	inputfile.seekg(0, inputfile.end);
-	size_t length = inputfile.tellg();
+	size_t length = (size_t)inputfile.tellg();
 	inputfile.seekg(0, inputfile.beg);
 
 	return length;
@@ -53,11 +53,7 @@ size_t FileSize(istream &inputfile)
 void ReadFiles(const TCHAR *inFile, const TCHAR *outFile, const TCHAR *key, function<char(char&, int)> cryptoFunc)
 {
 	ifstream inputFile(inFile, ifstream::binary);
-	if (!inputFile)
-	{
-		throw exception("Input file not found.");
-	}
-
+	inputFile.exceptions(ios::failbit);
 
 	size_t size = FileSize(inputFile);
 	if (size > kMaxFileSize)
@@ -66,10 +62,7 @@ void ReadFiles(const TCHAR *inFile, const TCHAR *outFile, const TCHAR *key, func
 	}
 	
 	ofstream outputFile(outFile, ofstream::binary);
-	if (!outputFile)
-	{
-		throw exception("Output file not found.");
-	}
+	outputFile.exceptions(ios::failbit);
 
 	int keyCrypt = stoi(key);
 	
@@ -102,6 +95,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		cout << e.what();
 		return 1;
 	}
+
 	return 0;
 }
 

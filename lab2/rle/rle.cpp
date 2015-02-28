@@ -11,7 +11,7 @@
 
 using namespace std;
 
-static size_t const kFileSize = 1024 * 1024 * 1024 * 2;
+static size_t const kFileSize = 1024u * 1024u * 1024u * 2u;
 
 struct packedData
 {
@@ -31,16 +31,10 @@ size_t FileSize(istream &inputfile)
 void Pack(const TCHAR *inFile , const TCHAR *outFile)
 {
 	ifstream inputFile(inFile, ifstream::binary);
-	if (!inputFile)
-	{
-		throw exception("Input file not found.");
-	}
+	inputFile.exceptions(ios::failbit);
 
 	ofstream outputFile(outFile, ofstream::binary);
-	if (!outputFile)
-	{
-		throw exception("Output file not found.");
-	}
+	outputFile.exceptions(ios::failbit);
 
 	packedData data = {};
 	while (!inputFile.eof())
@@ -56,21 +50,17 @@ void Pack(const TCHAR *inFile , const TCHAR *outFile)
 		data.symbol = ch;
 		data.counter++;
 	}
+
+	outputFile.close();
 }
 
 void Unpack(const TCHAR *inFile, const TCHAR *outFile)
 {
 	ifstream inputFile(inFile, ifstream::binary);
-	if (!inputFile)
-	{
-		throw exception("Input file not found.");
-	}
+	inputFile.exceptions(ios::failbit);
 
 	ofstream outputFile(outFile, ofstream::binary);
-	if (!outputFile)
-	{
-		throw exception("Output file not found.");
-	}
+	outputFile.exceptions(ios::failbit);
 
 	while (!inputFile.eof())
 	{
@@ -80,6 +70,8 @@ void Unpack(const TCHAR *inFile, const TCHAR *outFile)
 		for (int i = 0; i < data.counter; i++)
 			outputFile << data.symbol;
 	}
+
+	outputFile.close();
 }
 int _tmain(int argc, _TCHAR* argv[])
 {
@@ -100,7 +92,7 @@ int _tmain(int argc, _TCHAR* argv[])
 			Unpack(argv[2], argv[3]);
 		}
 	}
-	catch (exception& e)
+	catch (ifstream::failure& e)
 	{
 		cout << e.what();
 		return 1;
