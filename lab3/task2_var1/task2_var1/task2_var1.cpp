@@ -3,8 +3,6 @@
 
 #include "stdafx.h"
 #include <iostream>
-#include <iterator>
-#include <algorithm>
 #include <string>
 #include "StringOperations.h"
 

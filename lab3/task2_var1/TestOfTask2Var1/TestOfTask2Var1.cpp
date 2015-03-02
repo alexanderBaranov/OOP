@@ -14,11 +14,14 @@ BOOST_AUTO_TEST_CASE(testStringOperations)
 {
 	BOOST_CHECK_EQUAL(RemoveExtraSpaces(" "), "");
 	BOOST_CHECK_EQUAL(RemoveExtraSpaces(" 1"), "1");
+	BOOST_CHECK_EQUAL(RemoveExtraSpaces("1        "), "1");
 	BOOST_CHECK_EQUAL(RemoveExtraSpaces(" 1 "), "1");
 	BOOST_CHECK_EQUAL(RemoveExtraSpaces("     1       "), "1");
 	BOOST_CHECK_EQUAL(RemoveExtraSpaces(" 1 2"), "1 2");
 	BOOST_CHECK_EQUAL(RemoveExtraSpaces(" 1 2 "), "1 2");
 	BOOST_CHECK_EQUAL(RemoveExtraSpaces("    1 2    "), "1 2");
+	BOOST_CHECK_EQUAL(RemoveExtraSpaces("    1               2    "), "1 2");
+	BOOST_CHECK_EQUAL(RemoveExtraSpaces("    asd    xcvxc       sdda    2    "), "asd xcvxc sdda 2");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
