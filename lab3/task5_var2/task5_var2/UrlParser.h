@@ -4,7 +4,6 @@
 
 enum Protocol
 {
-	INVALID_PROTOCOL,
 	HTTP = 80, 
 	HTTPS = 443,
 	FTP = 21

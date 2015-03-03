@@ -1,97 +1,67 @@
 #include "stdafx.h"
+#include "UrlParser.h"
 #include <string>
 #include <vector>
 #include <boost/algorithm/string.hpp>
-#include "UrlParser.h"
+#include <boost/regex.hpp>
+#include <boost/lexical_cast.hpp>
 
 using namespace std;
 
 static const vector<string> kProtocols = {"http", "https", "ftp"};
-static const string kSlashesAfterProtocol = ":////";
-static const string kSlash = "//";
-static const string kColon = ":";
 static const int kMinPort = 1;
 static const int kMaxPort = 65535;
 
-Protocol ValidProtocol(string protocolOfUrl)
+Protocol CheckProtocol(string protocolOfUrl)
 {
-	string lowerProtocol = protocolOfUrl;
-	boost::algorithm::to_lower(lowerProtocol);
-
-	auto result = find(kProtocols.begin(), kProtocols.end(), lowerProtocol);
-
-	Protocol protocol = INVALID_PROTOCOL;
-	if (result != kProtocols.end())
+	Protocol protocol;
+	if (0 == kProtocols[0].compare(protocolOfUrl))
 	{
-		if (0 == kProtocols[0].compare(lowerProtocol))
-		{
-			protocol = HTTP;
-		}
-		else if (0 == kProtocols[1].compare(lowerProtocol))
-		{
-			protocol = HTTPS;
-		}
-		else if (0 == kProtocols[2].compare(lowerProtocol))
-		{
-			protocol = FTP;
-		}
+		protocol = HTTP;
+	}
+	else if (0 == kProtocols[1].compare(protocolOfUrl))
+	{
+		protocol = HTTPS;
+	}
+	else if (0 == kProtocols[2].compare(protocolOfUrl))
+	{
+		protocol = FTP;
 	}
 
 	return protocol;
 }
 
-bool ParseURL(std::string const& url,
+bool ParseURL(string const& url,
 	Protocol & protocol,
 	int & port,
-	std::string & host,
-	std::string & document)
+	string & host,
+	string & document)
 {
-	int posOfSlashesAfterProtocol = url.find_first_of(kSlashesAfterProtocol);
-	if (posOfSlashesAfterProtocol == string::npos)
+	string processUrl(url);
+	boost::algorithm::to_lower(processUrl);
+
+	boost::regex expression("^(http[s]?|ftp):\/\/?([^/\:]+)(?::(\\d+))?\/?(.+)?");
+
+	if (!boost::regex_match(processUrl, expression))
 	{
 		return false;
 	}
 
-	protocol = ValidProtocol(url.substr(0, posOfSlashesAfterProtocol));
-	if (protocol ==  INVALID_PROTOCOL)
+	vector<std::string> values;
+	if (!boost::regex_split(back_inserter(values), processUrl, expression))
 	{
 		return false;
 	}
 
-	int posOfBegHost = posOfSlashesAfterProtocol + kSlashesAfterProtocol.length() - 2;
-	int posOfSlash = url.find_first_of(kSlash, posOfBegHost);
-	string hostWithPort;
-	if (posOfSlash == string::npos)
-	{
-		hostWithPort = url.substr(posOfBegHost);
-	}
-	else
-	{
-		hostWithPort = url.substr(posOfBegHost, posOfSlash - posOfBegHost);
-		document = url.substr(posOfSlash + 1);
-	}
-	
-	if (hostWithPort.empty())
+	protocol = CheckProtocol(values[0]);
+	port = values[2].length() ? stoi(values[2]) : protocol;
+	if ((port <= kMinPort) && (port >= kMaxPort))
 	{
 		return false;
 	}
 
-	int posOfColon = hostWithPort.find_first_of(kColon);
-	if (posOfColon != string::npos)
-	{
-		port = stoi(hostWithPort.substr(posOfColon + 1, hostWithPort.length() - posOfColon));
-		if ((port < kMinPort) && (port > kMaxPort))
-		{
-			return false;
-		}
-
-		host = hostWithPort.substr(0, posOfColon);
-	}
-	else
-	{
-		port = protocol;
-		host = hostWithPort;
-	}
+	host = values[1];
+	document = values[3];
 
 	return true;
 }
