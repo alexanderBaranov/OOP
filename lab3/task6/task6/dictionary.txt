@@ -1,0 +1,4 @@
+asd=это последовательность букв.
+fffff=jh
+kkl=mbn, ngnn
+qwe=xcv
