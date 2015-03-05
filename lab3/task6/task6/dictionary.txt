@@ -1,4 +1,11 @@
+as=it
 asd=это последовательность букв.
 fffff=jh
 kkl=mbn, ngnn
 qwe=xcv
+v=нвЃ В
+x=нвЃ Х
+xs=xs cd
+zxc=ddddddddddddddddddddddd
+az=za
+za=asd

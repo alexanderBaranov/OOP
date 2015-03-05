@@ -41,12 +41,15 @@ dictionary ReadDictionaryFromFile(const TCHAR *fileName)
 
 bool WriteToDictionaryFile(const TCHAR *fileName, dictionary dict)
 {
-	ofstream outFile(fileName);
+	ofstream outFile(fileName, ios::app);
 	outFile.exceptions(ios::badbit);
 
 	for (const auto& pair : dict)
 	{
-		outFile << pair.first << "=" << pair.second << endl;
+		string key = pair.first;
+		boost::algorithm::to_lower(key);
+
+		outFile << key << "=" << pair.second << endl;
 	}
 
 	outFile.close();
@@ -57,6 +60,8 @@ bool WriteToDictionaryFile(const TCHAR *fileName, dictionary dict)
 string GetValueFromDictionary(dictionary &dict, string key)
 {
 	string value;
+
+	boost::algorithm::to_lower(key);
 
 	auto it = dict.find(key);
 
