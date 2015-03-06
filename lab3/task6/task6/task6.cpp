@@ -8,7 +8,6 @@
 #include "Dictionary.h"
 #include <boost/algorithm/string.hpp>
 #include<clocale>
-#include <codecvt>
 
 using namespace std;
 

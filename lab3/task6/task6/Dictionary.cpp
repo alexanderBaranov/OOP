@@ -3,7 +3,6 @@
 #include <fstream>
 #include <boost/algorithm/string.hpp>
 #include <boost/regex.hpp>
-#include <boost/lexical_cast.hpp>
 
 using namespace std;
 
