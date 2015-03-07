@@ -12,20 +12,20 @@ int _tmain(int argc, _TCHAR* argv[])
 {
 	if (argc != 2)
 	{
-		cout << "Example: task6.exe <input file>";
+		cout << "Example: task7_var2.exe <input file>";
 		return 1;
 	}
 
 	setlocale(LC_CTYPE, "");
 
+	cout << "Input string: ";
+
 	try
 	{
-		auto badWords = ReadBadWordsFromFile(argv[1]);
-
 		string inStr;
 		getline(cin, inStr);
 
-		inStr = FilterString(badWords, inStr);
+		cout << "Output string: " << Filter(argv[1], inStr) << endl;
 	}
 	catch (exception e)
 	{

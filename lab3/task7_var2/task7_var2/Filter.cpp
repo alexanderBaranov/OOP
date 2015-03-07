@@ -2,6 +2,7 @@
 #include "Filter.h"
 #include <fstream>
 #include <algorithm>
+#include <locale>
 #include <boost/algorithm/string.hpp>
 #include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>
@@ -39,23 +40,44 @@ vector<string> ReadBadWordsFromFile(const TCHAR *fileName)
 	return badWords;
 }
 
+string DeleteSubstring(string processStr, string delSubStr)
+{
+	int pos = processStr.find_first_of(delSubStr);
+	{
+		while (pos != string::npos)
+		{
+			bool isWordOfBegStr = pos ? !isalpha((unsigned char)processStr[pos - 1]) : true;
+			if (isWordOfBegStr && !isalpha((unsigned char)processStr[pos + delSubStr.length()]))
+			{
+				processStr.erase(pos, delSubStr.length());
+			}
+
+			pos = processStr.find_first_of(delSubStr, pos + delSubStr.length());
+		}
+	}
+
+	return processStr;
+}
 
 string FilterString(vector<string>& badWords,string inputString)
 {
 	vector<string> values = GetExpression(inputString);
 
+	setlocale(0, "");
+
 	for_each(badWords.begin(), badWords.end(), [&inputString, &values](string value)
 	{
 		if (find(values.begin(), values.end(), value) != values.end())
 		{
-			int pos = inputString.find_first_of(value);
-			while (pos != string::npos)
-			{
-				inputString.erase(pos, pos + value.length());
-				pos = inputString.find_first_of(value, pos + value.length());
-			}
+			inputString = DeleteSubstring(inputString, value);
 		}
 	});
 
 	return inputString;
+}
+
+string Filter(const TCHAR *fileName, string inputString)
+{
+	auto badWords = ReadBadWordsFromFile(fileName);
+	return FilterString(badWords, inputString);
 }
