@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE(testStringOperations)
 		params["BB"] = "[bb]";
 		params["C"] = "[c]";
 		params["CC"] = "[cc]";
-		assert(ExpandTemplate(tpl, params) ==
+		BOOST_CHECK(ExpandTemplate(tpl, params) ==
 			"-[aa][bb][cc][cc][c][a][b][c]+");
 	}
 }

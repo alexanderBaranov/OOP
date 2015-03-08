@@ -31,11 +31,7 @@ Protocol CheckProtocol(string protocolOfUrl)
 	return protocol;
 }
 
-bool ParseURL(string const& url,
-	Protocol & protocol,
-	int & port,
-	string & host,
-	string & document)
+vector<string> ParseFromStringUrlToVector(const string url)
 {
 	string processUrl(url);
 	boost::algorithm::to_lower(processUrl);
@@ -44,11 +40,26 @@ bool ParseURL(string const& url,
 
 	if (!boost::regex_match(processUrl, expression))
 	{
-		return false;
+		return {};
 	}
 
-	vector<std::string> values;
+	vector<string> values;
 	if (!boost::regex_split(back_inserter(values), processUrl, expression))
+	{
+		return {};
+	}
+
+	return values;
+}
+
+bool ParseURL(string const& url,
+	Protocol & protocol,
+	int & port,
+	string & host,
+	string & document)
+{
+	vector<string> values = ParseFromStringUrlToVector(url);
+	if (values.empty())
 	{
 		return false;
 	}

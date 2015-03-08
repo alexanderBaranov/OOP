@@ -7,6 +7,25 @@
 
 using namespace std;
 
+string RemoveOtherSymbolsFromWord(string word)
+{
+	for (int i = word.length(); i != 0; i--)
+	{
+		if (isalpha((unsigned char)word[i]))
+		{
+			word = word.substr(0, i + 1);
+			break;
+		}
+	}
+
+	return word;
+}
+
+bool IsNoWord(string word)
+{
+	return (word.length() == 1) && !isalpha((unsigned char)word[0]);
+}
+
 mapWords WordCount(string inputString)
 {
 	stringstream streamStr;
@@ -18,19 +37,12 @@ mapWords WordCount(string inputString)
 	string word;
 	while (streamStr >> word)
 	{
-		if ((word.length() == 1) && !isalpha((unsigned char)word[0]))
+		if (IsNoWord(word))
 		{
 			continue;
 		}
 
-		for (int i = word.length(); i != 0; i--)
-		{
-			if (isalpha((unsigned char)word[i]))
-			{
-				word = word.substr(0, i + 1);
-				break;
-			}
-		}
+		word = RemoveOtherSymbolsFromWord(word);
 
 		auto it = words.find(word);
 		if (it != words.end())
