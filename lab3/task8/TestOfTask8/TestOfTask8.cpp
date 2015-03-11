@@ -3,7 +3,7 @@
 
 #include "stdafx.h"
 
-#define BOOST_TEST_MODULE TestOfTask7Var2
+#define BOOST_TEST_MODULE TestOfTask8
 
 #include <boost\test\included\unit_test.hpp>
 #include "..\task8\ExpandTemplate.h"
@@ -12,7 +12,7 @@
 
 using namespace std;
 
-BOOST_AUTO_TEST_SUITE(TestOfTask7Var2)
+BOOST_AUTO_TEST_SUITE(TestOfTask8)
 
 BOOST_AUTO_TEST_CASE(testStringOperations)
 {

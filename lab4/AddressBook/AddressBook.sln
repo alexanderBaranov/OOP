@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AddressBook", "AddressBook\AddressBook.vcxproj", "{455EBB7E-1209-4BE5-A67A-1D4E50960E11}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Test", "Test\Test.vcxproj", "{0B168E54-62CF-45D5-8110-0606F5251549}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{455EBB7E-1209-4BE5-A67A-1D4E50960E11}.Debug|Win32.ActiveCfg = Debug|Win32
+		{455EBB7E-1209-4BE5-A67A-1D4E50960E11}.Debug|Win32.Build.0 = Debug|Win32
+		{455EBB7E-1209-4BE5-A67A-1D4E50960E11}.Release|Win32.ActiveCfg = Release|Win32
+		{455EBB7E-1209-4BE5-A67A-1D4E50960E11}.Release|Win32.Build.0 = Release|Win32
+		{0B168E54-62CF-45D5-8110-0606F5251549}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0B168E54-62CF-45D5-8110-0606F5251549}.Debug|Win32.Build.0 = Debug|Win32
+		{0B168E54-62CF-45D5-8110-0606F5251549}.Release|Win32.ActiveCfg = Release|Win32
+		{0B168E54-62CF-45D5-8110-0606F5251549}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
