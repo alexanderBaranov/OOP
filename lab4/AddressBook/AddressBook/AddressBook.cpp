@@ -6,6 +6,7 @@
 #include <fstream>
 #include <boost/algorithm/string.hpp>
 #include <boost/regex.hpp>
+#include <boost/format.hpp>
 
 using namespace std;
 
@@ -118,7 +119,9 @@ void CAddressBook::SaveSubscribers()
 
 		for (const auto& subscriber : m_subscribers)
 		{
-			
+			//string str(kName + "[" + toSsubscriber->GetIndex());
+
+			//outFile << ;
 		}
 
 		outFile.close();
