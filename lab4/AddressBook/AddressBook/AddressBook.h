@@ -35,6 +35,32 @@ public:
 private:
 	void LoadSubscribers();
 	void SaveSubscribers();
+	void ModifySubscriber(shared_ptr<CSubscriber>& subscriber,
+						const int index,
+						const std::string name,
+						const std::string surname,
+						const std::string patronymic,
+						const std::string email,
+						const std::string telephonNamber,
+						const std::string street,
+						const std::string house,
+						const std::string apartment,
+						const std::string city,
+						const std::string republic,
+						const std::string country);
+
+	void NewSubscriber(const int index,
+		const std::string name,
+		const std::string surname,
+		const std::string patronymic,
+		const std::string email,
+		const std::string telephonNamber,
+		const std::string street,
+		const std::string house,
+		const std::string apartment,
+		const std::string city,
+		const std::string republic,
+		const std::string country);
 
 	std::string ReadInputFile(const std::string fileName);
 	void ParseBaseData(std::string line, std::vector<std::string> &outValues);

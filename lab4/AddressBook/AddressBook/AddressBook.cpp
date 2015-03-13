@@ -33,7 +33,10 @@ CAddressBook::CAddressBook()
 
 CAddressBook::~CAddressBook()
 {
-	SaveSubscribers();
+	if (m_updateBD)
+	{
+		SaveSubscribers();
+	}
 }
 
 void CAddressBook::LoadSubscribers()
@@ -110,6 +113,8 @@ void CAddressBook::LoadSubscribers()
 	}
 }
 
+
+
 void CAddressBook::SaveSubscribers()
 {
 	if (m_updateBD)
@@ -117,11 +122,25 @@ void CAddressBook::SaveSubscribers()
 		ofstream outFile(kBaseData);
 		outFile.exceptions(ios::badbit);
 
+		sort(m_subscribers.begin(), m_subscribers.end(), [](shared_ptr<CSubscriber> subscriber1, shared_ptr<CSubscriber> subscriber2){
+			return subscriber1->GetIndex() < subscriber2->GetIndex();
+		});
+
 		for (const auto& subscriber : m_subscribers)
 		{
-			//string str(kName + "[" + toSsubscriber->GetIndex());
+			string str(kIndex + "[" + to_string(subscriber->GetIndex()) + "],");
+			str.append(kName + "[" + subscriber->GetName() + "],");
+			str.append(kSurname + "[" + subscriber->GetSurname() + "],");
+			str.append(kPatronymic + "[" + subscriber->GetPatronymic() + "],");
+			str.append(kEmail + "[" + subscriber->GetEmail() + "],");
+			str.append(kTelephoneNumber + "[" + subscriber->GetTelephoneNumber() + "],");
+			str.append(kStreet + "[" + subscriber->GetStreet() + "],");
+			str.append(kHouse + "[" + subscriber->GetApartment() + "],");
+			str.append(kCity + "[" + subscriber->GetCity() + "],");
+			str.append(kRepublic + "[" + subscriber->GetRepublic() + "],");
+			str.append(kCountry + "[" + subscriber->GetCountry() + "];");
 
-			//outFile << ;
+			outFile << str << endl;
 		}
 
 		outFile.close();
@@ -171,7 +190,92 @@ void CAddressBook::DeleteSubscriber(const int index)
 {
 }
 
-void CAddressBook::UpdateSubscriber(const int index, 
+void CAddressBook::UpdateSubscriber(const int index,
+	const std::string name,
+	const std::string surname,
+	const std::string patronymic,
+	const std::string email,
+	const std::string telephonNamber,
+	const std::string street,
+	const std::string house,
+	const std::string apartment,
+	const std::string city,
+	const std::string republic,
+	const std::string country)
+{
+	for (auto& subscriber : m_subscribers)
+	{
+		if (subscriber->GetIndex() == index)
+		{
+			ModifySubscriber(
+				subscriber,
+				index,
+				name,
+				surname,
+				patronymic,
+				email,
+				telephonNamber,
+				street,
+				house,
+				apartment,
+				city,
+				republic,
+				country);
+		}
+	}
+}
+
+void CAddressBook::NewSubscriber(const int index,
+	const std::string name,
+	const std::string surname,
+	const std::string patronymic,
+	const std::string email,
+	const std::string telephonNamber,
+	const std::string street,
+	const std::string house,
+	const std::string apartment,
+	const std::string city,
+	const std::string republic,
+	const std::string country)
+{
+	int newIndex = 0;
+	bool setIndex = false;
+	for (size_t i = 0; i < m_subscribers.size(); i++)
+	{
+		if (!setIndex && (i != m_subscribers[i]->GetIndex()))
+		{
+			newIndex = i;
+			setIndex = true;
+			break;
+		}
+
+		if (m_subscribers[i]->FindByEmail(email))
+		{
+			throw exception("Email set");
+		}
+	}
+
+	auto subscriber = make_shared<CSubscriber>();
+	ModifySubscriber(
+		subscriber,
+		newIndex,
+		name,
+		surname,
+		patronymic,
+		email,
+		telephonNamber,
+		street,
+		house,
+		apartment,
+		city,
+		republic,
+		country);
+
+	m_subscribers.push_back(subscriber);
+}
+
+void CAddressBook::ModifySubscriber( shared_ptr<CSubscriber>& subscriber,
+								const int index, 
 								const std::string name,
 								const std::string surname,
 								const std::string patronymic,
@@ -184,66 +288,63 @@ void CAddressBook::UpdateSubscriber(const int index,
 								const std::string republic,
 								const std::string country)
 {
-	for (auto& subscriber : m_subscribers)
+	if (subscriber->GetIndex() == index)
 	{
-		if (subscriber->GetIndex() == index)
+		m_updateBD = true;
+
+		if (!name.empty())
 		{
-			m_updateBD = true;
+			subscriber->SetName(name);
+		}
 
-			if (!name.empty())
-			{
-				subscriber->SetName(name);
-			}
+		if (!surname.empty())
+		{
+			subscriber->SetSurname(surname);
+		}
 
-			if (!surname.empty())
-			{
-				subscriber->SetSurname(surname);
-			}
+		if (!patronymic.empty())
+		{
+			subscriber->SetPatronymic(patronymic);
+		}
 
-			if (!patronymic.empty())
-			{
-				subscriber->SetPatronymic(patronymic);
-			}
+		if (!email.empty())
+		{
+			subscriber->SetEmail(email);
+		}
 
-			if (!email.empty())
-			{
-				subscriber->SetEmail(email);
-			}
+		if (!telephonNamber.empty())
+		{
+			subscriber->SetTelephoneNumber(telephonNamber);
+		}
 
-			if (!telephonNamber.empty())
-			{
-				subscriber->SetTelephoneNumber(telephonNamber);
-			}
+		if (!street.empty())
+		{
+			subscriber->SetStreet(street);
+		}
 
-			if (!street.empty())
-			{
-				subscriber->SetStreet(street);
-			}
+		if (!house.empty())
+		{
+			subscriber->SetHouse(house);
+		}
 
-			if (!house.empty())
-			{
-				subscriber->SetHouse(house);
-			}
+		if (!apartment.empty())
+		{
+			subscriber->SetApartment(apartment);
+		}
 
-			if (!apartment.empty())
-			{
-				subscriber->SetApartment(apartment);
-			}
+		if (!city.empty())
+		{
+			subscriber->SetCity(city);
+		}
 
-			if (!city.empty())
-			{
-				subscriber->SetCity(city);
-			}
+		if (!republic.empty())
+		{
+			subscriber->SetRepublic(republic);
+		}
 
-			if (!republic.empty())
-			{
-				subscriber->SetRepublic(republic);
-			}
-
-			if (!country.empty())
-			{
-				subscriber->SetCountry(country);
-			}
+		if (!country.empty())
+		{
+			subscriber->SetCountry(country);
 		}
 	}
 }
