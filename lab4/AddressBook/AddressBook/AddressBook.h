@@ -10,11 +10,16 @@ public:
 	CAddressBook();
 	~CAddressBook();
 	
-	subscribers Find(
+	subscribers FindByAllParams(
 		const std::string name,
-		const std::string address = "",
-		const std::string telephone = "",
-		const std::string email = "");
+		const std::string address,
+		const std::string telephone,
+		const std::string email);
+
+	subscribers FindByName(const std::string name);
+	subscribers FindByAddress(const std::string address);
+	subscribers FindByTelephone(const std::string telephone);
+	subscribers FindByEmail(const std::string email);
 
 	void DeleteSubscriber(const int index);
 	void UpdateSubscriber(const int index,
@@ -26,16 +31,14 @@ public:
 						const std::string street,
 						const std::string house,
 						const std::string apartment,
-						const std::string city,
-						const std::string republic,
-						const std::string country);
+						const std::string city);
 	
 	subscribers GetSubscribers();
 
 private:
 	void LoadSubscribers();
 	void SaveSubscribers();
-	void ModifySubscriber(shared_ptr<CSubscriber>& subscriber,
+	void ModifySubscriber(std::shared_ptr<CSubscriber>& subscriber,
 						const int index,
 						const std::string name,
 						const std::string surname,
@@ -45,9 +48,7 @@ private:
 						const std::string street,
 						const std::string house,
 						const std::string apartment,
-						const std::string city,
-						const std::string republic,
-						const std::string country);
+						const std::string city);
 
 	void NewSubscriber(const int index,
 		const std::string name,
@@ -58,12 +59,12 @@ private:
 		const std::string street,
 		const std::string house,
 		const std::string apartment,
-		const std::string city,
-		const std::string republic,
-		const std::string country);
+		const std::string city);
 
 	std::string ReadInputFile(const std::string fileName);
 	void ParseBaseData(std::string line, std::vector<std::string> &outValues);
+	//void ParseString(std::string line, vector<std::string> &outValues);
+	//std::shared_ptr<CSubscriber> CAddressBook::ParseInputData(std::string line);
 
 	subscribers m_subscribers;
 	bool m_updateBD;

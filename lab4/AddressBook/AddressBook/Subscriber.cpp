@@ -82,7 +82,7 @@ string CSubscriber::GetStringObjectFromVector(const vector<string>& objs) const
 {
 	string strObjs;
 
-	for (int i = 0; i < objs.size(); i++)
+	for (size_t i = 0; i < objs.size(); i++)
 	{
 		if (i)
 		{
@@ -134,30 +134,19 @@ string CSubscriber::GetCity() const
 	return m_city;
 }
 
-void CSubscriber::SetRepublic(string republic)
-{
-	m_republic = republic;
-}
-
-string CSubscriber::GetRepublic() const
-{
-	return m_republic;
-}
-
-void CSubscriber::SetCountry(string country)
-{
-	m_country = country;
-}
-
-string CSubscriber::GetCountry() const
-{
-	return m_country;
-}
-
-vector<string> CSubscriber::ParseFindString(string line)
+vector<string> CSubscriber::ParseName(string line)
 {
 	vector<string> values;
-	boost::regex expression("(\\w+)");
+	boost::regex expression("([^\\s]+)");
+	boost::regex_split(back_inserter(values), line, expression);
+
+	return values;
+}
+
+vector<string> CSubscriber::ParseAddress(string line)
+{
+	vector<string> values;
+	boost::regex expression("\\s*([^,]+)\\s*");
 	boost::regex_split(back_inserter(values), line, expression);
 
 	return values;
@@ -178,7 +167,7 @@ void CSubscriber::ParseTelephoneNumbers(string line, vector<string> &outValues)
 
 bool CSubscriber::FindByName(string name)
 {
-	vector<string> names = name.length() ? ParseFindString(name) : vector<string>();
+	vector<string> names = name.length() ? ParseName(name) : vector<string>();
 	vector<string>bdName({ m_name, m_surname, m_patronymic });
 
 	return CompareVectors(names, bdName);
@@ -186,8 +175,8 @@ bool CSubscriber::FindByName(string name)
 
 bool CSubscriber::FindByAddress(string address)
 {
-	vector<string> addresses = address.length() ? ParseFindString(address) : vector<string>();
-	vector<string>bdAddresses({ m_street, m_house, m_apartment, m_city, m_republic, m_country });
+	vector<string> addresses = address.length() ? ParseAddress(address) : vector<string>();
+	vector<string>bdAddresses({ m_street, m_house, m_apartment, m_city});
 
 	return CompareVectors(addresses, bdAddresses);
 }
@@ -204,6 +193,11 @@ bool CSubscriber::FindByEmail(string email)
 
 bool CSubscriber::CompareVectors(const vector<string>&vec, const vector<string>&bdVec)
 {
+	if (vec.empty() || bdVec.empty())
+	{
+		return false;
+	}
+
 	int countOfEquals = 0;
 	for_each(vec.begin(), vec.end(), [&countOfEquals, &bdVec](string str)
 	{

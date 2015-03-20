@@ -9,7 +9,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	try
 	{
 		auto addressBook = make_unique<CAddressBook>();
-		subscribers subscribes(addressBook->Find("Карамазов"));
+		subscribers subscribes(addressBook->FindByAddress("Россия, Йошкар-Ола"));
 	}
 	catch (const exception &error)
 	{

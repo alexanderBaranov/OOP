@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "AddressBook.h"
 #include <fstream>
+#include <algorithm>
 #include <boost/algorithm/string.hpp>
 #include <boost/regex.hpp>
 #include <boost/format.hpp>
@@ -23,8 +24,6 @@ static const string kStreet = "улица";
 static const string kHouse = "дом";
 static const string kApartment = "квартира";
 static const string kCity = "город";
-static const string kRepublic = "республика";
-static const string kCountry = "страна";
 
 CAddressBook::CAddressBook()
 {
@@ -98,16 +97,6 @@ void CAddressBook::LoadSubscribers()
 		{
 			subscriber->SetCity(values[++i]);
 		}
-		
-		if (values[++i] == kRepublic)
-		{
-			subscriber->SetRepublic(values[++i]);
-		}
-		
-		if (values[++i] == kCountry)
-		{
-			subscriber->SetCountry(values[++i]);
-		}
 
 		m_subscribers.push_back(move(subscriber));
 	}
@@ -137,8 +126,6 @@ void CAddressBook::SaveSubscribers()
 			str.append(kStreet + "[" + subscriber->GetStreet() + "],");
 			str.append(kHouse + "[" + subscriber->GetApartment() + "],");
 			str.append(kCity + "[" + subscriber->GetCity() + "],");
-			str.append(kRepublic + "[" + subscriber->GetRepublic() + "],");
-			str.append(kCountry + "[" + subscriber->GetCountry() + "];");
 
 			outFile << str << endl;
 		}
@@ -147,13 +134,82 @@ void CAddressBook::SaveSubscribers()
 	}
 }
 
-subscribers CAddressBook::Find(
+subscribers CAddressBook::FindByName(const std::string name)
+{
+	subscribers findedSubscribers;
+	for_each(m_subscribers.begin(), m_subscribers.end(), 
+		[&findedSubscribers, &name](shared_ptr<CSubscriber> subscriber)
+	{
+		if (subscriber->FindByName(name))
+		{
+			findedSubscribers.push_back(subscriber);
+		}
+	});
+
+	return findedSubscribers;
+}
+
+subscribers CAddressBook::FindByAddress(const std::string address)
+{
+	subscribers findedSubscribers;
+	for_each(m_subscribers.begin(), m_subscribers.end(),
+		[&findedSubscribers, &address](shared_ptr<CSubscriber> subscriber)
+	{
+		if (subscriber->FindByAddress(address))
+		{
+			findedSubscribers.push_back(subscriber);
+		}
+	});
+
+	return findedSubscribers;
+}
+
+subscribers CAddressBook::FindByTelephone(const std::string telephone)
+{
+	subscribers findedSubscribers;
+	for_each(m_subscribers.begin(), m_subscribers.end(),
+		[&findedSubscribers, &telephone](shared_ptr<CSubscriber> subscriber)
+	{
+		if (subscriber->FindByTelephoneNumber(telephone))
+		{
+			findedSubscribers.push_back(subscriber);
+		}
+	});
+
+	return findedSubscribers;
+}
+
+subscribers CAddressBook::FindByEmail(const std::string email)
+{
+	subscribers findedSubscribers;
+	for_each(m_subscribers.begin(), m_subscribers.end(),
+		[&findedSubscribers, &email](shared_ptr<CSubscriber> subscriber)
+	{
+		if (subscriber->FindByEmail(email))
+		{
+			findedSubscribers.push_back(subscriber);
+		}
+	});
+
+	return findedSubscribers;
+}
+
+subscribers CAddressBook::FindByAllParams(
 	const std::string name,
 	const std::string address,
 	const std::string telephone,
 	const std::string email)
 {
 	subscribers findedSubscribers;
+
+	if (name.empty() 
+		&& address.empty() 
+		&& telephone.empty() 
+		&& email.empty())
+	{
+		return findedSubscribers;
+	}
+
 	for(const auto& subscriber : m_subscribers)
 	{
 		bool isFinded = true;
@@ -188,6 +244,14 @@ subscribers CAddressBook::Find(
 
 void CAddressBook::DeleteSubscriber(const int index)
 {
+	for (size_t i = 0; i < m_subscribers.size(); i++)
+	{
+		if (m_subscribers[i]->GetIndex() == index)
+		{
+			m_subscribers.erase(m_subscribers.begin() + i);
+			break;
+		}
+	}
 }
 
 void CAddressBook::UpdateSubscriber(const int index,
@@ -199,9 +263,7 @@ void CAddressBook::UpdateSubscriber(const int index,
 	const std::string street,
 	const std::string house,
 	const std::string apartment,
-	const std::string city,
-	const std::string republic,
-	const std::string country)
+	const std::string city)
 {
 	for (auto& subscriber : m_subscribers)
 	{
@@ -218,9 +280,7 @@ void CAddressBook::UpdateSubscriber(const int index,
 				street,
 				house,
 				apartment,
-				city,
-				republic,
-				country);
+				city);
 		}
 	}
 }
@@ -234,9 +294,7 @@ void CAddressBook::NewSubscriber(const int index,
 	const std::string street,
 	const std::string house,
 	const std::string apartment,
-	const std::string city,
-	const std::string republic,
-	const std::string country)
+	const std::string city)
 {
 	int newIndex = 0;
 	bool setIndex = false;
@@ -267,9 +325,7 @@ void CAddressBook::NewSubscriber(const int index,
 		street,
 		house,
 		apartment,
-		city,
-		republic,
-		country);
+		city);
 
 	m_subscribers.push_back(subscriber);
 }
@@ -284,9 +340,7 @@ void CAddressBook::ModifySubscriber( shared_ptr<CSubscriber>& subscriber,
 								const std::string street,
 								const std::string house,
 								const std::string apartment,
-								const std::string city,
-								const std::string republic,
-								const std::string country)
+								const std::string city)
 {
 	if (subscriber->GetIndex() == index)
 	{
@@ -336,16 +390,6 @@ void CAddressBook::ModifySubscriber( shared_ptr<CSubscriber>& subscriber,
 		{
 			subscriber->SetCity(city);
 		}
-
-		if (!republic.empty())
-		{
-			subscriber->SetRepublic(republic);
-		}
-
-		if (!country.empty())
-		{
-			subscriber->SetCountry(country);
-		}
 	}
 }
 
@@ -370,3 +414,80 @@ void CAddressBook::ParseBaseData(string line, vector<string> &outValues)
 	boost::regex expression("(?:\\s*(\\w+)\\s*\\[([^\\]]*)\\]\\s*)");
 	boost::regex_split(back_inserter(outValues), line, expression);
 }
+
+//void CAddressBook::ParseString(string line, vector<string> &outValues)
+//{
+//	boost::regex expression("(\\w+)");
+//	boost::regex_split(back_inserter(outValues), line, expression);
+//}
+//
+//shared_ptr<CSubscriber> CAddressBook::ParseInputData(string line)
+//{
+//	vector<string> values;
+//	ParseString(line, values);
+//
+//	auto subscriber = make_shared<CSubscriber>();
+//
+//	for (size_t i = 0; i < values.size(); i++)
+//	{
+//		if (values[i].find(kPrefixName) != string::npos)
+//		{
+//			subscriber->SetIndex(values[++i]);
+//		}
+//
+//		if (values[++i] == kName)
+//		{
+//			subscriber->SetName(values[++i]);
+//		}
+//
+//		if (values[++i] == kSurname)
+//		{
+//			subscriber->SetSurname(values[++i]);
+//		}
+//
+//		if (values[++i] == kPatronymic)
+//		{
+//			subscriber->SetPatronymic(values[++i]);
+//		}
+//
+//		if (values[++i] == kEmail)
+//		{
+//			subscriber->SetEmail(values[++i]);
+//		}
+//
+//		if (values[++i] == kTelephoneNumber)
+//		{
+//			subscriber->SetTelephoneNumber(values[++i]);
+//		}
+//
+//		if (values[++i] == kStreet)
+//		{
+//			subscriber->SetStreet(values[++i]);
+//		}
+//
+//		if (values[++i] == kHouse)
+//		{
+//			subscriber->SetHouse(values[++i]);
+//		}
+//
+//		if (values[++i] == kApartment)
+//		{
+//			subscriber->SetApartment(values[++i]);
+//		}
+//
+//		if (values[++i] == kCity)
+//		{
+//			subscriber->SetCity(values[++i]);
+//		}
+//
+//		if (values[++i] == kRepublic)
+//		{
+//			subscriber->SetRepublic(values[++i]);
+//		}
+//
+//		if (values[++i] == kCountry)
+//		{
+//			subscriber->SetCountry(values[++i]);
+//		}
+//	}
+//}

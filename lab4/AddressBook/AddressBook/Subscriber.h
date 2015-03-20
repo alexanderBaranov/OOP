@@ -38,19 +38,14 @@ public:
 	void SetCity(std::string city);
 	std::string GetCity() const;
 
-	void SetRepublic(std::string republic);
-	std::string GetRepublic() const;
-
-	void SetCountry(std::string country);
-	std::string GetCountry() const;
-
 	bool FindByName(std::string name);
 	bool FindByAddress(std::string address);
 	bool FindByTelephoneNumber(std::string telephoneNumber);
 	bool FindByEmail(std::string email);
 
 private:
-	std::vector<std::string> ParseFindString(std::string line);
+	std::vector<std::string> CSubscriber::ParseName(std::string line);
+	std::vector<std::string> ParseAddress(std::string line);
 	void ParseEmail(std::string line, std::vector<std::string> &outValues);
 	void ParseTelephoneNumbers(std::string line, std::vector<std::string> &outValues);
 
@@ -68,7 +63,5 @@ private:
 	std::string m_house;
 	std::string m_apartment;
 	std::string m_city;
-	std::string m_republic;
-	std::string m_country;
 };
 
