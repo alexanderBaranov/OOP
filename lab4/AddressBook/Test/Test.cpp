@@ -36,6 +36,7 @@ BOOST_AUTO_TEST_CASE(testFinderOfAdreessBook)
 	BOOST_CHECK_EQUAL(ab.FindByAddress("Йошкар-Ола, 56, 23").size(), 2);
 	BOOST_CHECK_EQUAL(ab.FindByAddress("Йошкар-Ола, 56, 24").size(), 0);
 	BOOST_CHECK_EQUAL(ab.FindByAddress("Йошкар-Ола, 56, 23").size(), 2);
+	BOOST_CHECK_EQUAL(ab.FindByAddress("56, 23, Йошкар-Ола").size(), 2);
 
 	BOOST_CHECK_EQUAL(ab.FindByEmail("").size(), 0);
 	BOOST_CHECK_EQUAL(ab.FindByEmail("dostoevskiy@yandex.ru").size(), 1);
@@ -48,6 +49,39 @@ BOOST_AUTO_TEST_CASE(testFinderOfAdreessBook)
 	BOOST_CHECK_EQUAL(ab.FindByTelephone("789065").size(), 1);
 
 	//BOOST_CHECK_EQUAL(ab.Find("", ).size())
+}
+
+BOOST_AUTO_TEST_CASE(testAddToAdreessBook)
+{
+	{
+		CAddressBook ab;
+		BOOST_CHECK(ab.NewSubscriber("Добрыня", "", "Никитич", "d@mail.ru", "123123", "Богатырская", "1", "2", "Росы") == "");
+	}
+	{
+		CAddressBook ab;
+		ab.UpdateSubscriber(6, "", "", "", "", "777777", "", "", "", "");
+	}
+	{
+		CAddressBook ab;
+		subscribers subs = ab.FindByName("Добрыня");
+		BOOST_CHECK_EQUAL(subs.size(), 1);
+		BOOST_CHECK_EQUAL(subs[0]->GetTelephoneNumber(), "777777");
+	}
+	{
+		CAddressBook ab;
+		subscribers subs = ab.FindByName("Добрыня");
+		BOOST_CHECK_EQUAL(subs.size(), 1);
+
+		BOOST_CHECK(ab.NewSubscriber("Добрыня", "", "Никитич", "d@mail.ru", "123123", "Богатырская", "1", "2", "Росы") == "Такой email уже есть");
+
+		ab.DeleteSubscriber(subs[0]->GetIndex());
+	}
+	{
+		CAddressBook ab;
+		subscribers subs = ab.FindByName("Добрыня");
+		BOOST_CHECK_EQUAL(subs.size(), 0);
+		BOOST_CHECK_EQUAL(ab.GetSubscribers().size(), 6);
+	}
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -28,14 +28,15 @@ static const string kCity = "город";
 CAddressBook::CAddressBook()
 {
 	LoadSubscribers();
+	m_updateBD = false;
 }
 
 CAddressBook::~CAddressBook()
 {
-	if (m_updateBD)
-	{
-		SaveSubscribers();
-	}
+	//if (m_updateBD)
+	//{
+	//	SaveSubscribers();
+	//}
 }
 
 void CAddressBook::LoadSubscribers()
@@ -99,39 +100,35 @@ void CAddressBook::LoadSubscribers()
 		}
 
 		m_subscribers.push_back(move(subscriber));
-	}
-}
-
-
-
-void CAddressBook::SaveSubscribers()
-{
-	if (m_updateBD)
-	{
-		ofstream outFile(kBaseData);
-		outFile.exceptions(ios::badbit);
 
 		sort(m_subscribers.begin(), m_subscribers.end(), [](shared_ptr<CSubscriber> subscriber1, shared_ptr<CSubscriber> subscriber2){
 			return subscriber1->GetIndex() < subscriber2->GetIndex();
 		});
-
-		for (const auto& subscriber : m_subscribers)
-		{
-			string str(kIndex + "[" + to_string(subscriber->GetIndex()) + "],");
-			str.append(kName + "[" + subscriber->GetName() + "],");
-			str.append(kSurname + "[" + subscriber->GetSurname() + "],");
-			str.append(kPatronymic + "[" + subscriber->GetPatronymic() + "],");
-			str.append(kEmail + "[" + subscriber->GetEmail() + "],");
-			str.append(kTelephoneNumber + "[" + subscriber->GetTelephoneNumber() + "],");
-			str.append(kStreet + "[" + subscriber->GetStreet() + "],");
-			str.append(kHouse + "[" + subscriber->GetApartment() + "],");
-			str.append(kCity + "[" + subscriber->GetCity() + "],");
-
-			outFile << str << endl;
-		}
-
-		outFile.close();
 	}
+}
+
+void CAddressBook::SaveSubscribers()
+{
+	ofstream outFile(kBaseData);
+	outFile.exceptions(ios::badbit);
+
+	for (const auto& subscriber : m_subscribers)
+	{
+		string str(kIndex + "[" + to_string(subscriber->GetIndex()) + "],");
+		str.append(kName + "[" + subscriber->GetName() + "],");
+		str.append(kSurname + "[" + subscriber->GetSurname() + "],");
+		str.append(kPatronymic + "[" + subscriber->GetPatronymic() + "],");
+		str.append(kEmail + "[" + subscriber->GetEmail() + "],");
+		str.append(kTelephoneNumber + "[" + subscriber->GetTelephoneNumber() + "],");
+		str.append(kStreet + "[" + subscriber->GetStreet() + "],");
+		str.append(kHouse + "[" + subscriber->GetHouse() + "],");
+		str.append(kApartment + "[" + subscriber->GetApartment() + "],");
+		str.append(kCity + "[" + subscriber->GetCity() + "];");
+
+		outFile << str << endl;
+	}
+
+	outFile.close();
 }
 
 subscribers CAddressBook::FindByName(const std::string name)
@@ -249,6 +246,7 @@ void CAddressBook::DeleteSubscriber(const int index)
 		if (m_subscribers[i]->GetIndex() == index)
 		{
 			m_subscribers.erase(m_subscribers.begin() + i);
+			m_updateBD = true;
 			break;
 		}
 	}
@@ -285,7 +283,7 @@ void CAddressBook::UpdateSubscriber(const int index,
 	}
 }
 
-void CAddressBook::NewSubscriber(const int index,
+string CAddressBook::NewSubscriber(
 	const std::string name,
 	const std::string surname,
 	const std::string patronymic,
@@ -296,7 +294,7 @@ void CAddressBook::NewSubscriber(const int index,
 	const std::string apartment,
 	const std::string city)
 {
-	int newIndex = 0;
+	int newIndex = m_subscribers.size();
 	bool setIndex = false;
 	for (size_t i = 0; i < m_subscribers.size(); i++)
 	{
@@ -309,12 +307,12 @@ void CAddressBook::NewSubscriber(const int index,
 
 		if (m_subscribers[i]->FindByEmail(email))
 		{
-			throw exception("Email set");
+			return "Такой email уже есть";
 		}
 	}
 
 	auto subscriber = make_shared<CSubscriber>();
-	ModifySubscriber(
+	if (ModifySubscriber(
 		subscriber,
 		newIndex,
 		name,
@@ -325,12 +323,15 @@ void CAddressBook::NewSubscriber(const int index,
 		street,
 		house,
 		apartment,
-		city);
+		city))
+	{
+		m_subscribers.push_back(subscriber);
+	}
 
-	m_subscribers.push_back(subscriber);
+	return "";
 }
 
-void CAddressBook::ModifySubscriber( shared_ptr<CSubscriber>& subscriber,
+bool CAddressBook::ModifySubscriber( shared_ptr<CSubscriber>& subscriber,
 								const int index, 
 								const std::string name,
 								const std::string surname,
@@ -342,60 +343,73 @@ void CAddressBook::ModifySubscriber( shared_ptr<CSubscriber>& subscriber,
 								const std::string apartment,
 								const std::string city)
 {
-	if (subscriber->GetIndex() == index)
+	bool isModify = false;
+	if (!name.empty())
+	{
+		subscriber->SetName(name);
+		isModify = true;
+	}
+
+	if (!surname.empty())
+	{
+		subscriber->SetSurname(surname);
+		isModify = true;
+	}
+
+	if (!patronymic.empty())
+	{
+		subscriber->SetPatronymic(patronymic);
+		isModify = true;
+	}
+
+	if (!email.empty())
+	{
+		subscriber->SetEmail(email);
+		isModify = true;
+	}
+
+	if (!telephonNamber.empty())
+	{
+		subscriber->SetTelephoneNumber(telephonNamber);
+		isModify = true;
+	}
+
+	if (!street.empty())
+	{
+		subscriber->SetStreet(street);
+		isModify = true;
+	}
+
+	if (!house.empty())
+	{
+		subscriber->SetHouse(house);
+		isModify = true;
+	}
+
+	if (!apartment.empty())
+	{
+		subscriber->SetApartment(apartment);
+		isModify = true;
+	}
+
+	if (!city.empty())
+	{
+		subscriber->SetCity(city);
+		isModify = true;
+	}
+
+	if (isModify)
 	{
 		m_updateBD = true;
-
-		if (!name.empty())
-		{
-			subscriber->SetName(name);
-		}
-
-		if (!surname.empty())
-		{
-			subscriber->SetSurname(surname);
-		}
-
-		if (!patronymic.empty())
-		{
-			subscriber->SetPatronymic(patronymic);
-		}
-
-		if (!email.empty())
-		{
-			subscriber->SetEmail(email);
-		}
-
-		if (!telephonNamber.empty())
-		{
-			subscriber->SetTelephoneNumber(telephonNamber);
-		}
-
-		if (!street.empty())
-		{
-			subscriber->SetStreet(street);
-		}
-
-		if (!house.empty())
-		{
-			subscriber->SetHouse(house);
-		}
-
-		if (!apartment.empty())
-		{
-			subscriber->SetApartment(apartment);
-		}
-
-		if (!city.empty())
-		{
-			subscriber->SetCity(city);
-		}
+		subscriber->SetIndex(to_string(index));
 	}
+
+	return isModify;
 }
 
 subscribers CAddressBook::GetSubscribers()
 {
-	return subscribers();
+	return m_subscribers;
 }
 
 string CAddressBook::ReadInputFile(const string fileName)
@@ -413,4 +427,9 @@ void CAddressBook::ParseBaseData(string line, vector<string> &outValues)
 {
 	boost::regex expression("(?:\\s*(\\w+)\\s*\\[([^\\]]*)\\]\\s*)");
 	boost::regex_split(back_inserter(outValues), line, expression);
+}
+
+bool CAddressBook::Updated()
+{
+	return m_updateBD;
 }

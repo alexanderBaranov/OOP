@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <boost/regex.hpp>
 #include <boost/fusion/sequence/comparison/equal_to.hpp>
+#include <boost/algorithm/string.hpp>
 
 using namespace std;
 
@@ -167,16 +168,41 @@ void CSubscriber::ParseTelephoneNumbers(string line, vector<string> &outValues)
 
 bool CSubscriber::FindByName(string name)
 {
+	boost::algorithm::to_lower(name);
 	vector<string> names = name.length() ? ParseName(name) : vector<string>();
-	vector<string>bdName({ m_name, m_surname, m_patronymic });
+
+	string nameOfBD = m_name;
+	boost::algorithm::to_lower(nameOfBD);
+
+	string surnameOfBD = m_surname;
+	boost::algorithm::to_lower(surnameOfBD);
+
+	string patronymicOfBD = m_patronymic;
+	boost::algorithm::to_lower(patronymicOfBD);
+
+	vector<string>bdName({ nameOfBD, surnameOfBD, patronymicOfBD });
 
 	return CompareVectors(names, bdName);
 }
 
 bool CSubscriber::FindByAddress(string address)
 {
+	boost::algorithm::to_lower(address);
 	vector<string> addresses = address.length() ? ParseAddress(address) : vector<string>();
-	vector<string>bdAddresses({ m_street, m_house, m_apartment, m_city});
+
+	string street = m_street;
+	boost::algorithm::to_lower(street);
+
+	string house = m_house;
+	boost::algorithm::to_lower(house);
+
+	string apartment = m_apartment;
+	boost::algorithm::to_lower(apartment);
+
+	string city = m_city;
+	boost::algorithm::to_lower(city);
+
+	vector<string>bdAddresses({ street, house, apartment, city});
 
 	return CompareVectors(addresses, bdAddresses);
 }
@@ -188,7 +214,16 @@ bool CSubscriber::FindByTelephoneNumber(string telephoneNumber)
 
 bool CSubscriber::FindByEmail(string email)
 {
-	return find(m_email.begin(), m_email.end(), email) != m_email.end();;
+	boost::algorithm::to_lower(email);
+
+	vector<string> temp;
+	for each (string email in m_email)
+	{
+		boost::algorithm::to_lower(email);
+		temp.push_back(email);
+	}
+
+	return find(temp.begin(), temp.end(), email) != temp.end();
 }
 
 bool CSubscriber::CompareVectors(const vector<string>&vec, const vector<string>&bdVec)
