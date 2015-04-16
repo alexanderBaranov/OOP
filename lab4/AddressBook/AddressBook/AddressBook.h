@@ -10,16 +10,16 @@ public:
 	CAddressBook();
 	~CAddressBook();
 	
-	subscribers FindByAllParams(
+	subscribers const FindByAllParams(
 		const std::string name,
 		const std::string address,
 		const std::string telephone,
-		const std::string email);
+		const std::string email) const;
 
-	subscribers FindByName(const std::string name);
-	subscribers FindByAddress(const std::string address);
-	subscribers FindByTelephone(const std::string telephone);
-	subscribers FindByEmail(const std::string email);
+	subscribers const FindByName(const std::string name) const;
+	subscribers const FindByAddress(const std::string address) const;
+	subscribers const FindByTelephone(const std::string telephone) const;
+	subscribers const FindByEmail(const std::string email) const;
 
 	void DeleteSubscriber(const int index);
 	void UpdateSubscriber(const int index,

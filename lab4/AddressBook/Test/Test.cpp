@@ -56,10 +56,12 @@ BOOST_AUTO_TEST_CASE(testAddToAdreessBook)
 	{
 		CAddressBook ab;
 		BOOST_CHECK(ab.NewSubscriber("Добрыня", "", "Никитич", "d@mail.ru", "123123", "Богатырская", "1", "2", "Росы") == "");
+		ab.SaveSubscribers();
 	}
 	{
 		CAddressBook ab;
 		ab.UpdateSubscriber(6, "", "", "", "", "777777", "", "", "", "");
+		ab.SaveSubscribers();
 	}
 	{
 		CAddressBook ab;
@@ -75,6 +77,8 @@ BOOST_AUTO_TEST_CASE(testAddToAdreessBook)
 		BOOST_CHECK(ab.NewSubscriber("Добрыня", "", "Никитич", "d@mail.ru", "123123", "Богатырская", "1", "2", "Росы") == "Такой email уже есть");
 
 		ab.DeleteSubscriber(subs[0]->GetIndex());
+
+		ab.SaveSubscribers();
 	}
 	{
 		CAddressBook ab;

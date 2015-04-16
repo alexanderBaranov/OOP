@@ -109,6 +109,11 @@ void CAddressBook::LoadSubscribers()
 
 void CAddressBook::SaveSubscribers()
 {
+	if (!m_updateBD)
+	{
+		return;
+	}
+
 	ofstream outFile(kBaseData);
 	outFile.exceptions(ios::badbit);
 
@@ -131,7 +136,7 @@ void CAddressBook::SaveSubscribers()
 	outFile.close();
 }
 
-subscribers CAddressBook::FindByName(const std::string name)
+subscribers const CAddressBook::FindByName(const std::string name) const
 {
 	subscribers findedSubscribers;
 	for_each(m_subscribers.begin(), m_subscribers.end(), 
@@ -146,7 +151,7 @@ subscribers CAddressBook::FindByName(const std::string name)
 	return findedSubscribers;
 }
 
-subscribers CAddressBook::FindByAddress(const std::string address)
+subscribers const CAddressBook::FindByAddress(const std::string address) const
 {
 	subscribers findedSubscribers;
 	for_each(m_subscribers.begin(), m_subscribers.end(),
@@ -161,7 +166,7 @@ subscribers CAddressBook::FindByAddress(const std::string address)
 	return findedSubscribers;
 }
 
-subscribers CAddressBook::FindByTelephone(const std::string telephone)
+subscribers const CAddressBook::FindByTelephone(const std::string telephone) const
 {
 	subscribers findedSubscribers;
 	for_each(m_subscribers.begin(), m_subscribers.end(),
@@ -176,7 +181,7 @@ subscribers CAddressBook::FindByTelephone(const std::string telephone)
 	return findedSubscribers;
 }
 
-subscribers CAddressBook::FindByEmail(const std::string email)
+subscribers const CAddressBook::FindByEmail(const std::string email) const
 {
 	subscribers findedSubscribers;
 	for_each(m_subscribers.begin(), m_subscribers.end(),
@@ -191,11 +196,11 @@ subscribers CAddressBook::FindByEmail(const std::string email)
 	return findedSubscribers;
 }
 
-subscribers CAddressBook::FindByAllParams(
+subscribers const CAddressBook::FindByAllParams(
 	const std::string name,
 	const std::string address,
 	const std::string telephone,
-	const std::string email)
+	const std::string email) const
 {
 	subscribers findedSubscribers;
 

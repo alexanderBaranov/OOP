@@ -9,49 +9,49 @@ public:
 	~CSubscriber();
 
 	void SetIndex(std::string index);
-	int GetIndex() const;
+	int const& GetIndex() const;
 
 	void SetName(std::string name);
-	std::string GetName()  const;
+	std::string const& GetName()  const;
 
 	void SetSurname(std::string surname);
-	std::string GetSurname()  const;
+	std::string const& GetSurname()  const;
 
 	void SetPatronymic(std::string patronymic);
-	std::string GetPatronymic()  const;
+	std::string const& GetPatronymic()  const;
 
 	void SetEmail(std::string email);
-	std::string GetEmail()  const;
+	std::string const GetEmail()  const;
 
 	void SetTelephoneNumber(std::string telephoneNumber);
-	std::string GetTelephoneNumber()  const;
+	std::string const GetTelephoneNumber()  const;
 
 	void SetStreet(std::string street);
-	std::string GetStreet()  const;
+	std::string const& GetStreet()  const;
 
 	void SetHouse(std::string house);
-	std::string GetHouse()  const;
+	std::string const& GetHouse()  const;
 
 	void SetApartment(std::string apartment);
-	std::string GetApartment()  const;
+	std::string const& GetApartment()  const;
 
 	void SetCity(std::string city);
-	std::string GetCity() const;
+	std::string const& GetCity() const;
 
-	bool FindByName(std::string name);
-	bool FindByAddress(std::string address);
-	bool FindByTelephoneNumber(std::string telephoneNumber);
-	bool FindByEmail(std::string email);
+	bool FindByName(std::string name) const;
+	bool FindByAddress(std::string address) const;
+	bool FindByTelephoneNumber(std::string telephoneNumber) const;
+	bool FindByEmail(std::string email) const;
 
 private:
-	std::vector<std::string> CSubscriber::ParseName(std::string line);
-	std::vector<std::string> ParseAddress(std::string line);
-	void ParseEmail(std::string line, std::vector<std::string> &outValues);
-	void ParseTelephoneNumbers(std::string line, std::vector<std::string> &outValues);
+	std::vector<std::string> const CSubscriber::ParseName(std::string line) const;
+	std::vector<std::string> const ParseAddress(std::string line) const;
+	void ParseEmail(std::string line, std::vector<std::string> &outValues) const;
+	void ParseTelephoneNumbers(std::string line, std::vector<std::string> &outValues) const;
 
-	bool CompareVectors(const std::vector<std::string>&vec1, const std::vector<std::string>&vec2);
+	bool CompareVectors(const std::vector<std::string>&vec1, const std::vector<std::string>&vec2) const;
 	
-	std::string GetStringObjectFromVector(const std::vector<std::string>& objs) const;
+	std::string const GetStringObjectFromVector(const std::vector<std::string>& objs) const;
 
 	int m_index;
 	std::string m_name;

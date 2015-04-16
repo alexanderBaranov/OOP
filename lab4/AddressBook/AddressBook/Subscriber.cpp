@@ -20,7 +20,7 @@ void CSubscriber::SetIndex(string index)
 	m_index = stoi(index);
 }
 
-int CSubscriber::GetIndex() const
+int const& CSubscriber::GetIndex() const
 {
 	return m_index;
 }
@@ -30,7 +30,7 @@ void CSubscriber::SetName(string name)
 	m_name = name;
 }
 
-string CSubscriber::GetName() const
+string const& CSubscriber::GetName() const
 {
 	return m_name;
 }
@@ -40,7 +40,7 @@ void CSubscriber::SetSurname(string surname)
 	m_surname = surname;
 }
 
-string CSubscriber::GetSurname() const
+string const& CSubscriber::GetSurname() const
 {
 	return m_surname;
 }
@@ -50,7 +50,7 @@ void CSubscriber::SetPatronymic(string patronymic)
 	m_patronymic = patronymic;
 }
 
-string CSubscriber::GetPatronymic() const
+string const& CSubscriber::GetPatronymic() const
 {
 	return m_patronymic;
 }
@@ -62,7 +62,7 @@ void CSubscriber::SetEmail(string email)
 	m_email = emails;
 }
 
-string CSubscriber::GetEmail() const
+string const CSubscriber::GetEmail() const
 {
 	return GetStringObjectFromVector(m_email);
 }
@@ -74,12 +74,12 @@ void CSubscriber::SetTelephoneNumber(string telephoneNumber)
 	m_telephoneNumber = telephoneNumbers;
 }
 
-string CSubscriber::GetTelephoneNumber() const
+string const CSubscriber::GetTelephoneNumber() const
 {
 	return GetStringObjectFromVector(m_telephoneNumber);
 }
 
-string CSubscriber::GetStringObjectFromVector(const vector<string>& objs) const
+string const CSubscriber::GetStringObjectFromVector(const vector<string>& objs) const
 {
 	string strObjs;
 
@@ -100,7 +100,7 @@ void CSubscriber::SetStreet(string street)
 	m_street = street;
 }
 
-string CSubscriber::GetStreet() const
+string const& CSubscriber::GetStreet() const
 {
 	return m_street;
 }
@@ -110,7 +110,7 @@ void CSubscriber::SetHouse(string house)
 	m_house = house;
 }
 
-string CSubscriber::GetHouse() const
+string const& CSubscriber::GetHouse() const
 {
 	return  m_house;
 }
@@ -120,7 +120,7 @@ void CSubscriber::SetApartment(string apartment)
 	m_apartment = apartment;
 }
 
-string CSubscriber::GetApartment() const
+string const& CSubscriber::GetApartment() const
 {
 	return m_apartment;
 }
@@ -130,12 +130,12 @@ void CSubscriber::SetCity(string city)
 	m_city = city;
 }
 
-string CSubscriber::GetCity() const
+string const& CSubscriber::GetCity() const
 {
 	return m_city;
 }
 
-vector<string> CSubscriber::ParseName(string line)
+vector<string> const CSubscriber::ParseName(string line) const
 {
 	vector<string> values;
 	boost::regex expression("([^\\s]+)");
@@ -144,7 +144,7 @@ vector<string> CSubscriber::ParseName(string line)
 	return values;
 }
 
-vector<string> CSubscriber::ParseAddress(string line)
+vector<string> const CSubscriber::ParseAddress(string line) const
 {
 	vector<string> values;
 	boost::regex expression("\\s*([^,]+)\\s*");
@@ -153,20 +153,20 @@ vector<string> CSubscriber::ParseAddress(string line)
 	return values;
 }
 
-void CSubscriber::ParseEmail(string line, vector<string> &outValues)
+void CSubscriber::ParseEmail(string line, vector<string> &outValues) const
 {
 	boost::regex expression("([^,\\s]+)");
 	boost::regex_split(back_inserter(outValues), line, expression);
 }
 
-void CSubscriber::ParseTelephoneNumbers(string line, vector<string> &outValues)
+void CSubscriber::ParseTelephoneNumbers(string line, vector<string> &outValues) const
 {
 	boost::regex expression("([^,\\s]+)");
 	boost::regex_split(back_inserter(outValues), line, expression);
 }
 
 
-bool CSubscriber::FindByName(string name)
+bool CSubscriber::FindByName(string name) const
 {
 	boost::algorithm::to_lower(name);
 	vector<string> names = name.length() ? ParseName(name) : vector<string>();
@@ -185,7 +185,7 @@ bool CSubscriber::FindByName(string name)
 	return CompareVectors(names, bdName);
 }
 
-bool CSubscriber::FindByAddress(string address)
+bool CSubscriber::FindByAddress(string address) const
 {
 	boost::algorithm::to_lower(address);
 	vector<string> addresses = address.length() ? ParseAddress(address) : vector<string>();
@@ -207,12 +207,12 @@ bool CSubscriber::FindByAddress(string address)
 	return CompareVectors(addresses, bdAddresses);
 }
 
-bool CSubscriber::FindByTelephoneNumber(string telephoneNumber)
+bool CSubscriber::FindByTelephoneNumber(string telephoneNumber) const
 {
 	return find(m_telephoneNumber.begin(), m_telephoneNumber.end(), telephoneNumber) != m_telephoneNumber.end();
 }
 
-bool CSubscriber::FindByEmail(string email)
+bool CSubscriber::FindByEmail(string email) const
 {
 	boost::algorithm::to_lower(email);
 
@@ -226,7 +226,7 @@ bool CSubscriber::FindByEmail(string email)
 	return find(temp.begin(), temp.end(), email) != temp.end();
 }
 
-bool CSubscriber::CompareVectors(const vector<string>&vec, const vector<string>&bdVec)
+bool CSubscriber::CompareVectors(const vector<string>&vec, const vector<string>&bdVec) const
 {
 	if (vec.empty() || bdVec.empty())
 	{
