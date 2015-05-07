@@ -83,10 +83,18 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\university\Person.h" />
+    <ClInclude Include="..\university\Student.h" />
+    <ClInclude Include="..\university\University.h" />
+    <ClInclude Include="..\university\UniversityProcess.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\university\Person.cpp" />
+    <ClCompile Include="..\university\Student.cpp" />
+    <ClCompile Include="..\university\University.cpp" />
+    <ClCompile Include="..\university\UniversityProcess.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>

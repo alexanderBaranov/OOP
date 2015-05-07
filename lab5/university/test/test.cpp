@@ -2,6 +2,7 @@
 //
 
 #include "stdafx.h"
+#include "../university/UniversityProcess.h"
 #define BOOST_TEST_MODULE TestsOfUnivercity
 
 #include <boost\test\included\unit_test.hpp>
@@ -12,6 +13,8 @@ BOOST_AUTO_TEST_SUITE(TestsOfUnivercity)
 
 BOOST_AUTO_TEST_CASE(testEmpty)
 {
+	//CUniversityProcess asd;
+
 	BOOST_CHECK(true);
 }
 

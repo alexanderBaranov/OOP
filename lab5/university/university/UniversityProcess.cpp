@@ -27,8 +27,8 @@ CUniversityProcess::~CUniversityProcess()
 }
 
 void CUniversityProcess::Load(
-	std::string listOfUniversity, 
-	std::string listOfStudents)
+	const std::string listOfUniversity, 
+	const std::string listOfStudents)
 {
 	string contentListOfUniversity = ReadInputFile(listOfUniversity);
 	vector<string> values;
@@ -36,7 +36,10 @@ void CUniversityProcess::Load(
 
 	for (const string& val : values)
 	{
-		m_universities.push_back(make_shared<CUniversity>(CUniversity(val)));
+		if (!FindUniversity(val))
+		{
+			m_universities.push_back(make_shared<CUniversity>(CUniversity(val)));
+		}
 	}
 
 	string contentListOfStudents = ReadInputFile(listOfStudents);
@@ -76,12 +79,80 @@ void CUniversityProcess::Load(
 			university = values[++i];
 		}
 
-
-
-		m_students.push_back(make_shared<CStudent>(CStudent(
-
-			)));
+		const auto univer = FindUniversity(university);
+		if (univer)
+		{
+			m_students.push_back(make_shared<CStudent>(name, gender, stod(growth), stod(weight), stoi(age), univer));
+		}
 	}
+}
+
+const universites CUniversityProcess::GetListUniversites() const
+{
+	return m_universities;
+}
+
+const students CUniversityProcess::GetListStudents() const
+{
+	return m_students;
+}
+
+bool CUniversityProcess::ReplaceUniversity(const std::string oldName, const std::string newName)
+{
+	auto it = FindUniversity(newName);
+	if (it)
+	{
+		return false;
+	}
+	
+	it = FindUniversity(oldName);
+	if (!it)
+	{
+		return false;
+	}
+
+	it->SetName(newName);
+
+	return true;
+}
+
+bool CUniversityProcess::DeleteUniversity(const std::string name)
+{
+	const auto univer_it = FindUniversity(name);
+	if (!univer_it)
+	{
+		return false;
+	}
+
+	auto it_beg = m_students.begin();
+	auto it_end = m_students.end();
+	for (; it_beg != it_end; it_beg)
+	{
+		const CStudent *student = it_beg->get();
+		if (student->UniversityName().compare(univer_it->GetName()) == 0)
+		{
+			it_beg = m_students.erase(it_beg);
+		}
+	}
+
+	m_universities.erase(find(m_universities.begin(), m_universities.end(),univer_it));
+
+	return true;
+}
+
+std::shared_ptr<CUniversity> CUniversityProcess::FindUniversity(const std::string universityName)
+{
+	if (m_universities.empty())
+	{
+		return false;
+	}
+
+	const auto it = find_if(m_universities.begin(), m_universities.end(), [&universityName](const shared_ptr<CUniversity>& university)
+	{
+		return university->GetName().compare(universityName) == 0;
+	});
+
+	return *it;
 }
 
 std::string CUniversityProcess::ReadInputFile(const std::string fileName)
