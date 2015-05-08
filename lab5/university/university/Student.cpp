@@ -38,3 +38,8 @@ void CStudent::SetNumberOfYearsStudy(const int year)
 		m_numberOfYearsStudy = year;
 	}
 }
+
+void CStudent::SetUniversity(const std::shared_ptr<CUniversity> university)
+{
+	m_university = university;
+}

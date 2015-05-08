@@ -18,9 +18,10 @@ public:
 	const int NumberOfYearsStudy() const;
 	const std::string UniversityName() const;
 	void SetNumberOfYearsStudy(const int year);
+	void SetUniversity(const std::shared_ptr<CUniversity> university);
 
 private:
-	const std::shared_ptr<CUniversity> m_university;
+	std::shared_ptr<CUniversity> m_university;
 	int m_numberOfYearsStudy;
 };
 

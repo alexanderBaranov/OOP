@@ -99,27 +99,27 @@ const students CUniversityProcess::GetListStudents() const
 
 bool CUniversityProcess::ReplaceUniversity(const std::string oldName, const std::string newName)
 {
-	auto it = FindUniversity(newName);
-	if (it)
+	auto univer = FindUniversity(newName);
+	if (univer)
 	{
 		return false;
 	}
 	
-	it = FindUniversity(oldName);
-	if (!it)
+	univer = FindUniversity(oldName);
+	if (!univer)
 	{
 		return false;
 	}
 
-	it->SetName(newName);
+	univer->SetName(newName);
 
 	return true;
 }
 
 bool CUniversityProcess::DeleteUniversity(const std::string name)
 {
-	const auto univer_it = FindUniversity(name);
-	if (!univer_it)
+	const auto univer = FindUniversity(name);
+	if (!univer)
 	{
 		return false;
 	}
@@ -129,18 +129,54 @@ bool CUniversityProcess::DeleteUniversity(const std::string name)
 	for (; it_beg != it_end; it_beg)
 	{
 		const CStudent *student = it_beg->get();
-		if (student->UniversityName().compare(univer_it->GetName()) == 0)
+		if (student->UniversityName().compare(univer->GetName()) == 0)
 		{
 			it_beg = m_students.erase(it_beg);
 		}
 	}
 
-	m_universities.erase(find(m_universities.begin(), m_universities.end(),univer_it));
+	m_universities.erase(find(m_universities.begin(), m_universities.end(),univer));
 
 	return true;
 }
 
-std::shared_ptr<CUniversity> CUniversityProcess::FindUniversity(const std::string universityName)
+const students CUniversityProcess::GetListStudentsFromUniversity(const std::string universityName) const
+{
+	const auto univer = FindUniversity(universityName);
+	if (!univer)
+	{
+		return students();
+	}
+
+	students findedStudents;
+	auto it_beg = m_students.begin();
+	auto it_end = m_students.end();
+	for (; it_beg != it_end; it_beg)
+	{
+		const CStudent *student = it_beg->get();
+		if (student->UniversityName().compare(univer->GetName()) == 0)
+		{
+			findedStudents.push_back(*it_beg);
+		}
+	}
+
+	return findedStudents;
+}
+
+bool CUniversityProcess::AddNewUniversity(const std::string newName)
+{
+	const auto univer = FindUniversity(newName);
+	if (!univer)
+	{
+		return false;
+	}
+
+	m_universities.push_back(make_shared<CUniversity>(CUniversity(newName)));
+
+	return true;
+}
+
+std::shared_ptr<CUniversity> CUniversityProcess::FindUniversity(const std::string universityName) const
 {
 	if (m_universities.empty())
 	{
@@ -153,6 +189,63 @@ std::shared_ptr<CUniversity> CUniversityProcess::FindUniversity(const std::strin
 	});
 
 	return *it;
+}
+
+bool CUniversityProcess::UpdateStudentData(const int listNumber,
+	const std::string name,
+	const double growth,
+	const double weight,
+	const int age,
+	const std::string universityName,
+	const int numberOfYearsStudy)
+{
+	if ((size_t)listNumber > m_students.size() - 1)
+	{
+		return false;
+	}
+
+	auto student = m_students[listNumber];
+
+	student->SetName(name);
+	student->SetGrowth(growth);
+	student->SetWeight(weight);
+	student->SetAge(age);
+
+	const auto univer = FindUniversity(universityName);
+	if (univer)
+	{
+		student->SetUniversity(univer);
+	}
+
+	return true;
+}
+
+bool CUniversityProcess::DeleteStudent(const int listNumber)
+{
+	if ((size_t)listNumber > m_students.size() - 1)
+	{
+		return false;
+	}
+
+	return m_students.end() == m_students.erase(m_students.begin() + listNumber) ? false : true;
+}
+
+bool CUniversityProcess::AddNewStudent(const std::string name,
+									const std::string gender,
+									const double growth,
+									const double weight,
+									const int age,
+									const std::string university)
+{
+	const auto univer = FindUniversity(university);
+	if (univer)
+	{
+		return false;
+	}
+
+	m_students.push_back(make_shared<CStudent>(name, gender, growth, weight, age, univer));
+
+	return true;
 }
 
 std::string CUniversityProcess::ReadInputFile(const std::string fileName)
