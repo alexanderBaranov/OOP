@@ -11,7 +11,8 @@ public:
 		const double growth,
 		const double weight,
 		const int age,
-		const std::shared_ptr<CUniversity> university);
+		const std::shared_ptr<CUniversity> university,
+		const int numberOfYearsStudy);
 
 	~CStudent();
 	

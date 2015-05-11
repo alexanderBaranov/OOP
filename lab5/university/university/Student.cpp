@@ -6,15 +6,17 @@ using namespace std;
 static const int kMinYearsStudy = 1;
 static const int kMaxYearsStudy = 5;
 
-CStudent::CStudent(const std::string name, 
+CStudent::CStudent(const std::string name,
 	const std::string gender,
 	const double growth,
 	const double weight,
 	const int age,
-	const std::shared_ptr<CUniversity> university)
+	const std::shared_ptr<CUniversity> university,
+	const int numberOfYearsStudy)
 :CPerson(name, gender, growth, weight, age),
 m_university(university)
 {
+	SetNumberOfYearsStudy(numberOfYearsStudy);
 }
 
 CStudent::~CStudent()

@@ -52,7 +52,7 @@ public:
 
 private:
 	void LoadSubscribers();
-	bool ModifySubscriber(std::shared_ptr<CSubscriber>& subscriber,
+	bool ModifySubscriber(std::shared_ptr<CSubscriber> subscriber,
 						const int index,
 						const std::string name,
 						const std::string surname,

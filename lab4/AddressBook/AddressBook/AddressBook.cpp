@@ -336,7 +336,7 @@ string CAddressBook::NewSubscriber(
 	return "";
 }
 
-bool CAddressBook::ModifySubscriber( shared_ptr<CSubscriber>& subscriber,
+bool CAddressBook::ModifySubscriber( shared_ptr<CSubscriber> subscriber,
 								const int index, 
 								const std::string name,
 								const std::string surname,

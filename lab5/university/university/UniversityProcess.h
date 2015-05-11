@@ -14,7 +14,8 @@ public:
 	~CUniversityProcess();
 
 	void Load(const std::string listOfUniversity, const std::string listOfStudents);
-	
+	void Save();
+
 	const universites GetListUniversites() const;
 	const students GetListStudents() const;
 	const students GetListStudentsFromUniversity(const std::string universityName) const;
@@ -24,24 +25,24 @@ public:
 	bool DeleteUniversity(const std::string name);
 	bool DeleteStudent(const int listNumber);
 
-	bool AddNewUniversity(const std::string newName);
-
-	
-	bool UpdateStudentData(const int listNumber,
-						const std::string name,
-						const double growth,
-						const double weight,
-						const int age,
-						const std::string universityName,
-						const int numberOfYearsStudy);
-
+	bool AddNewUniversity(const std::string newName);	
 	bool AddNewStudent(const std::string name,
 					const std::string gender,
 					const double growth,
 					const double weight,
 					const int age,
-					const std::string university);
+					const std::string university,
+					const int numberOfYearsStudy);
 
+	bool UpdateStudentData(const int listNumber,
+		const std::string name,
+		const double growth,
+		const double weight,
+		const int age,
+		const std::string universityName,
+		const int numberOfYearsStudy);
+
+	bool Updated();
 private:
 	std::string ReadInputFile(const std::string fileName);
 	void ParseBaseData(std::string line, std::vector<std::string> &outValues);
@@ -50,6 +51,9 @@ private:
 
 	universites m_universities;
 	students m_students;
-	bool m_updateBD;
+	bool m_updated;
+
+	std::string m_universitiesFile;
+	std::string m_studentsFile;
 };
 
