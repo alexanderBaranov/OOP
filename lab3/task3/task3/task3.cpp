@@ -14,10 +14,13 @@ int _tmain()
 
 	string srcString;
 	getline(cin, srcString);
+	
+	locale mylocale("");
+	cout.imbue(mylocale);
 
 	mapWords words = WordCount(srcString);
 
-	for each(const auto& pair in words)
+	for(const auto& pair : words)
 	{
 		cout << pair.first << " = " << pair.second << endl;
 	}

@@ -7,31 +7,30 @@
 
 using namespace std;
 
-string RemoveOtherSymbolsFromWord(string word)
+string GetWordFromString(string &inputString)
 {
-	for (int i = word.length(); i != 0; i--)
+	for (size_t i = inputString.length(); i != 0; i--)
 	{
-		if (isalpha((unsigned char)word[i]))
+		if (isalnum((unsigned char)inputString[i]))
 		{
-			word = word.substr(0, i + 1);
+			inputString = inputString.substr(0, i + 1);
 			break;
 		}
 	}
 
-	return word;
+	return inputString;
 }
 
-bool IsNoWord(string word)
+bool IsNoWord(const string &word)
 {
 	return (word.length() == 1) && !isalpha((unsigned char)word[0]);
 }
 
-mapWords WordCount(string inputString)
+mapWords WordCount(const string& inputString)
 {
-	stringstream streamStr;
-	streamStr << inputString;
+	setlocale(0, "");
 
-	setlocale(0,"");
+	stringstream streamStr(inputString);
 
 	mapWords words;
 	string word;
@@ -42,17 +41,9 @@ mapWords WordCount(string inputString)
 			continue;
 		}
 
-		word = RemoveOtherSymbolsFromWord(word);
+		word = GetWordFromString(word);
 
-		auto it = words.find(word);
-		if (it != words.end())
-		{
-			it->second++;
-		}
-		else
-		{
-			words[word] = 1;
-		}
+		++words[word];
 	}
 
 	return words;
