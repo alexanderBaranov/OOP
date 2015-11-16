@@ -21,7 +21,7 @@ BOOST_AUTO_TEST_CASE(testStringOperations)
 	BOOST_CHECK(WordCount("asd zxc s , , s asd") == mapWords({ { "asd", 2 }, { "zxc", 1 }, { "s", 2 } }));
 	BOOST_CHECK(WordCount(" , , , , asd zxc s , , s asd") == mapWords({ { "asd", 2 }, { "zxc", 1 }, { "s", 2 } }));
 	BOOST_CHECK(WordCount("R2D2") == mapWords({ { "R2D2", 1 } }));
-	BOOST_CHECK(WordCount("7777") == mapWords({ { "7777", 1 } }));
+	BOOST_CHECK(WordCount("7777 это цифра") == mapWords({ { "это", 1 }, {"цифра", 1} }));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

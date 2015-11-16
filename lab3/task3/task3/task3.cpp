@@ -14,9 +14,6 @@ int _tmain()
 
 	string srcString;
 	getline(cin, srcString);
-	
-	locale mylocale("");
-	cout.imbue(mylocale);
 
 	mapWords words = WordCount(srcString);
 

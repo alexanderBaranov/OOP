@@ -9,6 +9,7 @@ using namespace std;
 
 string GetWordFromString(string &inputString)
 {
+	std::locale loc;
 	for (size_t i = inputString.length(); i != 0; i--)
 	{
 		if (isalnum((unsigned char)inputString[i]))
@@ -26,6 +27,20 @@ bool IsNoWord(const string &word)
 	return (word.length() == 1) && !isalpha((unsigned char)word[0]);
 }
 
+bool IsDigit(const string &word)
+{
+	bool isDigit = true;
+	try
+	{
+		double digit = stod(word);
+	}
+	catch (...)
+	{
+		isDigit = false;
+	}
+	return isDigit;
+}
+
 mapWords WordCount(const string& inputString)
 {
 	setlocale(0, "");
@@ -36,7 +51,7 @@ mapWords WordCount(const string& inputString)
 	string word;
 	while (streamStr >> word)
 	{
-		if (IsNoWord(word))
+		if (IsNoWord(word) || IsDigit(word))
 		{
 			continue;
 		}
