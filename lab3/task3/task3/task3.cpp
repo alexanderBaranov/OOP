@@ -8,14 +8,15 @@
 
 using namespace std;
 
-int _tmain()
+int _tmain(int argc, _TCHAR* argv[])
 {
-	cout << "Input string: ";
+	if (argc != 2)
+	{
+		cout << "Please, input file path. Example:task3.exe <file path>";
+		return 1;
+	}
 
-	string srcString;
-	getline(cin, srcString);
-
-	mapWords words = WordCount(srcString);
+	mapWords words = CountWordsFromFile(argv[1]);
 
 	for(const auto& pair : words)
 	{
