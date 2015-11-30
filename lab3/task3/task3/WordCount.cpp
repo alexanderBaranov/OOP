@@ -8,66 +8,32 @@
 
 using namespace std;
 
-string GetWordFromString(string &inputString)
-{
-	std::locale loc("");
-
-	string resultWord;
-	for (size_t i = 0; i < inputString.length(); i++)
-	{
-		if (isalnum(inputString[i], loc))
-		{
-			resultWord += inputString.substr(i, 1);
-		}
-	}
-
-	return resultWord;
-}
-
-bool IsDigit(const string &word)
-{
-	bool isDigit = true;
-	try
-	{
-		double digit = stod(word);
-	}
-	catch (...)
-	{
-		isDigit = false;
-	}
-	return isDigit;
-}
-
 mapWords CountWords(const string& inputString)
 {
-	stringstream streamStr(inputString);
-	streamStr.imbue(locale(""));
-
 	mapWords words;
-	string word;
-	while (streamStr >> word)
+
+	std::locale loc("");
+	string resultWord;
+	for (const char& symbol : inputString)
 	{
-		if (!IsDigit(word))
+		char lowerSymbol = tolower(symbol, loc);
+		if (isalnum(lowerSymbol, loc))
 		{
-			word = GetWordFromString(word);
-			if (!word.empty())
-			{
-				++words[word];
-			}
+			resultWord += lowerSymbol;
 		}
+		else if (!resultWord.empty())
+		{
+			boost::algorithm::to_lower(resultWord);
+
+			++words[resultWord];
+			resultWord.clear();
+		}
+	}
+
+	if (!resultWord.empty())
+	{
+		++words[resultWord];
 	}
 
 	return words;
-}
-
-mapWords CountWordsFromFile(const TCHAR* filePath)
-{
-	ifstream inputFile(filePath);
-
-	if (inputFile.bad())
-	{
-		return {};
-	}
-
-	return CountWords(string(istreambuf_iterator<char>(inputFile), istreambuf_iterator<char>()));
 }

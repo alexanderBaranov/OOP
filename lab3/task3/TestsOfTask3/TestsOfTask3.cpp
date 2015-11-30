@@ -13,15 +13,31 @@ using namespace std;
 
 BOOST_AUTO_TEST_SUITE(TestsOfTask3)
 
-BOOST_AUTO_TEST_CASE(testStringOperations)
-{	
-	BOOST_CHECK(CountWords("a a bbbb ; ; bbbb") == mapWords({ { "a", 2 }, { "bbbb", 2 } }));
-	BOOST_CHECK(CountWords("привет a a bbbb ; ; bbbb") == mapWords({ { "привет", 1 }, { "a", 2 }, { "bbbb", 2 } }));
-	BOOST_CHECK(CountWords("привет;;; a a bbbb ; ; bbbb") == mapWords({ { "привет", 1 }, { "a", 2 }, { "bbbb", 2 } }));
-	BOOST_CHECK(CountWords("asd zxc s , , s asd") == mapWords({ { "asd", 2 }, { "zxc", 1 }, { "s", 2 } }));
-	BOOST_CHECK(CountWords(" , , , ,asd zxc s , , s asd") == mapWords({ { "asd", 2 }, { "zxc", 1 }, { "s", 2 } }));
-	BOOST_CHECK(CountWords("R2D2") == mapWords({ { "R2D2", 1 } }));
-	BOOST_CHECK(CountWords("7777 это цифра") == mapWords({ { "это", 1 }, { "цифра", 1 } }));
+BOOST_AUTO_TEST_CASE(test_calculate_the_same_words)
+{
+	BOOST_CHECK(CountWords("много, много, очень много слов") == mapWords({ { "много", 3 }, { "очень", 1 }, {"слов", 1} }));
+}
+
+BOOST_AUTO_TEST_CASE(test_caunting_the_same_words_with_upper_and_lower_case_letters)
+{
+	BOOST_CHECK(CountWords("ћного, мно√о, очень мнќго слов") == mapWords({ { "много", 3 }, { "очень", 1 }, { "слов", 1 } }));
+}
+
+BOOST_AUTO_TEST_CASE(test_count_word_in_the_composition_with_digit)
+{
+	BOOST_CHECK(CountWords("4тобы было много неба, чтобы было много солнца") == mapWords({ { "много", 2 }, { "было", 2 }, { "неба", 1 }, { "4тобы", 1 }, { "чтобы", 1 }, {"солнца", 1} }));
+	BOOST_CHECK(CountWords("r2d2") == mapWords({ { "r2d2", 1 } }));
+	BOOST_CHECK(CountWords("Ћимонад за 3 копейки, ботинки 100 рублей") == mapWords({ { "лимонад", 1 }, { "за", 1 }, { "3", 1 }, { "копейки", 1 }, { "ботинки", 1 }, { "100", 1 }, { "рублей", 1 } }));
+}
+
+BOOST_AUTO_TEST_CASE(test_counting_the_words_punctuation_mark_without_spaces_between_words)
+{
+	BOOST_CHECK(CountWords("ћного,мно√о,очень мнќго слов") == mapWords({ { "много", 3 }, { "очень", 1 }, { "слов", 1 } }));
+}
+
+BOOST_AUTO_TEST_CASE(test_first_punctuation_after_the_word)
+{
+	BOOST_CHECK(CountWords("......,,,,,., много знаков") == mapWords({ { "много", 1 }, { "знаков", 1 } }));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

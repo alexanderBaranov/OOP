@@ -5,18 +5,15 @@
 #include <iostream>
 #include <Windows.h>
 #include "WordCount.h"
+#include "vector"
 
 using namespace std;
 
-int _tmain(int argc, _TCHAR* argv[])
+int main()
 {
-	if (argc != 2)
-	{
-		cout << "Please, input file path. Example:task3.exe <file path>";
-		return 1;
-	}
+	cout << "Input string. Ctrl+z is close input string.\n";
 
-	mapWords words = CountWordsFromFile(argv[1]);
+	mapWords words = CountWords(string(istream_iterator<char>(cin >> noskipws), istream_iterator<char>()));
 
 	for(const auto& pair : words)
 	{
@@ -25,4 +22,3 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	return 0;
 }
-
