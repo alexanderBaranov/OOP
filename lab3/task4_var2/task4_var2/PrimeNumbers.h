@@ -2,4 +2,4 @@
 
 #include <set>
 
-std::set<int> GeneratePrimeNumbersSet(int upperBound);
+std::set<int> GeneratePrimeNumbersSet(size_t upperBound);

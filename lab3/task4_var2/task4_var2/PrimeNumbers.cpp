@@ -1,38 +1,13 @@
 #include "stdafx.h"
 #include <set>
+#include <vector>
+#include <algorithm>
 
 using namespace std;
 
-static const int kMaxUpperBound = 100000000;
+static const size_t kMaxUpperBound = 100000000;
 
-bool IsEvenNumber(int number)
-{
-	return (number % 2) == 0;
-}
-
-bool IsPrimeNumber(int number)
-{
-	if (IsEvenNumber(number))
-	{
-		return false;
-	}
-
-	int sq = (int)sqrt(number);
-	bool isPrimeNumber = true;
-
-	for (int i = 3; i <= sq; i++)
-	{
-		if ((number % i) == 0)
-		{
-			isPrimeNumber = false;
-			continue;
-		}
-	}
-
-	return isPrimeNumber;
-}
-
-set<int> GeneratePrimeNumbersSet(int upperBound)
+set<int> GeneratePrimeNumbersSet(size_t upperBound)
 {
 	if (upperBound == 1)
 	{
@@ -43,12 +18,26 @@ set<int> GeneratePrimeNumbersSet(int upperBound)
 	{
 		throw exception("upperBound > kMaxUpperBound");
 	}
+	
+	upperBound++;
+	vector<bool> numbers(upperBound, true);
+	set<int> primeNumbers;
+	for (size_t i = 2; i < upperBound; i++)
+	{
+		if ((i*i <= upperBound) && numbers[i])
+		{
+			size_t tempCounter = 0;
+			for (size_t j = i*i; j < upperBound; j = i*i + tempCounter * i)
+			{
+				tempCounter++;
+				numbers[j] = false;
+			}
+		}
 
-	set<int> primeNumbers({ 2 });
-	for (int number = 2; number < upperBound; number++)
-	{			
-		if (IsPrimeNumber(number))
-			primeNumbers.insert(number);
+		if (numbers[i])
+		{
+			primeNumbers.insert(i);
+		}
 	}
 
 	return primeNumbers;

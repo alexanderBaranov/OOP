@@ -16,7 +16,11 @@ int _tmain()
 		int upperBound;
 		cin >> upperBound;
 
-		GeneratePrimeNumbersSet(upperBound);
+		auto primeNumbers = GeneratePrimeNumbersSet(upperBound);
+		for (int i : primeNumbers)
+		{
+			cout << i << " ";
+		}
 	}
 	catch (const exception& e)
 	{
