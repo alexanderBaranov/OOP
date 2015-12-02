@@ -40,4 +40,19 @@ BOOST_AUTO_TEST_CASE(test_first_punctuation_after_the_word)
 	BOOST_CHECK(CountWords("......,,,,,., много знаков") == mapWords({ { "много", 1 }, { "знаков", 1 } }));
 }
 
+BOOST_AUTO_TEST_CASE(test_multiple_tabs_in_the_string)
+{
+	BOOST_CHECK(CountWords("			много		знаков			") == mapWords({ { "много", 1 }, { "знаков", 1 } }));
+}
+
+BOOST_AUTO_TEST_CASE(test_empty_string)
+{
+	BOOST_CHECK(CountWords("  ") == mapWords());
+}
+
+BOOST_AUTO_TEST_CASE(test_newline_character_in_the_string)
+{
+	BOOST_CHECK(CountWords("\n\r\tмного\n\r\t знаков\n\r\t") == mapWords({ { "много", 1 }, { "знаков", 1 } }));
+}
+
 BOOST_AUTO_TEST_SUITE_END()

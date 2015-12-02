@@ -5,7 +5,6 @@
 #include <iostream>
 #include <Windows.h>
 #include "WordCount.h"
-#include "vector"
 
 using namespace std;
 
