@@ -5,7 +5,7 @@
 
 using namespace std;
 
-static const size_t kMaxUpperBound = 100000000;
+static const size_t MAX_UPPER_BOUND = 100000000;
 
 set<int> GeneratePrimeNumbersSet(size_t upperBound)
 {
@@ -14,20 +14,20 @@ set<int> GeneratePrimeNumbersSet(size_t upperBound)
 		return{};
 	}
 
-	if (upperBound > kMaxUpperBound)
+	if (upperBound > MAX_UPPER_BOUND)
 	{
 		throw exception("upperBound > kMaxUpperBound");
 	}
 	
-	upperBound++;
-	vector<bool> numbers(upperBound, true);
+	vector<bool> numbers(upperBound + 1, true);
 	set<int> primeNumbers;
-	for (size_t i = 2; i < upperBound; i++)
+
+	for (size_t i = 2; i <= upperBound; i++)
 	{
 		if ((i*i <= upperBound) && numbers[i])
 		{
 			size_t tempCounter = 0;
-			for (size_t j = i*i; j < upperBound; j = i*i + tempCounter * i)
+			for (size_t j = i * i; j <= upperBound; j = i * i + tempCounter * i)
 			{
 				tempCounter++;
 				numbers[j] = false;
@@ -36,7 +36,7 @@ set<int> GeneratePrimeNumbersSet(size_t upperBound)
 
 		if (numbers[i])
 		{
-			primeNumbers.insert(i);
+			primeNumbers.insert(primeNumbers.end(), i);
 		}
 	}
 

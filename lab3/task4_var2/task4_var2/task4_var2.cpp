@@ -7,15 +7,17 @@
 
 using namespace std;
 
-int _tmain()
+int _tmain(int argc, _TCHAR* argv[])
 {
-	cout << "Input upper bound: ";
+	if (argc < 2)
+	{
+		cout << "Example: task4_var2.exe 100000000";
+		return 1;
+	}
 
 	try
 	{
-		int upperBound;
-		cin >> upperBound;
-
+		size_t upperBound = _tstoi(argv[1]);
 		auto primeNumbers = GeneratePrimeNumbersSet(upperBound);
 		for (int i : primeNumbers)
 		{
