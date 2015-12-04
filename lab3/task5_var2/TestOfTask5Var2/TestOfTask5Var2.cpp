@@ -69,9 +69,23 @@ BOOST_AUTO_TEST_CASE(test_check_url_with_ip)
 	TestParseUrlAndEqualWithExpectedValues("HTTP://192.168.1.1", 80, HTTP, "192.168.1.1", "");
 }
 
-BOOST_AUTO_TEST_CASE(test_parse_HTTP_url)
+BOOST_AUTO_TEST_CASE(test_parse_uppercase_HTTP_url)
 {
 	TestParseUrlAndEqualWithExpectedValues("HTTP://vk", 80, HTTP, "vk", "");
+}
+
+BOOST_AUTO_TEST_CASE(test_parse_uppercase_HTTPS_url)
+{
+	TestParseUrlAndEqualWithExpectedValues("HTTPS://vk", 443, HTTPS, "vk", "");
+}
+
+BOOST_AUTO_TEST_CASE(test_parse_uppercase_FTP_url)
+{
+	TestParseUrlAndEqualWithExpectedValues("FTP://vk", 21, FTP, "vk", "");
+}
+
+BOOST_AUTO_TEST_CASE(test_parse_HTTP_url)
+{
 	TestParseUrlAndEqualWithExpectedValues("http://vk", 80, HTTP, "vk", "");
 	TestParseUrlAndEqualWithExpectedValues("http://vk.com", 80, HTTP, "vk.com", "");
 	TestParseUrlAndEqualWithExpectedValues("http://vk.vk.com:23", 23, HTTP, "vk.vk.com", "");
@@ -80,7 +94,6 @@ BOOST_AUTO_TEST_CASE(test_parse_HTTP_url)
 
 BOOST_AUTO_TEST_CASE(test_parse_HTTPS_url)
 {
-	TestParseUrlAndEqualWithExpectedValues("HTTPS://vk", 443, HTTPS, "vk", "");
 	TestParseUrlAndEqualWithExpectedValues("https://vk", 443, HTTPS, "vk", "");
 	TestParseUrlAndEqualWithExpectedValues("https://vk.vk.com", 443, HTTPS, "vk.vk.com", "");
 	TestParseUrlAndEqualWithExpectedValues("https://vk.vk.com:23", 23, HTTPS, "vk.vk.com", "");
@@ -89,7 +102,6 @@ BOOST_AUTO_TEST_CASE(test_parse_HTTPS_url)
 
 BOOST_AUTO_TEST_CASE(test_parse_FTP_url)
 {
-	TestParseUrlAndEqualWithExpectedValues("FTP://vk", 21, FTP, "vk", "");
 	TestParseUrlAndEqualWithExpectedValues("ftp://vk", 21, FTP, "vk", "");
 	TestParseUrlAndEqualWithExpectedValues("ftp://vk.vk.com", 21, FTP, "vk.vk.com", "");
 	TestParseUrlAndEqualWithExpectedValues("ftp://vk.vk.com:23", 23, FTP, "vk.vk.com", "");
