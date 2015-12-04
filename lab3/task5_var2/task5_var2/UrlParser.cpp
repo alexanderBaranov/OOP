@@ -8,22 +8,22 @@
 
 using namespace std;
 
-static const vector<string> kProtocols = {"http", "https", "ftp"};
-static const int kMinPort = 1;
-static const int kMaxPort = 65535;
+static const vector<string> PROTOCOLS = {"http", "https", "ftp"};
+static const int MIN_PORT = 1;
+static const int MAX_PORT = 65535;
 
-Protocol CheckProtocol(string protocolOfUrl)
+Protocol CheckProtocol(const string& protocolOfUrl)
 {
 	Protocol protocol;
-	if (0 == kProtocols[0].compare(protocolOfUrl))
+	if (0 == PROTOCOLS[0].compare(protocolOfUrl))
 	{
 		protocol = HTTP;
 	}
-	else if (0 == kProtocols[1].compare(protocolOfUrl))
+	else if (0 == PROTOCOLS[1].compare(protocolOfUrl))
 	{
 		protocol = HTTPS;
 	}
-	else if (0 == kProtocols[2].compare(protocolOfUrl))
+	else if (0 == PROTOCOLS[2].compare(protocolOfUrl))
 	{
 		protocol = FTP;
 	}
@@ -31,12 +31,12 @@ Protocol CheckProtocol(string protocolOfUrl)
 	return protocol;
 }
 
-vector<string> ParseFromStringUrlToVector(const string url)
+vector<string> ParseFromStringUrlToVector(const string& url)
 {
 	string processUrl(url);
 	boost::algorithm::to_lower(processUrl);
 
-	boost::regex expression("^(http[s]?|ftp):\/\/?([^/\:]+)(?::(\\d+))?\/?(.+)?");
+	boost::regex expression("^(http[s]?|ftp)://?([^/:]+)(?::(\\d+))?/?(.+)?");
 
 	if (!boost::regex_match(processUrl, expression))
 	{
@@ -52,21 +52,27 @@ vector<string> ParseFromStringUrlToVector(const string url)
 	return values;
 }
 
+int GetDefaultPort(Protocol protocol)
+{
+	return protocol;
+}
+
 bool ParseURL(string const& url,
-	Protocol & protocol,
-	int & port,
+	Protocol& protocol,
+	int& port,
 	string & host,
 	string & document)
 {
 	vector<string> values = ParseFromStringUrlToVector(url);
-	if (values.empty())
+	if (values.size() != 4)
 	{
 		return false;
 	}
 
 	protocol = CheckProtocol(values[0]);
-	port = values[2].length() ? stoi(values[2]) : protocol;
-	if ((port <= kMinPort) && (port >= kMaxPort))
+
+	port = values[2].length() ? stoi(values[2]) : GetDefaultPort(protocol);
+	if ((port <= MIN_PORT) && (port >= MAX_PORT))
 	{
 		return false;
 	}

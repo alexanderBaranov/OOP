@@ -10,7 +10,7 @@ enum Protocol
 };
 
 bool ParseURL(std::string const& url,
-	Protocol & protocol,
-	int & port,
+	Protocol& protocol,
+	int& port,
 	std::string & host,
 	std::string & document);
