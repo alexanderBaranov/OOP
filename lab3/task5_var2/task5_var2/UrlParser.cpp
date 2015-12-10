@@ -34,20 +34,11 @@ Protocol CheckProtocol(const string& protocolOfUrl)
 vector<string> ParseFromStringUrlToVector(const string& url)
 {
 	string processUrl(url);
-	boost::algorithm::to_lower(processUrl);
 
-	boost::regex expression("^(http[s]?|ftp)://?([^/:]+)(?::(\\d+))?/?(.+)?");
-
-	if (!boost::regex_match(processUrl, expression))
-	{
-		return {};
-	}
+	boost::regex expression("^(http[s]?|ftp?|HTTP[S]?|FTP)://?([^/:]+)(?::(\\d+))?/?(.+)?");
 
 	vector<string> values;
-	if (!boost::regex_split(back_inserter(values), processUrl, expression))
-	{
-		return {};
-	}
+	boost::regex_split(back_inserter(values), processUrl, expression);
 
 	return values;
 }
@@ -69,10 +60,11 @@ bool ParseURL(string const& url,
 		return false;
 	}
 
+	boost::algorithm::to_lower(values[0]);
 	protocol = CheckProtocol(values[0]);
 
 	port = values[2].length() ? stoi(values[2]) : GetDefaultPort(protocol);
-	if ((port <= MIN_PORT) || (port >= MAX_PORT))
+	if ((port < MIN_PORT) || (port > MAX_PORT))
 	{
 		return false;
 	}

@@ -58,10 +58,16 @@ BOOST_AUTO_TEST_CASE(test_invalid_url)
 	BOOST_CHECK(!CheckValidityOfAddress("BBC://1tv.ru"));
 }
 
-BOOST_AUTO_TEST_CASE(test_non_existen_port)
+BOOST_AUTO_TEST_CASE(test_check_invalid_ports)
 {
 	BOOST_CHECK(!CheckValidityOfAddress("HTTP:://1tv.ru:0"));
-	BOOST_CHECK(!CheckValidityOfAddress("HTTP:://1tv.ru:70000"));
+	BOOST_CHECK(!CheckValidityOfAddress("HTTP:://1tv.ru:65536"));
+}
+
+BOOST_AUTO_TEST_CASE(test_check_valid_ports)
+{
+	BOOST_CHECK(CheckValidityOfAddress("HTTP://1tv.ru:1"));
+	BOOST_CHECK(CheckValidityOfAddress("HTTP://1tv.ru:65535"));
 }
 
 BOOST_AUTO_TEST_CASE(test_check_url_with_ip)
