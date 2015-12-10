@@ -9,40 +9,30 @@
 
 using namespace std;
 
-vector<string> GetExpression(string line)
+vector<string> ParseWordsToVector(string line)
 {
 	boost::regex expression("(\\w+)");
 	vector<string> values;
-	if (!boost::regex_split(back_inserter(values), line, expression))
-	{
-		return{};
-	}
+	boost::regex_split(back_inserter(values), line, expression);
 
 	return values;
 }
 
-vector<string> ReadBadWordsFromFile(const TCHAR *fileName)
+vector<string> ReadBadWordsFromFile(const string& fileName)
 {
 	ifstream inFile(fileName);
 	inFile.exceptions(ios::badbit);
 
 	string contentOfInFile((istreambuf_iterator<char>(inFile)), istreambuf_iterator<char>());
 	
-	vector<string> badWords;
-	vector<string> values = GetExpression(contentOfInFile);
-	if (values.size())
-	{
-		badWords.assign(values.begin(), values.end());
-	}
-
-	inFile.close();
+	vector<string> badWords = ParseWordsToVector(contentOfInFile);
 
 	return badWords;
 }
 
-string DeleteSubstring(string processStr, string delSubStr)
+string DeleteSubstring(string& processStr, const string& delSubStr)
 {
-	int pos = processStr.find_first_of(delSubStr);
+	int pos = processStr.find(delSubStr);
 	{
 		while (pos != string::npos)
 		{
@@ -52,32 +42,33 @@ string DeleteSubstring(string processStr, string delSubStr)
 				processStr.erase(pos, delSubStr.length());
 			}
 
-			pos = processStr.find_first_of(delSubStr, pos + delSubStr.length());
+			pos = processStr.find(delSubStr);
 		}
 	}
 
 	return processStr;
 }
 
-string FilterString(vector<string>& badWords,string inputString)
+string FilterString(const vector<string>& badWords,const string& inputString)
 {
-	vector<string> values = GetExpression(inputString);
+	vector<string> values = ParseWordsToVector(inputString);
 
 	setlocale(0, "");
 
-	for_each(badWords.begin(), badWords.end(), [&inputString, &values](string value)
+	string resultString(inputString);
+	for (const string& badWord : badWords)
 	{
-		if (find(values.begin(), values.end(), value) != values.end())
+		if (find(values.begin(), values.end(), badWord) != values.end())
 		{
-			inputString = DeleteSubstring(inputString, value);
+			resultString = DeleteSubstring(resultString, badWord);
 		}
-	});
+	};
 
-	return inputString;
+	return resultString;
 }
 
-string Filter(const TCHAR *fileName, string inputString)
-{
-	auto badWords = ReadBadWordsFromFile(fileName);
-	return FilterString(badWords, inputString);
-}
+//string Filter(const string& fileName, const string& inputString)
+//{
+//	auto badWords = ReadBadWordsFromFile(fileName);
+//	return FilterString(badWords, inputString);
+//}

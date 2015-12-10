@@ -5,6 +5,7 @@
 #include "Filter.h"
 #include <iostream> 
 #include <string>
+#include <atlbase.h>
 
 using namespace std;
 
@@ -18,14 +19,23 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	setlocale(LC_CTYPE, "");
 
-	cout << "Input string: ";
-
 	try
 	{
-		string inStr;
-		getline(cin, inStr);
+		USES_CONVERSION;
 
-		cout << "Output string: " << Filter(argv[1], inStr) << endl;
+		auto badWords = ReadBadWordsFromFile(T2A(argv[1]));
+
+		istream_iterator<char>in_it;
+		do{
+			cout << "Input string(Ctrl+z is close input string. Input only '.' and Ctrl+z exit programm): ";
+			cin.clear();
+
+			in_it = cin >> noskipws;
+			string inStr(in_it, istream_iterator<char>());
+
+			cout << "Output string: " << FilterString(badWords, inStr) << endl;
+
+		} while (*in_it != '.');
 	}
 	catch (exception e)
 	{
