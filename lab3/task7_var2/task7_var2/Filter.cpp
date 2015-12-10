@@ -33,17 +33,16 @@ vector<string> ReadBadWordsFromFile(const string& fileName)
 string DeleteSubstring(string& processStr, const string& delSubStr)
 {
 	int pos = processStr.find(delSubStr);
-	{
-		while (pos != string::npos)
-		{
-			bool isWordOfBegStr = pos ? !isalpha((unsigned char)processStr[pos - 1]) : true;
-			if (isWordOfBegStr && !isalpha((unsigned char)processStr[pos + delSubStr.length()]))
-			{
-				processStr.erase(pos, delSubStr.length());
-			}
 
-			pos = processStr.find(delSubStr);
+	while (pos != string::npos)
+	{
+		bool isWordOfBegStr = pos ? !isalpha((unsigned char)processStr[pos - 1]) : true;
+		if (isWordOfBegStr && !isalpha((unsigned char)processStr[pos + delSubStr.length()]))
+		{
+			processStr.erase(pos, delSubStr.length());
 		}
+
+		pos = processStr.find(delSubStr);
 	}
 
 	return processStr;
