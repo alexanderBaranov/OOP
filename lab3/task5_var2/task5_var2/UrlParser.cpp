@@ -72,7 +72,7 @@ bool ParseURL(string const& url,
 	protocol = CheckProtocol(values[0]);
 
 	port = values[2].length() ? stoi(values[2]) : GetDefaultPort(protocol);
-	if ((port <= MIN_PORT) && (port >= MAX_PORT))
+	if ((port <= MIN_PORT) || (port >= MAX_PORT))
 	{
 		return false;
 	}

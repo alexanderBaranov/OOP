@@ -19,10 +19,31 @@ int _tmain(int argc, _TCHAR* argv[])
 	string host;
 	string document;
 
-	istringstream urls(string(istream_iterator<char>(cin >> noskipws), istream_iterator<char>()));
-	string url;
-	while (urls >> url)
-	{
+	//istringstream urls(string(istream_iterator<char>(cin >> noskipws), istream_iterator<char>()));
+	//string url;
+	//while (urls >> url)
+	//{
+	//	cout << url << endl;
+	//	if (!ParseURL(url, protocol, port, host, document))
+	//	{
+	//		cout << "Invalid url" << endl;
+	//	}
+	//	else
+	//	{
+	//		cout << "HOST:" << host << endl;
+	//		cout << "PORT:" << port << endl;
+	//		cout << "DOC:" << document << endl << endl;
+	//	}
+	//}
+
+	istream_iterator<char>in_it;
+	do{
+		cout << "Input url(Ctrl+z is close input url. Input only '.' and Ctrl+z exit programm): ";
+		cin.clear();
+
+		in_it = cin >> noskipws;
+		string url(in_it, istream_iterator<char>());
+
 		cout << url << endl;
 		if (!ParseURL(url, protocol, port, host, document))
 		{
@@ -34,7 +55,8 @@ int _tmain(int argc, _TCHAR* argv[])
 			cout << "PORT:" << port << endl;
 			cout << "DOC:" << document << endl << endl;
 		}
-	}
+
+	} while (*in_it != '.');
 
 	return 0;
 }
