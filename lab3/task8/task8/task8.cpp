@@ -17,7 +17,6 @@ string ReadInputFile(const TCHAR *fileName)
 	inFile.exceptions(ios::badbit);
 
 	string contentOfInFile((istreambuf_iterator<char>(inFile)), istreambuf_iterator<char>());
-	inFile.close();
 
 	return contentOfInFile;
 }
@@ -28,8 +27,6 @@ void WriteToOutputFile(const TCHAR *fileName, string text)
 	outFile.exceptions(ios::badbit);
 
 	outFile << text;
-
-	outFile.close();
 }
 
 int _tmain(int argc, _TCHAR* argv[])

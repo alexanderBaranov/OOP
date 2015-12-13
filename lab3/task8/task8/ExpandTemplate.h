@@ -5,4 +5,4 @@
 
 typedef std::map<std::string, std::string> templateParams;
 
-std::string ExpandTemplate(const std::string& sourceStr, templateParams& tmplParams);
+std::string ExpandTemplate(const std::string& sourceStr, const templateParams& tmplParams);
