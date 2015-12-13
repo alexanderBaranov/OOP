@@ -65,12 +65,11 @@ string DeleteSubstring(const string& sourceStr, const vector<string>& badWords)
 {
 	string resultString, tmpStr;
 
-	for (size_t range = 0; range < sourceStr.length(); range++)
+	for (size_t pos = 0; pos < sourceStr.length(); pos++)
 	{
-		size_t tmpRange = range;
-		tmpStr += sourceStr[range];
+		tmpStr += sourceStr[pos];
 
-		if (MatchesWithTemplateBadWords(tmpStr, sourceStr, badWords, range))
+		if (MatchesWithTemplateBadWords(tmpStr, sourceStr, badWords, pos))
 		{
 			continue;
 		}
@@ -81,8 +80,8 @@ string DeleteSubstring(const string& sourceStr, const vector<string>& badWords)
 		}
 		else
 		{
-			bool isWordOfBegStr = (range > tmpStr.length()) ? !isalnum((unsigned char)sourceStr[range - tmpStr.length()]) : true;
-			if (!isWordOfBegStr || isalnum((unsigned char)sourceStr[range + 1]))
+			bool isWordOfBegStr = (pos > tmpStr.length()) ? !isalnum((unsigned char)sourceStr[pos - tmpStr.length()]) : true;
+			if (!isWordOfBegStr || isalnum((unsigned char)sourceStr[pos + 1]))
 			{
 				resultString += tmpStr;
 			}
