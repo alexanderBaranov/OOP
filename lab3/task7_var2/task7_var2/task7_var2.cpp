@@ -17,7 +17,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		return 1;
 	}
 
-	setlocale(LC_CTYPE, "");
+	cout << "Input URLs. 'exit' is close programm." << endl;
 
 	try
 	{
@@ -25,17 +25,20 @@ int _tmain(int argc, _TCHAR* argv[])
 
 		auto badWords = ReadBadWordsFromFile(T2A(argv[1]));
 
-		istream_iterator<char>in_it;
-		do{
-			cout << "Input string(Ctrl+z is close input string. Input only '.' and Ctrl+z exit programm): ";
-			cin.clear();
+		cout << "Input string: ";
 
-			in_it = cin >> noskipws;
-			string inStr(in_it, istream_iterator<char>());
+		string inStr;
+		while (getline(cin, inStr))
+		{
+			if (inStr.compare("exit") == 0)
+			{
+				break;
+			}
 
-			cout << "Output string: " << FilterString(badWords, inStr) << endl;
+			cout << "Output string: " << FilterString(badWords, inStr) << endl << endl;
 
-		} while (*in_it != '.');
+			cout << "Input string: ";
+		}
 	}
 	catch (exception e)
 	{

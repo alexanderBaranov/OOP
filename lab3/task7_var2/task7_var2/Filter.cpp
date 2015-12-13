@@ -30,44 +30,73 @@ vector<string> ReadBadWordsFromFile(const string& fileName)
 	return badWords;
 }
 
-string DeleteSubstring(string& processStr, const string& delSubStr)
+bool MatchesWithTemplateBadWords(const string& searchString ,const string& sourceStr, const vector<string>& badWords, size_t positionSearch)
 {
-	int pos = processStr.find(delSubStr);
+	bool matched = false;
 
-	while (pos != string::npos)
+	bool endOfStr = (sourceStr.length() == positionSearch) ? true : false;
+
+	if (positionSearch != sourceStr.length()-1)
+		++positionSearch;
+
+	for (const auto& badWord : badWords)
 	{
-		bool isWordOfBegStr = pos ? !isalpha((unsigned char)processStr[pos - 1]) : true;
-		if (isWordOfBegStr && !isalpha((unsigned char)processStr[pos + delSubStr.length()]))
+		size_t indexOfPos = badWord.find(searchString);
+		if (indexOfPos != string::npos)
 		{
-			processStr.erase(pos, delSubStr.length());
-		}
+			if (!endOfStr)
+			{
+				string tempNextStr = searchString + sourceStr[positionSearch];
+				size_t indexOfPosTmp = badWord.find(tempNextStr);
 
-		pos = processStr.find(delSubStr);
+				if (indexOfPosTmp != string::npos)
+				{
+					matched = true;
+					break;
+				}
+			}
+		}
 	}
 
-	return processStr;
+	return matched;
+}
+
+string DeleteSubstring(const string& sourceStr, const vector<string>& badWords)
+{
+	string resultString, tmpStr;
+
+	for (size_t range = 0; range < sourceStr.length(); range++)
+	{
+		size_t tmpRange = range;
+		tmpStr += sourceStr[range];
+
+		if (MatchesWithTemplateBadWords(tmpStr, sourceStr, badWords, range))
+		{
+			continue;
+		}
+
+		if (find(badWords.begin(), badWords.end(), tmpStr) == badWords.end())
+		{
+			resultString += tmpStr;
+		}
+		else
+		{
+			bool isWordOfBegStr = (range > tmpStr.length()) ? !isalnum((unsigned char)sourceStr[range - tmpStr.length()]) : true;
+			if (!isWordOfBegStr || isalnum((unsigned char)sourceStr[range + 1]))
+			{
+				resultString += tmpStr;
+			}
+		}
+
+		tmpStr.clear();
+	}
+
+	return resultString;
 }
 
 string FilterString(const vector<string>& badWords,const string& inputString)
 {
 	vector<string> values = ParseWordsToVector(inputString);
 
-	setlocale(0, "");
-
-	string resultString(inputString);
-	for (const string& badWord : badWords)
-	{
-		if (find(values.begin(), values.end(), badWord) != values.end())
-		{
-			resultString = DeleteSubstring(resultString, badWord);
-		}
-	};
-
-	return resultString;
+	return DeleteSubstring(inputString, badWords);
 }
-
-//string Filter(const string& fileName, const string& inputString)
-//{
-//	auto badWords = ReadBadWordsFromFile(fileName);
-//	return FilterString(badWords, inputString);
-//}
