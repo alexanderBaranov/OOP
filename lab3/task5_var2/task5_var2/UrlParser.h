@@ -4,6 +4,7 @@
 
 enum Protocol
 {
+	UNKNOWN_HOST = 0,
 	HTTP = 80, 
 	HTTPS = 443,
 	FTP = 21

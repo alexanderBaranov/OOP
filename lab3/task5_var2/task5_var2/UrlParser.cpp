@@ -8,34 +8,22 @@
 
 using namespace std;
 
-static const vector<string> PROTOCOLS = {"http", "https", "ftp"};
+static const map<string, Protocol> PROTOCOLS = {{ "http", HTTP }, { "https", HTTPS }, { "ftp", FTP }};
 static const int MIN_PORT = 1;
 static const int MAX_PORT = 65535;
 
 Protocol CheckProtocol(const string& protocolOfUrl)
-{
-	Protocol protocol;
-	if (0 == PROTOCOLS[0].compare(protocolOfUrl))
-	{
-		protocol = HTTP;
-	}
-	else if (0 == PROTOCOLS[1].compare(protocolOfUrl))
-	{
-		protocol = HTTPS;
-	}
-	else if (0 == PROTOCOLS[2].compare(protocolOfUrl))
-	{
-		protocol = FTP;
-	}
+{	
+	auto it = PROTOCOLS.find(protocolOfUrl);
 
-	return protocol;
+	return it != PROTOCOLS.end() ? it->second : UNKNOWN_HOST;
 }
 
 vector<string> ParseFromStringUrlToVector(const string& url)
 {
 	string processUrl(url);
 
-	boost::regex expression("^(http[s]?|ftp?|HTTP[S]?|FTP)://?([^/:]+)(?::(\\d+))?/?(.+)?");
+	boost::regex expression("^(.+)://?([^/:]+)(?::(\\d+))?/?(.+)?");
 
 	vector<string> values;
 	boost::regex_split(back_inserter(values), processUrl, expression);
@@ -61,7 +49,12 @@ bool ParseURL(string const& url,
 	}
 
 	boost::algorithm::to_lower(values[0]);
+	
 	protocol = CheckProtocol(values[0]);
+	if (protocol == UNKNOWN_HOST)
+	{
+		return false;
+	}
 
 	port = values[2].length() ? stoi(values[2]) : GetDefaultPort(protocol);
 	if ((port < MIN_PORT) || (port > MAX_PORT))
