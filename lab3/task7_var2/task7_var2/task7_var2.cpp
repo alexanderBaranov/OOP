@@ -17,7 +17,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		return 1;
 	}
 
-	cout << "Input URLs. 'exit' is close programm." << endl;
+	cout << "'exit' is close programm." << endl;
 
 	try
 	{

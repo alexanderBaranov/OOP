@@ -9,93 +9,70 @@
 
 using namespace std;
 
-vector<string> ParseWordsToVector(string line)
+unordered_set<string> ParseWordsToVector(string line)
 {
 	boost::regex expression("(\\w+)");
-	vector<string> values;
-	boost::regex_split(back_inserter(values), line, expression);
+	unordered_set<string>values;
+	boost::regex_split(inserter(values, values.begin()), line, expression);
 
 	return values;
 }
 
-vector<string> ReadBadWordsFromFile(const string& fileName)
+unordered_set<string> ReadBadWordsFromFile(const string& fileName)
 {
 	ifstream inFile(fileName);
 	inFile.exceptions(ios::badbit);
 
 	string contentOfInFile((istreambuf_iterator<char>(inFile)), istreambuf_iterator<char>());
 	
-	vector<string> badWords = ParseWordsToVector(contentOfInFile);
+	unordered_set<string> badWords = ParseWordsToVector(contentOfInFile);
 
 	return badWords;
 }
 
-bool MatchesWithTemplateBadWords(const string& searchString ,const string& sourceStr, const vector<string>& badWords, size_t positionSearch)
+bool MatchesWithTemplateBadWords(const string& searchString, const unordered_set<string>& badWords)
 {
-	bool matched = false;
+	auto it = badWords.find(searchString);
 
-	bool endOfStr = (sourceStr.length() == positionSearch) ? true : false;
-
-	if (positionSearch != sourceStr.length()-1)
-		++positionSearch;
-
-	for (const auto& badWord : badWords)
-	{
-		size_t indexOfPos = badWord.find(searchString);
-		if (indexOfPos != string::npos)
-		{
-			if (!endOfStr)
-			{
-				string tempNextStr = searchString + sourceStr[positionSearch];
-				size_t indexOfPosTmp = badWord.find(tempNextStr);
-
-				if (indexOfPosTmp != string::npos)
-				{
-					matched = true;
-					break;
-				}
-			}
-		}
-	}
-
-	return matched;
+	return it != badWords.end();
 }
 
-string DeleteSubstring(const string& sourceStr, const vector<string>& badWords)
+string DeleteSubstring(const string& sourceStr, const unordered_set<string>& badWords)
 {
 	string resultString, tmpStr;
 
-	for (size_t pos = 0; pos < sourceStr.length(); pos++)
+	string resultWord;
+	for (const char& symbol : sourceStr)
 	{
-		tmpStr += sourceStr[pos];
-
-		if (MatchesWithTemplateBadWords(tmpStr, sourceStr, badWords, pos))
+		if (isalnum(symbol))
 		{
-			continue;
-		}
-
-		if (find(badWords.begin(), badWords.end(), tmpStr) == badWords.end())
-		{
-			resultString += tmpStr;
+			resultWord += symbol;
 		}
 		else
 		{
-			bool isWordOfBegStr = (pos > tmpStr.length()) ? !isalnum((unsigned char)sourceStr[pos - tmpStr.length()]) : true;
-			if (!isWordOfBegStr || isalnum((unsigned char)sourceStr[pos + 1]))
+			if (!resultWord.empty())
 			{
-				resultString += tmpStr;
-			}
-		}
+				if (!MatchesWithTemplateBadWords(resultWord, badWords))
+				{
+					resultString += resultWord;
+				}
 
-		tmpStr.clear();
+				resultWord.clear();
+			}
+
+			resultString += symbol;
+		}
+	}
+
+	if (!resultWord.empty() && !MatchesWithTemplateBadWords(resultWord, badWords))
+	{
+		resultString += resultWord;
 	}
 
 	return resultString;
 }
 
-string FilterString(const vector<string>& badWords,const string& inputString)
+string FilterString(const unordered_set<string>& badWords, const string& inputString)
 {
-	vector<string> values = ParseWordsToVector(inputString);
-
 	return DeleteSubstring(inputString, badWords);
 }
