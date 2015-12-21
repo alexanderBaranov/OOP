@@ -3,19 +3,33 @@
 #include <fstream>
 #include <boost/algorithm/string.hpp>
 #include <boost/regex.hpp>
+#include <boost/optional.hpp>
+#include <iostream>
 
 using namespace std;
 
-vector<string> GetExpression(string line)
+vector<string> ParseMessageTranslation(string& line)
 {
 	boost::regex expression("(.+)=(.+)");
 	vector<string> values;
-	if (!boost::regex_split(back_inserter(values), line, expression))
-	{
-		return{};
-	}
+	boost::regex_split(back_inserter(values), line, expression);
 
 	return values;
+}
+
+dictionary GetDictionaryFromStream(istringstream& inputStream)
+{
+	dictionary dict;
+	for (string line; getline(inputStream, line);)
+	{
+		vector<string> values = ParseMessageTranslation(line);
+		if (!values.empty())
+		{
+			dict[values[0]] = values[1];
+		}
+	}
+
+	return dict;
 }
 
 dictionary ReadDictionaryFromFile(const TCHAR *fileName)
@@ -23,40 +37,36 @@ dictionary ReadDictionaryFromFile(const TCHAR *fileName)
 	ifstream inFile(fileName);
 	inFile.exceptions(ios::badbit);
 
-	dictionary dict;
-	for (string line; getline(inFile, line);)
-	{
-		vector<string> values = GetExpression(line);
-		if (values.size())
-		{
-			dict[values[0]] = values[1];
-		}
-	}
+	string str((istreambuf_iterator<char>(inFile)), istreambuf_iterator<char>());
+	istringstream inStream(str);
 
-	inFile.close();
-
-	return dict;
+	return GetDictionaryFromStream(inStream);
 }
 
-bool WriteToDictionaryFile(const TCHAR *fileName, dictionary dict)
+ostringstream GetStreamFromDictionary(const dictionary& dict)
 {
-	ofstream outFile(fileName, ios::app);
-	outFile.exceptions(ios::badbit);
-
+	ostringstream outStream;
 	for (const auto& pair : dict)
 	{
 		string key = pair.first;
 		boost::algorithm::to_lower(key);
 
-		outFile << key << "=" << pair.second << endl;
+		outStream << key << "=" << pair.second << endl;
 	}
 
-	outFile.close();
+	return outStream;
+}
 
+bool WriteToDictionaryFile(const TCHAR *fileName, dictionary& dict)
+{
+	ofstream outFile(fileName, ios::app);
+	outFile.exceptions(ios::badbit);
+
+	outFile << GetStreamFromDictionary(dict).str();
 	return true;
 }
 
-string GetValueFromDictionary(dictionary &dict, string key)
+string GetValueFromDictionary(const dictionary &dict, string key)
 {
 	string value;
 

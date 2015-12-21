@@ -2,24 +2,32 @@
 //
 
 #include "stdafx.h"
-#include <iostream> 
+#include <Windows.h>
+#include <iostream>
 #include <string>
 #include <algorithm>
 #include "Dictionary.h"
 #include <boost/algorithm/string.hpp>
-#include<clocale>
+#include <locale>
+#include <conio.h>
 
 using namespace std;
 
-void SetNewExpression(dictionary& dict, string& key)
+void SetNewTranslationWordAndAddToDictionary(dictionary& dict, string& key)
 {
+	//locale loc("");
+	//cout.imbue(loc);
+	auto loc = cout.getloc();
+	auto name = loc.name();
 	cout << "Неизвестное слово " << key << " введите перевод или пустую строку для отказа." << endl;
 
+	auto name2 = cin.getloc().name();
 	string newValue;
-	getline(cin,newValue);
+	getline(cin, newValue);
 
 	if (!newValue.empty())
 	{
+		boost::algorithm::to_lower(key);
 		dict[key] = newValue;
 
 		cout << "Слово \"" << key << "\" сохранено в словаре как \"" << newValue << "\"." << endl;
@@ -67,7 +75,14 @@ int _tmain(int argc, _TCHAR* argv[])
 		return 1;
 	}
 
-	setlocale(LC_CTYPE, "");
+	//int cp = GetConsoleCP();
+
+	//SetConsoleCP(1251);
+
+	//ios_base::sync_with_stdio(false);
+	setlocale(LC_ALL, "");
+
+	cout << "'...' is exit programm.\n" << endl;
 
 	try
 	{
@@ -86,7 +101,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 			if (!Translate(dict, inputString))
 			{
-				SetNewExpression(newExpressions, inputString);
+				SetNewTranslationWordAndAddToDictionary(newExpressions, inputString);
 				dict.insert(newExpressions.begin(), newExpressions.end());
 			}
 		}
@@ -99,8 +114,11 @@ int _tmain(int argc, _TCHAR* argv[])
 	catch (exception e)
 	{
 		cout << e.what();
+
+		//SetConsoleCP(cp);
 	}
+
+	//SetConsoleCP(cp);
 
 	return 0;
 }
-
