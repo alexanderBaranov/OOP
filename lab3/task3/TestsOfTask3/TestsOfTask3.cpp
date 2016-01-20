@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE(test_counting_the_words_punctuation_mark_without_spaces_bet
 	BOOST_CHECK(CountWords("ћного,мно√о,очень мнќго слов") == mapWords({ { "много", 3 }, { "очень", 1 }, { "слов", 1 } }));
 }
 
-BOOST_AUTO_TEST_CASE(test_first_punctuation_after_the_word)
+BOOST_AUTO_TEST_CASE(test_punctuation_before_word)
 {
 	BOOST_CHECK(CountWords("......,,,,,., много знаков") == mapWords({ { "много", 1 }, { "знаков", 1 } }));
 }

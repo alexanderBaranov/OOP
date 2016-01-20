@@ -1,9 +1,6 @@
 #include "stdafx.h"
 #include "WordCount.h"
-#include <sstream>
-#include <algorithm>
 #include <locale>
-#include <fstream>
 #include <boost/algorithm/string.hpp>
 
 using namespace std;

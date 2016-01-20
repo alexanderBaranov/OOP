@@ -31,9 +31,9 @@ void WriteToOutputFile(const TCHAR *fileName, string text)
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	if (argc < 5)
+	if ((argc < 5) || !(argc % 2))
 	{
-		cout << "Example: expand_template.exe <input-file> <output-file> [<param> <value> [<param> <value> ...]]" << endl;
+		cout << "Example: task8.exe <input-file> <output-file> [<param> <value> [<param> <value> ...]]" << endl;
 		return 1;
 	}
 
@@ -44,16 +44,9 @@ int _tmain(int argc, _TCHAR* argv[])
 	}
 
 	templateParams params;
-	for (int i = 3; i < argc; i++)
+	for (int i = 4; i < argc; i = i + 2)
 	{
-		if (i % 2)
-		{
-			params[argv[i]] = "";
-		}
-		else
-		{
-			params[argv[i - 1]] = argv[i];
-		}
+		params[argv[i - 1]] = argv[i];
 	}
 
 	try
@@ -61,7 +54,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		string contentOfFile = ReadInputFile(argv[1]);
 		WriteToOutputFile(argv[2], ExpandTemplate(contentOfFile, params));
 	}
-	catch (exception e)
+	catch (const exception& e)
 	{
 		cout << e.what();
 	}

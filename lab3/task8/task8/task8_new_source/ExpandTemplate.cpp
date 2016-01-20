@@ -10,7 +10,7 @@ bool MatchesWithTemplateWords(const boost::string_ref searchString, const string
 
 	bool endOfStr = (sourceStr.length() == positionSearch) ? true : false;
 
-	size_t startPosSearch = positionSearch > searchString.length() ? positionSearch - searchString.length() + 1 : positionSearch;
+	int startPosSearch = positionSearch > searchString.length() ? positionSearch - searchString.length() + 1 : positionSearch;
 
 	if (positionSearch != sourceStr.length() - 1)
 	{
@@ -56,7 +56,7 @@ string ExpandTemplate(const string& sourceStr, const templateParams& tmplParams)
 
 	startTime = boost::posix_time::microsec_clock::local_time();
 
-	size_t startPosSearch = 0;
+	int startPosSearch = 0;
 	for (size_t curPos = 0; curPos < sourceStr.length(); curPos++)
 	{
 		boost::string_ref searchStr(&sourceStr[startPosSearch], curPos - startPosSearch + 1);

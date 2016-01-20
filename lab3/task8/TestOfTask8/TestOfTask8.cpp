@@ -43,4 +43,11 @@ BOOST_AUTO_TEST_CASE(testStringOperations)
 			"-[aa][bb][cc][cc][c][a][b][c]+");
 	}
 }
+
+BOOST_AUTO_TEST_CASE(testEmptyString)
+{
+	templateParams params({ { "%USER_NAME%", "Ivan Petrov" }, { "{WEEK_DAY}", "Friday" } });
+	BOOST_CHECK_EQUAL(ExpandTemplate("Test", params), "Test");
+}
+
 BOOST_AUTO_TEST_SUITE_END()
