@@ -27,7 +27,7 @@ bool MatchesWithTemplateWords(const boost::string_ref searchString, const string
 	for (const auto& pair : tmplParams)
 	{
 		size_t indexOfPos = pair.first.find(searchString.to_string());
-		if ((indexOfPos != string::npos) && (indexOfPos == 0))
+		if (indexOfPos == 0)
 		{
 			if (!endOfStr)
 			{
