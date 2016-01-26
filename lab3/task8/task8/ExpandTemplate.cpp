@@ -5,23 +5,32 @@ using namespace std;
 
 bool MatchesWithTemplateWords(const boost::string_ref& searchString, const templateParams& tmplParams)
 {
-	boost::string_ref nextSearchString(searchString.begin(), searchString.length() + 1);
 	for (const auto& pair : tmplParams)
 	{
-		boost::string_ref substrOfTemplateString = pair.first.substr(0, searchString.length());
+		boost::string_ref templateString(pair.first);
+
+		auto substrOfTemplateString = templateString.substr(0, searchString.length());
 		if (substrOfTemplateString == searchString)
 		{
-			substrOfTemplateString = pair.first.substr(0, nextSearchString.length());
-			if (substrOfTemplateString == nextSearchString)
-			{
-				return true;
-			}
+			return true;
 		}
 	}
 
 	return false;
 }
 
+const boost::string_ref GetValueFromTemplateWords(const boost::string_ref& key, const templateParams& tmplParams)
+{
+	for (const auto& pair : tmplParams)
+	{
+		if (key == pair.first)
+		{
+			return pair.second;
+		}
+	}
+
+	return "";
+}
 
 string ExpandTemplate(const string& sourceStr, const templateParams& tmplParams)
 {
@@ -29,18 +38,25 @@ string ExpandTemplate(const string& sourceStr, const templateParams& tmplParams)
 	size_t startPosSearch = 0;
 	for (size_t curPos = 0; curPos < sourceStr.length(); curPos++)
 	{
-		boost::string_ref searchStr(&sourceStr[startPosSearch], curPos - startPosSearch + 1);
+		size_t lengthOfCaptureCharacters = curPos - startPosSearch + 1;
+		//if (lengthOfCaptureCharacters > sourceStr.length())
+		//{
+		//	lengthOfCaptureCharacters = sourceStr.length();
+		//}
 
-		if (MatchesWithTemplateWords(searchStr, tmplParams))
+		boost::string_ref searchStr(&sourceStr[startPosSearch], lengthOfCaptureCharacters);
+
+		boost::string_ref value;
+		if ((curPos != sourceStr.length() - 1)
+			&& MatchesWithTemplateWords(boost::string_ref(&sourceStr[startPosSearch], searchStr.length() + 1), tmplParams))
 		{
 			continue;
 		}
 
-		auto it = tmplParams.find(searchStr);
-		if (it != tmplParams.end())
+		value = GetValueFromTemplateWords(searchStr, tmplParams);
+		if (!value.empty())
 		{
-			auto templateString = it->second;
-			resultString.append(templateString.begin(), templateString.end());
+			resultString.append(value.begin(), value.end());
 		}
 		else
 		{
