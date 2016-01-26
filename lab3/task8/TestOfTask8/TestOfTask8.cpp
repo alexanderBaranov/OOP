@@ -44,10 +44,22 @@ BOOST_AUTO_TEST_CASE(testStringOperations)
 	}
 }
 
-BOOST_AUTO_TEST_CASE(testEmptyString)
+BOOST_AUTO_TEST_CASE(testNotFindTemplatesWords)
 {
 	templateParams params({ { "%USER_NAME%", "Ivan Petrov" }, { "{WEEK_DAY}", "Friday" } });
 	BOOST_CHECK_EQUAL(ExpandTemplate("Test", params), "Test");
+}
+
+BOOST_AUTO_TEST_CASE(MalovsTest)
+{
+	BOOST_CHECK_EQUAL(ExpandTemplate("abqd", { { "ab", "AB" }, { "abdabq", "MNPQR" }, { "bqd", "XYZ" } }), "ABqd");
+	BOOST_CHECK_EQUAL(ExpandTemplate("abqd", { { "ab", "AB" }, { "abdabq", "MNPQR" }, { "bqd", "XYZ" }, { "qd", "QD" } }), "ABQD");
+}
+
+BOOST_AUTO_TEST_CASE(testEmptyTemplateWords)
+{
+	templateParams params;
+	BOOST_CHECK_EQUAL(ExpandTemplate("String", params), "String");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

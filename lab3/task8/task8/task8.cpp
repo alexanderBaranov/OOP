@@ -8,6 +8,7 @@
 #include <fstream>
 #include <locale>
 #include <boost/filesystem.hpp>
+#include <boost/timer/timer.hpp>
 
 using namespace std;
 
@@ -51,8 +52,12 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	try
 	{
+		boost::timer::cpu_timer timer;
+
 		string contentOfFile = ReadInputFile(argv[1]);
 		WriteToOutputFile(argv[2], ExpandTemplate(contentOfFile, params));
+
+		cout << "Duration = " << timer.format() << endl;
 	}
 	catch (const exception& e)
 	{
