@@ -67,6 +67,14 @@ void WriteNewDictionary(dictionary& dict, const TCHAR *fileName)
 	}
 }
 
+void SetupConsoleFont(const HANDLE& hConsole, CONSOLE_FONT_INFOEX cfi)
+{
+	if (hConsole != INVALID_HANDLE_VALUE)
+	{
+		SetCurrentConsoleFontEx(hConsole, FALSE, &cfi);
+	}
+}
+
 int _tmain(int argc, _TCHAR* argv[])
 {
 	if (argc != 2)
@@ -75,12 +83,24 @@ int _tmain(int argc, _TCHAR* argv[])
 		return 1;
 	}
 
-	//int cp = GetConsoleCP();
+	int cp = GetConsoleCP();
+	int cpOutput = GetConsoleOutputCP();
 
-	//SetConsoleCP(1251);
+	SetConsoleCP(1251);
+	SetConsoleOutputCP(1251);
 
-	//ios_base::sync_with_stdio(false);
-	setlocale(LC_ALL, "");
+	CONSOLE_FONT_INFOEX curCfi, newCfi;
+
+	HANDLE hConsole = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
+	if (hConsole != INVALID_HANDLE_VALUE)
+	{
+		GetCurrentConsoleFontEx(hConsole, FALSE, &curCfi);
+		newCfi = curCfi;
+
+		wcscpy_s(newCfi.FaceName, L"Lucida Console");
+
+		SetupConsoleFont(hConsole, newCfi);
+	}
 
 	cout << "'...' is exit programm.\n" << endl;
 
@@ -115,10 +135,14 @@ int _tmain(int argc, _TCHAR* argv[])
 	{
 		cout << e.what();
 
-		//SetConsoleCP(cp);
+		SetConsoleCP(cp);
+		SetConsoleOutputCP(cpOutput);
+		SetupConsoleFont(hConsole, curCfi);
 	}
 
-	//SetConsoleCP(cp);
+	SetConsoleCP(cp);
+	SetConsoleOutputCP(cpOutput);
+	SetupConsoleFont(hConsole, curCfi);
 
 	return 0;
 }
