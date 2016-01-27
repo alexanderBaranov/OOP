@@ -38,7 +38,8 @@ BOOST_AUTO_TEST_CASE(test_get_dictionary_from_stream)
 
 BOOST_AUTO_TEST_CASE(test_write_dictionary_to_stream)
 {
-	ostringstream stream = GetStreamFromDictionary(dict);
+	ostringstream stream;
+	WriteDictionaryToStream(dict, stream);
 
 	BOOST_CHECK_EQUAL(stream.str(), "stream=потока\ntest=тест\nthis=это\n");
 }
