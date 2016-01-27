@@ -68,7 +68,14 @@ BOOST_AUTO_TEST_CASE(MalovsTest1)
 	string tpl = string("Hello\0Goodbye", 13);
 	boost::string_ref tplRef(tpl);
 	auto result = ExpandTemplate(subj, { { tpl, "XXX" } });
-	//BOOST_CHECK_EQUAL(result, subj);
+	BOOST_CHECK_EQUAL(result, subj);
+}
+
+BOOST_AUTO_TEST_CASE(MalovsTest2)
+{
+	string subj = "ABC";
+	auto result = ExpandTemplate(subj, { { "B", "" }, { "A", "" }, { "C", "" } });
+	BOOST_CHECK_EQUAL(result, "");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
