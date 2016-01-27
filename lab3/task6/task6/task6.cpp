@@ -13,28 +13,28 @@
 
 using namespace std;
 
-void SetNewTranslationWordAndAddToDictionary(dictionary& dict, string& key)
+void AddNewTranslationMessageToDictionary(dictionary& dict, string message, string translationMessage)
 {
-	//locale loc("");
-	//cout.imbue(loc);
-	auto loc = cout.getloc();
-	auto name = loc.name();
-	cout << "Неизвестное слово " << key << " введите перевод или пустую строку для отказа." << endl;
+	boost::algorithm::to_lower(message);
+	dict[message] = translationMessage;
+}
 
-	auto name2 = cin.getloc().name();
-	string newValue;
-	getline(cin, newValue);
+void SetNewTranslationMessage(dictionary& dict, const string& message)
+{
+	cout << "Неизвестное слово " << message << " введите перевод или пустую строку для отказа." << endl;
 
-	if (!newValue.empty())
+	string translationMessage;
+	getline(cin, translationMessage);
+
+	if (!translationMessage.empty())
 	{
-		boost::algorithm::to_lower(key);
-		dict[key] = newValue;
+		AddNewTranslationMessageToDictionary(dict, message, translationMessage);
 
-		cout << "Слово \"" << key << "\" сохранено в словаре как \"" << newValue << "\"." << endl;
+		cout << "Слово \"" << message << "\" сохранено в словаре как \"" << translationMessage << "\"." << endl;
 	}
 	else
 	{
-		cout << "Слово " << key << " проигнорировано." << endl;
+		cout << "Слово " << message << " проигнорировано." << endl;
 	}
 }
 
@@ -101,7 +101,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 			if (!Translate(dict, inputString))
 			{
-				SetNewTranslationWordAndAddToDictionary(newExpressions, inputString);
+				SetNewTranslationMessage(newExpressions, inputString);
 				dict.insert(newExpressions.begin(), newExpressions.end());
 			}
 		}
@@ -111,7 +111,7 @@ int _tmain(int argc, _TCHAR* argv[])
 			WriteNewDictionary(newExpressions, argv[1]);
 		}
 	}
-	catch (exception e)
+	catch (const exception& e)
 	{
 		cout << e.what();
 

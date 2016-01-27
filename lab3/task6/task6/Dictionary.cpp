@@ -40,18 +40,15 @@ dictionary ReadDictionaryFromFile(const TCHAR *fileName)
 	return GetDictionaryFromStream(inFile);
 }
 
-ostringstream GetStreamFromDictionary(const dictionary& dict)
+void WriteDictionaryToStream(const dictionary& dict, ostream& stream)
 {
-	ostringstream outStream;
 	for (const auto& pair : dict)
 	{
 		string key = pair.first;
 		boost::algorithm::to_lower(key);
 
-		outStream << key << "=" << pair.second << endl;
+		stream << key << "=" << pair.second << endl;
 	}
-
-	return outStream;
 }
 
 bool WriteToDictionaryFile(const TCHAR *fileName, dictionary& dict)
@@ -59,7 +56,7 @@ bool WriteToDictionaryFile(const TCHAR *fileName, dictionary& dict)
 	ofstream outFile(fileName, ios::app);
 	outFile.exceptions(ios::badbit);
 
-	outFile << GetStreamFromDictionary(dict).str();
+	WriteDictionaryToStream(dict, outFile);
 	return true;
 }
 
