@@ -17,13 +17,13 @@ vector<string> ParseMessageTranslation(string& line)
 	return values;
 }
 
-dictionary GetDictionaryFromStream(istringstream& inputStream)
+dictionary GetDictionaryFromStream(istream& inputStream)
 {
 	dictionary dict;
 	for (string line; getline(inputStream, line);)
 	{
 		vector<string> values = ParseMessageTranslation(line);
-		if (!values.empty())
+		if (values.size() == 2)
 		{
 			dict[values[0]] = values[1];
 		}
@@ -37,10 +37,7 @@ dictionary ReadDictionaryFromFile(const TCHAR *fileName)
 	ifstream inFile(fileName);
 	inFile.exceptions(ios::badbit);
 
-	string str((istreambuf_iterator<char>(inFile)), istreambuf_iterator<char>());
-	istringstream inStream(str);
-
-	return GetDictionaryFromStream(inStream);
+	return GetDictionaryFromStream(inFile);
 }
 
 ostringstream GetStreamFromDictionary(const dictionary& dict)

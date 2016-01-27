@@ -7,7 +7,7 @@
 typedef std::map<std::string, std::string> dictionary;
 
 dictionary ReadDictionaryFromFile(const TCHAR *infileStream);
-dictionary GetDictionaryFromStream(std::istringstream& inputStream);
+dictionary GetDictionaryFromStream(std::istream& inputStream);
 
 bool WriteToDictionaryFile(const TCHAR *outFileStream, dictionary& dict);
 std::ostringstream GetStreamFromDictionary(const dictionary& dict);
