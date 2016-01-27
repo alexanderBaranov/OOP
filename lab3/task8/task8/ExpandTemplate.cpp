@@ -29,7 +29,7 @@ const boost::string_ref GetValueFromTemplateWords(const boost::string_ref& key, 
 		}
 	}
 
-	return "";
+	return boost::string_ref();
 }
 
 string ExpandTemplate(const string& sourceStr, const templateParams& tmplParams)
@@ -39,22 +39,17 @@ string ExpandTemplate(const string& sourceStr, const templateParams& tmplParams)
 	for (size_t curPos = 0; curPos < sourceStr.length(); curPos++)
 	{
 		size_t lengthOfCaptureCharacters = curPos - startPosSearch + 1;
-		//if (lengthOfCaptureCharacters > sourceStr.length())
-		//{
-		//	lengthOfCaptureCharacters = sourceStr.length();
-		//}
 
 		boost::string_ref searchStr(&sourceStr[startPosSearch], lengthOfCaptureCharacters);
 
-		boost::string_ref value;
 		if ((curPos != sourceStr.length() - 1)
 			&& MatchesWithTemplateWords(boost::string_ref(&sourceStr[startPosSearch], searchStr.length() + 1), tmplParams))
 		{
 			continue;
 		}
 
-		value = GetValueFromTemplateWords(searchStr, tmplParams);
-		if (!value.empty())
+		boost::string_ref value = GetValueFromTemplateWords(searchStr, tmplParams);
+		if (value.begin())
 		{
 			resultString.append(value.begin(), value.end());
 		}
