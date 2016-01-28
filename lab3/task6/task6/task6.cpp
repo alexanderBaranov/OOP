@@ -106,9 +106,11 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	try
 	{
-		dictionary dict = ReadDictionaryFromFile(argv[1]);
-		dictionary newExpressions;
+		_TCHAR* dictionaryFileName = argv[1];
+
+		dictionary dict = ReadDictionaryFromFile(dictionaryFileName);
 		string inputString;
+		size_t sizeOfDictionary = dict.size();
 
 		while (true)
 		{
@@ -121,23 +123,18 @@ int _tmain(int argc, _TCHAR* argv[])
 
 			if (!Translate(dict, inputString))
 			{
-				SetNewTranslationMessage(newExpressions, inputString);
-				dict.insert(newExpressions.begin(), newExpressions.end());
+				SetNewTranslationMessage(dict, inputString);
 			}
 		}
 
-		if (newExpressions.size())
+		if (sizeOfDictionary != dict.size())
 		{
-			WriteNewDictionary(newExpressions, argv[1]);
+			WriteNewDictionary(dict, dictionaryFileName);
 		}
 	}
 	catch (const exception& e)
 	{
 		cout << e.what();
-
-		SetConsoleCP(cp);
-		SetConsoleOutputCP(cpOutput);
-		SetupConsoleFont(hConsole, curCfi);
 	}
 
 	SetConsoleCP(cp);

@@ -53,7 +53,7 @@ void WriteDictionaryToStream(const dictionary& dict, ostream& stream)
 
 bool WriteToDictionaryFile(const TCHAR *fileName, dictionary& dict)
 {
-	ofstream outFile(fileName, ios::app);
+	ofstream outFile(fileName);
 	outFile.exceptions(ios::badbit);
 
 	WriteDictionaryToStream(dict, outFile);
