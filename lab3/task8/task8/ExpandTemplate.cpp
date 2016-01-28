@@ -1,22 +1,23 @@
 #include "stdafx.h"
 #include "ExpandTemplate.h"
+#include <boost/algorithm/string/predicate.hpp>
+#include <boost/algorithm/cxx11/any_of.hpp>
+#include <boost/range/adaptor/map.hpp>
+#include <functional>
 
 using namespace std;
+using namespace std::placeholders;
+using boost::algorithm::any_of;
+using boost::adaptors::map_keys;
+
+bool StartsWith(const string& subject, const boost::string_ref & prefix)
+{
+	return boost::starts_with(subject, prefix);
+}
 
 bool MatchesWithTemplateWords(const boost::string_ref& searchString, const templateParams& tmplParams)
 {
-	for (const auto& pair : tmplParams)
-	{
-		boost::string_ref templateString(pair.first);
-
-		auto substrOfTemplateString = templateString.substr(0, searchString.length());
-		if (substrOfTemplateString == searchString)
-		{
-			return true;
-		}
-	}
-
-	return false;
+	return any_of(tmplParams | map_keys, bind(StartsWith, _1, searchString));
 }
 
 const boost::string_ref GetValueFromTemplateWords(const boost::string_ref& key, const templateParams& tmplParams)
