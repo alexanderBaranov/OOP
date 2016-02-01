@@ -1,13 +1,15 @@
-// fill.cpp : Defines the entry point for the console application.
+//// fill.cpp : Defines the entry point for the console application.
+////
 //
-
 #include "stdafx.h"
 #include <fstream> 
 #include <iostream> 
 #include <string>
 #include <vector>
 #include <algorithm>
-#include <boost/range/algorithm/find.hpp>
+#include <unordered_set>
+#include <boost/functional/hash.hpp>
+
 using namespace std;
 
 static const char CONTOUR = '#';
@@ -27,283 +29,94 @@ struct Point
 	}
 };
 
-vector<Point> FindContour(
-	Point pointOfContour,
-	vector<string>& sourceFile);
-
-bool ContourContainsPoint(const Point point, const vector<Point>& contour)
+template <>
+struct hash<Point>
 {
-	if (!contour.size())
-		return false;
+	typedef Point      argument_type;
+	typedef std::size_t  result_type;
 
-	return boost::find(contour, point) != contour.end();
-}
-
-bool IsContour(
-	const Point point,
-	const vector<Point>& contour,
-	const vector<string>& sourceFile)
-{
-	if (ContourContainsPoint(point, contour))
+	result_type operator()(const Point & t) const
 	{
-		return false;
+		std::size_t val{ 0 };
+		boost::hash_combine(val, t.x);
+		boost::hash_combine(val, t.y);
+		return val;
 	}
+};
 
-	if ((point.y < sourceFile.size())
-		&& (point.x <= sourceFile[point.y].length())
-		&& (sourceFile[point.y][point.x] == CONTOUR))
-	{
-		return true;
-	}
-
-	return false;
-}
-
-bool IsPointOfArea(const Point &point, const vector<Point>& contour)
+void FillObjectFromPoint(const Point& point, vector<string>& sourceFile)
 {
-	auto upperBoundOfContour = find_if(contour.begin(), contour.end(), [&point](Point a)
+	std::unordered_set<Point>pointsToBePainted = {point};
+	while (pointsToBePainted.size())
 	{
-		return (point.x == a.x) && (point.y > a.y);
-	});
+		auto curPoint = pointsToBePainted.begin();
+		char& contentsOfPoint = sourceFile[curPoint->y][curPoint->x];
 
-	if (upperBoundOfContour != contour.end())
-	{
-		auto lowerBoundOfContour = find_if(contour.begin(), contour.end(), [&point](Point a)
+		if (contentsOfPoint == SPACE)
 		{
-			return (point.x == a.x) && (point.y < a.y);
-		});
-
-		if (lowerBoundOfContour != contour.end())
-		{
-			return true;
+			contentsOfPoint = POINT;
 		}
-	}
 
-	return false;
-}
+		Point newPoint = { curPoint->x, curPoint->y };
+		newPoint.y = (newPoint.y < sourceFile.size() - 1) ? newPoint.y + 1 : newPoint.y;
 
-void SetPoint(const vector<Point>& contour, vector<string>& sourceFile, int y, int x1, int x2)
-{
-	size_t numberOfBoundariesOfInnerContour = 0;
-	vector<Point> anotherContour;
-	for (; x1 < x2; ++x1)
-	{
-		Point temp = { x1, y };
+		if (sourceFile[newPoint.y][newPoint.x] == SPACE)
+		{
+			pointsToBePainted.insert({ newPoint.x, newPoint.y });
+		}
 		
-		if ((sourceFile[y][x1] == CONTOUR) && !ContourContainsPoint(temp, contour))
+		newPoint = { curPoint->x, curPoint->y };
+		newPoint.y = (newPoint.y != 0) ? newPoint.y - 1 : newPoint.y;
+
+		if (sourceFile[newPoint.y][newPoint.x] == SPACE)
 		{
-			if (anotherContour.empty() || !IsPointOfArea(temp, anotherContour))
-			{
-				anotherContour = FindContour(temp, sourceFile);
-				continue;
-			}
+			pointsToBePainted.insert({ newPoint.x, newPoint.y });
+		}
+		
+		newPoint = { curPoint->x, curPoint->y };
+		newPoint.x = (newPoint.x < sourceFile[newPoint.y].length() - 1) ? newPoint.x + 1 : newPoint.x;
+
+		if (sourceFile[newPoint.y][newPoint.x] == SPACE)
+		{
+			pointsToBePainted.insert({ newPoint.x, newPoint.y });
+		}
+		
+		newPoint = { curPoint->x, curPoint->y };
+		newPoint.x = (newPoint.x != 0) ? newPoint.x - 1 : newPoint.x;
+
+		if (sourceFile[newPoint.y][newPoint.x] == SPACE)
+		{
+			pointsToBePainted.insert({ newPoint.x, newPoint.y });
 		}
 
-		if (!anotherContour.empty() && IsPointOfArea(temp, anotherContour))
-		{
-			continue;
-		}
-
-		if (IsPointOfArea(temp, contour) && (sourceFile[y][x1] == SPACE))
-		{
-			sourceFile[y][x1] = POINT;
-		}
-	}	
-}
-
-
-
-void FillAreaOfContour(const vector<Point>& contour, vector<string>& sourceFile)
-{
-	for (const auto& point1OfRange : contour)
-	{
-		for (const auto& point2Ofrange : contour)
-		{
-			bool isRangeOfFill = (point1OfRange.y == point2Ofrange.y) && (point1OfRange.x != point2Ofrange.x);
-			if (isRangeOfFill)
-			{
-				if (point1OfRange.x < point2Ofrange.x)
-				{
-					SetPoint(contour, sourceFile, point1OfRange.y, point1OfRange.x, point2Ofrange.x);
-				}
-				else
-				{
-					SetPoint(contour, sourceFile, point1OfRange.y, point2Ofrange.x, point1OfRange.x);
-				}
-			}
-		}
+		pointsToBePainted.erase(curPoint);
 	}
 }
 
-
-bool FindFillMarkerFromRange(const vector<Point>& contour, vector<string>& sourceFile, int y, int x1, int x2)
+void FillObjectsFromPoints(const vector<Point>& pointsMarkersFill, vector<string>& sourceFile)
 {
-	size_t numberOfBoundariesOfInnerContour = 0;
-	vector<Point> anotherContour;
-	for (; x1 < x2; ++x1)
+	for (const auto& point : pointsMarkersFill)
 	{
-		Point temp = { x1, y };
-
-		if ((sourceFile[y][x1] == CONTOUR) && !ContourContainsPoint(temp, contour))
-		{
-			if (anotherContour.empty() || !IsPointOfArea(temp, anotherContour))
-			{
-				anotherContour = FindContour(temp, sourceFile);
-				continue;
-			}
-		}
-
-		if (!anotherContour.empty() && IsPointOfArea(temp, anotherContour))
-		{
-			continue;
-		}
-
-		if (IsPointOfArea(temp, contour) && (sourceFile[y][x1] == MARKER_TO_FILL))
-		{
-			return true;
-		}
-	}
-
-	return false;
-}
-
-bool FindFillMarkerFromArea(const vector<Point>& contour, vector<string>& sourceFile)
-{
-	for (const auto& point1OfRange : contour)
-	{
-		for (const auto& point2Ofrange : contour)
-		{
-			bool isRangeFromArea = (point1OfRange.y == point2Ofrange.y) && (point1OfRange.x != point2Ofrange.x);
-			if (isRangeFromArea)
-			{
-				bool foundFillMarker;
-				if (point1OfRange.x < point2Ofrange.x)
-				{
-					foundFillMarker = FindFillMarkerFromRange(contour, sourceFile, point1OfRange.y, point1OfRange.x, point2Ofrange.x);
-				}
-				else
-				{
-					foundFillMarker = FindFillMarkerFromRange(contour, sourceFile, point1OfRange.y, point2Ofrange.x, point1OfRange.x);
-				}
-
-				if (foundFillMarker)
-					return true;
-			}
-		}
-	}
-
-	return false;
-}
-
-
-vector<Point> FindContour(
-	Point pointOfContour,
-	vector<string>& sourceFile)
-{
-	bool foundPointOfContour = false;
-	vector<Point> contour;
-
-	do
-	{
-		foundPointOfContour = false;
-
-		if (pointOfContour.x != 0)
-		{
-			if (!foundPointOfContour && IsContour({ pointOfContour.x - 1, pointOfContour.y }, contour, sourceFile))
-			{
-				pointOfContour = { pointOfContour.x - 1, pointOfContour.y };
-				foundPointOfContour = true;
-			}
-			else if (!foundPointOfContour && IsContour({ pointOfContour.x - 1, pointOfContour.y + 1 }, contour, sourceFile))
-			{
-				pointOfContour = { pointOfContour.x - 1, pointOfContour.y + 1 };
-				foundPointOfContour = true;
-			}
-		}
-
-		if (pointOfContour.y != 0)
-		{
-			if (!foundPointOfContour && IsContour({ pointOfContour.x, pointOfContour.y - 1 }, contour, sourceFile))
-			{
-				pointOfContour = { pointOfContour.x, pointOfContour.y - 1 };
-				foundPointOfContour = true;
-			}
-			else if (!foundPointOfContour && IsContour({ pointOfContour.x + 1, pointOfContour.y - 1 }, contour, sourceFile))
-			{
-				pointOfContour = { pointOfContour.x + 1, pointOfContour.y - 1 };
-				foundPointOfContour = true;
-			}
-		}
-
-		if ((pointOfContour.x != 0) && (pointOfContour.y != 0))
-		{
-			if (!foundPointOfContour && IsContour({ pointOfContour.x - 1, pointOfContour.y - 1 }, contour, sourceFile))
-			{
-				pointOfContour = { pointOfContour.x - 1, pointOfContour.y - 1 };
-				foundPointOfContour = true;
-			}
-		}
-
-		if (!foundPointOfContour && IsContour({ pointOfContour.x + 1, pointOfContour.y }, contour, sourceFile))
-		{
-			pointOfContour = { pointOfContour.x + 1, pointOfContour.y };
-			foundPointOfContour = true;
-		}
-		else if (!foundPointOfContour && IsContour({ pointOfContour.x, pointOfContour.y + 1 }, contour, sourceFile))
-		{
-			pointOfContour = { pointOfContour.x, pointOfContour.y + 1 };
-			foundPointOfContour = true;
-		}
-		else if (!foundPointOfContour && IsContour({ pointOfContour.x + 1, pointOfContour.y + 1 }, contour, sourceFile))
-		{
-			pointOfContour = { pointOfContour.x + 1, pointOfContour.y + 1 };
-			foundPointOfContour = true;
-		}
-
-		if (foundPointOfContour)
-		{
-			contour.push_back(pointOfContour);
-		}
-	} while (foundPointOfContour);
-
-	return contour;
-}
-
-void ContourInline(vector<string>& sourceFile, const int& lineNumber)
-{
-	const string strInline = sourceFile[lineNumber];
-	for (size_t i = 0; i < strInline.length(); i++)
-	{
-		if (strInline[i] == CONTOUR)
-		{
-			vector<Point> contour = FindContour({ i, lineNumber }, sourceFile);
-
-			if (FindFillMarkerFromArea(contour, sourceFile))
-			{
-				FillAreaOfContour(contour, sourceFile);
-			}
-		}
-		//if (strInline[i] == MARKER_TO_FILL)
-		//{
-		//	size_t posOfContur = strInline.find(CONTOUR, i);
-		//	if (posOfContur != string::npos)
-		//	{
-		//		vector<Point> contour = FindContour({ posOfContur, lineNumber }, sourceFile);
-
-		//		FillAreaOfContour(contour, sourceFile);
-
-		//		i = posOfContur;
-		//	}
-		//}
+		FillObjectFromPoint(point, sourceFile);
 	}
 }
 
-void FindAndFillObjects(vector<string>& sourceFile)
+vector<Point> FindMarkersFill(const vector<string>& sourceFile)
 {
+	vector<Point> pointsMarkersFill;
 	for (size_t i = 0; i < sourceFile.size(); i++)
 	{
-		ContourInline(sourceFile, i);
+		const auto& strLine = sourceFile[i];
+
+		int pos = strLine.find_first_of(MARKER_TO_FILL);
+		while (pos != string::npos)
+		{
+			pointsMarkersFill.push_back({ pos, i });
+			pos = strLine.find_first_of(MARKER_TO_FILL, pos + 1);
+		}
 	}
+
+	return pointsMarkersFill;
 }
 
 void Print(vector<string>& sourceFile, const TCHAR *outputFile)
@@ -332,12 +145,12 @@ void Fill(const TCHAR *inputFile, const TCHAR *outputFile)
 	string strLine;
 	while (getline(inFile, strLine))
 	{
-		if (sourceFile.size() > MAX_SIZE)
+		if (sourceFile.size() >= MAX_SIZE)
 		{
 			break;
 		}
 
-		if (strLine.length() > MAX_SIZE)
+		if (strLine.length() >= MAX_SIZE)
 		{
 			sourceFile.push_back(strLine.substr(0, MAX_SIZE - 1) + "\n");
 		}
@@ -347,7 +160,9 @@ void Fill(const TCHAR *inputFile, const TCHAR *outputFile)
 		}
 	}
 
-	FindAndFillObjects(sourceFile);
+	vector<Point> pointsMarkersFill = FindMarkersFill(sourceFile);
+
+	FillObjectsFromPoints(pointsMarkersFill, sourceFile);
 
 	Print(sourceFile, outputFile);
 }
