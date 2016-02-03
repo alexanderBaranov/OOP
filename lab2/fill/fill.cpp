@@ -7,8 +7,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
-#include <unordered_set>
-#include <boost/functional/hash.hpp>
+#include <deque>
 
 using namespace std;
 
@@ -20,8 +19,8 @@ static const int MAX_SIZE = 100;
 
 struct Point
 {
-	size_t x;
-	size_t y;
+	unsigned int x;
+	unsigned int y;
 
 	bool operator==(const Point &coord) const
 	{
@@ -29,84 +28,58 @@ struct Point
 	}
 };
 
-template <>
-struct hash<Point>
+void TryToAddPointToPainting(const Point& point, deque<Point>& pointsToBePainted, const vector<string>& sourceObjectsToPainting)
 {
-	typedef Point      argument_type;
-	typedef std::size_t  result_type;
-
-	result_type operator()(const Point & t) const
+	if ((point.y >= sourceObjectsToPainting.size())
+		|| (point.y <= 0)
+		|| (point.x >= sourceObjectsToPainting[point.y].length())
+		|| (point.x <= 0))
 	{
-		std::size_t val{ 0 };
-		boost::hash_combine(val, t.x);
-		boost::hash_combine(val, t.y);
-		return val;
+		return;
 	}
-};
 
-void FillObjectFromPoint(const Point& point, vector<string>& sourceFile)
-{
-	std::unordered_set<Point>pointsToBePainted = {point};
-	while (pointsToBePainted.size())
+	if (sourceObjectsToPainting[point.y][point.x] == SPACE)
 	{
-		auto curPoint = pointsToBePainted.begin();
-		char& contentsOfPoint = sourceFile[curPoint->y][curPoint->x];
+		pointsToBePainted.push_back({ point.x, point.y });
+	}
+}
+
+void FillObjectFromPoint(const Point& point, vector<string>& sourceObjectsToPainting)
+{
+	deque<Point> pointsToBePainted = {point};
+	while (!pointsToBePainted.empty())
+	{
+		const Point& curPoint = pointsToBePainted.front();
+		char& contentsOfPoint = sourceObjectsToPainting[curPoint.y][curPoint.x];
 
 		if (contentsOfPoint == SPACE)
 		{
 			contentsOfPoint = POINT;
 		}
 
-		Point newPoint = { curPoint->x, curPoint->y };
-		newPoint.y = (newPoint.y < sourceFile.size() - 1) ? newPoint.y + 1 : newPoint.y;
+		TryToAddPointToPainting({ curPoint.x, curPoint.y + 1 }, pointsToBePainted, sourceObjectsToPainting);
+		TryToAddPointToPainting({ curPoint.x, curPoint.y - 1}, pointsToBePainted, sourceObjectsToPainting);
+		TryToAddPointToPainting({ curPoint.x + 1, curPoint.y }, pointsToBePainted, sourceObjectsToPainting);
+		TryToAddPointToPainting({ curPoint.x - 1, curPoint.y }, pointsToBePainted, sourceObjectsToPainting);
 
-		if (sourceFile[newPoint.y][newPoint.x] == SPACE)
-		{
-			pointsToBePainted.insert({ newPoint.x, newPoint.y });
-		}
-		
-		newPoint = { curPoint->x, curPoint->y };
-		newPoint.y = (newPoint.y != 0) ? newPoint.y - 1 : newPoint.y;
-
-		if (sourceFile[newPoint.y][newPoint.x] == SPACE)
-		{
-			pointsToBePainted.insert({ newPoint.x, newPoint.y });
-		}
-		
-		newPoint = { curPoint->x, curPoint->y };
-		newPoint.x = (newPoint.x < sourceFile[newPoint.y].length() - 1) ? newPoint.x + 1 : newPoint.x;
-
-		if (sourceFile[newPoint.y][newPoint.x] == SPACE)
-		{
-			pointsToBePainted.insert({ newPoint.x, newPoint.y });
-		}
-		
-		newPoint = { curPoint->x, curPoint->y };
-		newPoint.x = (newPoint.x != 0) ? newPoint.x - 1 : newPoint.x;
-
-		if (sourceFile[newPoint.y][newPoint.x] == SPACE)
-		{
-			pointsToBePainted.insert({ newPoint.x, newPoint.y });
-		}
-
-		pointsToBePainted.erase(curPoint);
+		pointsToBePainted.pop_front();
 	}
 }
 
-void FillObjectsFromPoints(const vector<Point>& pointsMarkersFill, vector<string>& sourceFile)
+void FillObjectsFromPoints(const vector<Point>& pointsMarkersFill, vector<string>& sourceObjectsToPainting)
 {
 	for (const auto& point : pointsMarkersFill)
 	{
-		FillObjectFromPoint(point, sourceFile);
+		FillObjectFromPoint(point, sourceObjectsToPainting);
 	}
 }
 
-vector<Point> FindMarkersFill(const vector<string>& sourceFile)
+vector<Point> FindFillMarkers(const vector<string>& sourceObjectsToPainting)
 {
 	vector<Point> pointsMarkersFill;
-	for (size_t i = 0; i < sourceFile.size(); i++)
+	for (size_t i = 0; i < sourceObjectsToPainting.size(); i++)
 	{
-		const auto& strLine = sourceFile[i];
+		const auto& strLine = sourceObjectsToPainting[i];
 
 		int pos = strLine.find_first_of(MARKER_TO_FILL);
 		while (pos != string::npos)
@@ -119,7 +92,7 @@ vector<Point> FindMarkersFill(const vector<string>& sourceFile)
 	return pointsMarkersFill;
 }
 
-void Print(vector<string>& sourceFile, const TCHAR *outputFile)
+void Print(vector<string>& sourceObjectsToPainting, const TCHAR *outputFile)
 {
 	ofstream outFile(outputFile, ofstream::binary);
 	if (!outFile)
@@ -127,13 +100,13 @@ void Print(vector<string>& sourceFile, const TCHAR *outputFile)
 		throw exception("Can't open file.");
 	}
 
-	for each(string strLine in sourceFile)
+	for each(string strLine in sourceObjectsToPainting)
 	{
 		outFile << strLine;
 	}
 }
 
-void Fill(const TCHAR *inputFile, const TCHAR *outputFile)
+vector<string> ReadSourceObjectsToPaintingFromFile(const TCHAR *inputFile)
 {
 	ifstream inFile(inputFile, ifstream::binary);
 	if (!inFile)
@@ -141,30 +114,37 @@ void Fill(const TCHAR *inputFile, const TCHAR *outputFile)
 		throw exception("Can't open file.");
 	}
 
-	vector<string> sourceFile;
+	vector<string> sourceObjectsToPainting;
 	string strLine;
 	while (getline(inFile, strLine))
 	{
-		if (sourceFile.size() >= MAX_SIZE)
+		if (sourceObjectsToPainting.size() >= MAX_SIZE)
 		{
 			break;
 		}
 
 		if (strLine.length() >= MAX_SIZE)
 		{
-			sourceFile.push_back(strLine.substr(0, MAX_SIZE - 1) + "\n");
+			sourceObjectsToPainting.push_back(strLine.substr(0, MAX_SIZE - 1) + "\n");
 		}
 		else
 		{
-			sourceFile.push_back(strLine);
+			sourceObjectsToPainting.push_back(strLine);
 		}
 	}
 
-	vector<Point> pointsMarkersFill = FindMarkersFill(sourceFile);
+	return sourceObjectsToPainting;
+}
 
-	FillObjectsFromPoints(pointsMarkersFill, sourceFile);
+void Fill(const TCHAR *inputFile, const TCHAR *outputFile)
+{
+	vector<string> sourceObjectsToPainting = ReadSourceObjectsToPaintingFromFile(inputFile);
 
-	Print(sourceFile, outputFile);
+	vector<Point> pointsFillMarkers = FindFillMarkers(sourceObjectsToPainting);
+
+	FillObjectsFromPoints(pointsFillMarkers, sourceObjectsToPainting);
+
+	Print(sourceObjectsToPainting, outputFile);
 }
 
 int _tmain(int argc, _TCHAR* argv[])
