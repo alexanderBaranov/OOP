@@ -19,7 +19,7 @@ static const char SPACE = ' ';
 static const char POINT = '.';
 static const int MAX_SIZE = 100;
 
-typedef std::array<std::array<char, MAX_SIZE>, MAX_SIZE> dataArray;
+typedef std::array<std::array<char, MAX_SIZE>, MAX_SIZE> Canvas;
 
 struct Point
 {
@@ -32,7 +32,7 @@ struct Point
 	}
 };
 
-void TryToAddPointToPainting(const Point& point, deque<Point>& pointsToBePainted, const dataArray& sourceObjectsToPaint)
+void TryToPaintThePoint(const Point& point, deque<Point>& paintedPoints, Canvas& canvas)
 {
 	if ((point.y >= MAX_SIZE)
 		|| (point.y < 0)
@@ -42,65 +42,58 @@ void TryToAddPointToPainting(const Point& point, deque<Point>& pointsToBePainted
 		return;
 	}
 
-	if (sourceObjectsToPaint[point.y][point.x] == SPACE)
+	char& contentsOfPoint = canvas[point.y][point.x];
+
+	if (canvas[point.y][point.x] == SPACE)
 	{
-		if (!(find(pointsToBePainted.begin(), pointsToBePainted.end(), point) != pointsToBePainted.end()))
-		{
-			pointsToBePainted.push_back(point);
-		}
+		contentsOfPoint = POINT;
+		paintedPoints.push_back(point);
 	}
 }
 
-void FillObjectFromPoint(const Point& point, dataArray& sourceObjectsToPaint)
+void FillCanvasFromPoint(const Point& point, Canvas& canvas)
 {
-	deque<Point> pointsToBePainted = {point};
-	while (!pointsToBePainted.empty())
+	deque<Point> paintedPoints = {point};
+	while (!paintedPoints.empty())
 	{
-		const Point& curPoint = pointsToBePainted.front();
-		char& contentsOfPoint = sourceObjectsToPaint[curPoint.y][curPoint.x];
+		const Point& curPoint = paintedPoints.front();
 
-		if (contentsOfPoint == SPACE)
-		{
-			contentsOfPoint = POINT;
-		}
+		TryToPaintThePoint({ curPoint.x, curPoint.y + 1 }, paintedPoints, canvas);
+		TryToPaintThePoint({ curPoint.x, curPoint.y - 1 }, paintedPoints, canvas);
+		TryToPaintThePoint({ curPoint.x + 1, curPoint.y }, paintedPoints, canvas);
+		TryToPaintThePoint({ curPoint.x - 1, curPoint.y }, paintedPoints, canvas);
 
-		TryToAddPointToPainting({ curPoint.x, curPoint.y + 1 }, pointsToBePainted, sourceObjectsToPaint);
-		TryToAddPointToPainting({ curPoint.x, curPoint.y - 1}, pointsToBePainted, sourceObjectsToPaint);
-		TryToAddPointToPainting({ curPoint.x + 1, curPoint.y }, pointsToBePainted, sourceObjectsToPaint);
-		TryToAddPointToPainting({ curPoint.x - 1, curPoint.y }, pointsToBePainted, sourceObjectsToPaint);
-
-		pointsToBePainted.pop_front();
+		paintedPoints.pop_front();
 	}
 }
 
-void FillObjectsFromPoints(const vector<Point>& pointsMarkersFill, dataArray& sourceObjectsToPaint)
+void FillCanvasFromPoints(const vector<Point>& pointsMarkersFill, Canvas& canvas)
 {
 	for (const auto& point : pointsMarkersFill)
 	{
-		FillObjectFromPoint(point, sourceObjectsToPaint);
+		FillCanvasFromPoint(point, canvas);
 	}
 }
 
-vector<Point> FindFillMarkers(const dataArray& sourceObjectsToPaint)
+vector<Point> FindFillMarkers(const Canvas& canvas)
 {
 	vector<Point> pointsMarkersFill;
-	for (size_t i = 0; i < sourceObjectsToPaint.size(); i++)
+	for (unsigned i = 0; i < canvas.size(); i++)
 	{
-		const string strLine(sourceObjectsToPaint[i].data());
+		const string strLine(canvas[i].data());
 
-		auto it = find(sourceObjectsToPaint[i].begin(), sourceObjectsToPaint[i].end(), MARKER_TO_FILL);
-		while (it != sourceObjectsToPaint[i].end())
+		auto & canvasRow = canvas[i];
+		for (auto it = canvasRow.begin(); (it = find(it, canvasRow.end(), MARKER_TO_FILL)) != canvasRow.end(); ++it)
 		{
-			size_t pos = it - sourceObjectsToPaint[i].begin();
+			unsigned pos = static_cast<unsigned>(it - canvasRow.begin());
 			pointsMarkersFill.push_back({ pos, i });
-			it = find(it + 1, sourceObjectsToPaint[i].end(), MARKER_TO_FILL);
 		}
 	}
 
 	return pointsMarkersFill;
 }
 
-void Print(dataArray& sourceObjectsToPaint, const TCHAR *outputFile)
+void Print(const Canvas& canvas, const TCHAR *outputFile)
 {
 	ofstream outFile(outputFile, ofstream::binary);
 	if (!outFile)
@@ -108,18 +101,18 @@ void Print(dataArray& sourceObjectsToPaint, const TCHAR *outputFile)
 		throw exception("Can't open file.");
 	}
 
-	for (size_t column = 0; column < sourceObjectsToPaint.size(); column++)
+	for (size_t column = 0; column < canvas.size(); column++)
 	{
-		for (size_t row = 0; row < sourceObjectsToPaint[column].size(); row++)
+		for (size_t row = 0; row < canvas[column].size(); row++)
 		{
-			outFile << sourceObjectsToPaint[column][row];
+			outFile << canvas[column][row];
 		}
 
 		outFile << endl;
 	}
 }
 
-dataArray ReadSourceObjectsToPaintingFromFile(const TCHAR *inputFile)
+Canvas ReadCanvasFromFile(const TCHAR *inputFile)
 {
 	ifstream inFile(inputFile, ifstream::binary);
 	if (!inFile)
@@ -127,46 +120,47 @@ dataArray ReadSourceObjectsToPaintingFromFile(const TCHAR *inputFile)
 		throw exception("Can't open file.");
 	}
 
-	dataArray sourceObjectsToPaint;
-	sourceObjectsToPaint[0].fill(' ');
-	sourceObjectsToPaint.fill(sourceObjectsToPaint[0]);
+	Canvas canvas;
+	canvas[0].fill(' ');
+	canvas.fill(canvas[0]);
 
-	int column = 0;
+	int row = 0;
 	string line;
 
 	while (getline(inFile, line))
 	{
-		if (column == MAX_SIZE)
+		if (row == MAX_SIZE)
 		{
 			break;
 		}
 
-		line = line.substr(0, MAX_SIZE);
+		string::iterator it_end = (line.length() <= MAX_SIZE) ? line.end() : line.begin() + MAX_SIZE;
 
-		copy_if(line.begin(), line.end(), sourceObjectsToPaint[column].begin(), [](char& ch)
+		transform(line.begin(), it_end, canvas[row].begin(), [](char& ch)
 		{
 			if ((ch == '\n') || (ch == '\r'))
 			{
 				ch = ' ';
 			}
+
 			return ch;
 		});
 
-		column++;
+		row++;
 	}
 
-	return sourceObjectsToPaint;
+	return canvas;
 }
 
 void Fill(const TCHAR *inputFile, const TCHAR *outputFile)
 {
-	dataArray sourceObjectsToPaint = ReadSourceObjectsToPaintingFromFile(inputFile);
+	Canvas canvas = ReadCanvasFromFile(inputFile);
 
-	vector<Point> pointsFillMarkers = FindFillMarkers(sourceObjectsToPaint);
+	vector<Point> pointsFillMarkers = FindFillMarkers(canvas);
 
-	FillObjectsFromPoints(pointsFillMarkers, sourceObjectsToPaint);
+	FillCanvasFromPoints(pointsFillMarkers, canvas);
 
-	Print(sourceObjectsToPaint, outputFile);
+	Print(canvas, outputFile);
 }
 
 int _tmain(int argc, _TCHAR* argv[])
@@ -181,7 +175,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	{
 		Fill(argv[1], argv[2]);
 	}
-	catch (exception e)
+	catch (const exception& e)
 	{
 		cout << e.what();
 	}
