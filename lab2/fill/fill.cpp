@@ -42,11 +42,11 @@ void TryToPaintThePoint(const Point& point, deque<Point>& paintedPoints, Canvas&
 		return;
 	}
 
-	char& contentsOfPoint = canvas[point.y][point.x];
+	char& pixel = canvas[point.y][point.x];
 
-	if (canvas[point.y][point.x] == SPACE)
+	if (pixel == SPACE)
 	{
-		contentsOfPoint = POINT;
+		pixel = POINT;
 		paintedPoints.push_back(point);
 	}
 }
@@ -134,9 +134,9 @@ Canvas ReadCanvasFromFile(const TCHAR *inputFile)
 			break;
 		}
 
-		string::iterator it_end = (line.length() <= MAX_SIZE) ? line.end() : line.begin() + MAX_SIZE;
+		string::iterator itEnd = (line.length() <= MAX_SIZE) ? line.end() : line.begin() + MAX_SIZE;
 
-		transform(line.begin(), it_end, canvas[row].begin(), [](char& ch)
+		transform(line.begin(), itEnd, canvas[row].begin(), [](char ch)
 		{
 			if ((ch == '\n') || (ch == '\r'))
 			{
