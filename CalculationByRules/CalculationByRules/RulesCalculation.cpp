@@ -2,14 +2,19 @@
 #include "RulesCalculation.h"
 #include <vector>
 #include <sstream>
-#include <string>
-#include <boost/utility/string_ref.hpp>
 #include <map>
 #include <algorithm>
 #include <iomanip>
 
 using namespace std;
-using namespace boost;
+
+static const string RULE = "R";
+static const string VALUE = "Q";
+static const string PARAM = "S";
+static const string PLUS = "+";
+static const string MINUS = "-";
+static const char SEPARATOR = '|';
+static const string NONE = "nan";
 
 typedef map<string, string> Values;
 
@@ -25,14 +30,14 @@ Values ReadValuesFromStream(istream& inputStream)
 			istringstream ss(line);
 			ss >> std::ws;
 			string key;
-			while (getline(ss, item, '|'))
+			while (getline(ss, item, SEPARATOR))
 			{
-				if (item == "R")
+				if (item == RULE)
 				{
 					break;
 				}
 
-				if (item == "Q")
+				if (item == VALUE)
 				{
 					continue;
 				}
@@ -85,19 +90,19 @@ void CalculatFunction(const vector<string>& quote, Values& draft, Values& result
 	const string& param1 = quote[3];
 	const string& param2 = quote[4];
 
-	if ((draft[param1] == "nan") || (draft[param2] == "nan") || draft[param1].empty() || draft[param2].empty())
+	if ((draft[param1] == NONE) || (draft[param2] == NONE) || draft[param1].empty() || draft[param2].empty())
 	{
-		draft[functionName] = "nan";
+		draft[functionName] = NONE;
 	}
 	else
 	{
 		double numberOfParam1 = stod(draft[param1]);
 		double numberOfParam2 = stod(draft[param2]);
-		if (operation == "+")
+		if (operation == PLUS)
 		{
 			numberOfParam1 += numberOfParam2;
 		}
-		else if (operation == "-")
+		else if (operation == MINUS)
 		{
 			numberOfParam1 -= numberOfParam2;
 		}
@@ -111,7 +116,7 @@ void CalculatFunction(const vector<string>& quote, Values& draft, Values& result
 string GetValueForParam(const string& param, Values& values)
 {
 	string value = values[param];
-	return !value.empty() ? value : "nan";
+	return !value.empty() ? value : NONE;
 }
 
 void CalculationByRulesFromInputToOutputStream(istream& inputStream, ostream& outputStream)
@@ -131,9 +136,9 @@ void CalculationByRulesFromInputToOutputStream(istream& inputStream, ostream& ou
 		{
 			quote.clear();
 			istringstream ss(line);
-			while (getline(ss, item, '|'))
+			while (getline(ss, item, SEPARATOR))
 			{
-				if (item == "Q")
+				if (item == VALUE)
 				{
 					break;
 				}
@@ -143,7 +148,7 @@ void CalculationByRulesFromInputToOutputStream(istream& inputStream, ostream& ou
 
 			if (!quote.empty())
 			{
-				if (quote[2] == "S")
+				if (quote[2] == PARAM)
 				{
 					draft[quote[1]] = GetValueForParam(quote[1], values);
 				}
