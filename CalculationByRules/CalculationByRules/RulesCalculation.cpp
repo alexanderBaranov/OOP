@@ -13,7 +13,7 @@ using namespace boost;
 
 typedef map<string, string> Values;
 
-map<string, string> ReadValuesFromStream(istream& inputStream)
+Values ReadValuesFromStream(istream& inputStream)
 {
 	map<string, string> values;
 	string line, item;
@@ -78,10 +78,46 @@ void Print(const Values& results, ostream& outputStream)
 	}
 }
 
+void CalculatFunction(const vector<string>& quote, Values& draft, Values& results)
+{
+	const string& functionName = quote[1];
+	const string& operation = quote[2];
+	const string& param1 = quote[3];
+	const string& param2 = quote[4];
+
+	if ((draft[param1] == "nan") || (draft[param2] == "nan") || draft[param1].empty() || draft[param2].empty())
+	{
+		draft[functionName] = "nan";
+	}
+	else
+	{
+		double numberOfParam1 = stod(draft[param1]);
+		double numberOfParam2 = stod(draft[param2]);
+		if (operation == "+")
+		{
+			numberOfParam1 += numberOfParam2;
+		}
+		else if (operation == "-")
+		{
+			numberOfParam1 -= numberOfParam2;
+		}
+
+		draft[functionName] = to_string(numberOfParam1);
+	}
+
+	results[functionName] = draft[functionName];
+}
+
+string GetValueForParam(const string& param, Values& values)
+{
+	string value = values[param];
+	return !value.empty() ? value : "nan";
+}
+
 void CalculationByRulesFromInputToOutputStream(istream& inputStream, ostream& outputStream)
 {
-	map<string, string> values = ReadValuesFromStream(inputStream);
-	Values result;
+	Values values = ReadValuesFromStream(inputStream);
+	Values results;
 	Values draft;
 
 	inputStream.clear();
@@ -109,38 +145,15 @@ void CalculationByRulesFromInputToOutputStream(istream& inputStream, ostream& ou
 			{
 				if (quote[2] == "S")
 				{
-					string value = values[quote[1]];
-					draft[quote[1]] = !value.empty() ? value : "nan";
+					draft[quote[1]] = GetValueForParam(quote[1], values);
 				}
-				else if (quote[2] == "+")
+				else 
 				{
-					if ((draft[quote[3]] == "nan") || (draft[quote[4]] == "nan") || draft[quote[3]].empty())
-					{
-						draft[quote[1]] = "nan";
-						result[quote[1]] = "nan";
-					}
-					else
-					{
-						draft[quote[1]] = to_string(stod(draft[quote[3]]) + stod(draft[quote[4]]));
-						result[quote[1]] = draft[quote[1]];
-					}
-				}
-				else if (quote[2] == "-")
-				{
-					if ((draft[quote[3]] == "nan") || (draft[quote[4]] == "nan") || draft[quote[3]].empty())
-					{
-						draft[quote[1]] = "nan";
-						result[quote[1]] = "nan";
-					}
-					else
-					{
-						draft[quote[1]] = to_string(stod(draft[quote[3]]) - stod(draft[quote[4]]));
-						result[quote[1]] = draft[quote[1]];
-					}
+					CalculatFunction(quote, draft, results);
 				}
 			}
 		}
 	}
 
-	Print(result, outputStream);
+	Print(results, outputStream);
 }

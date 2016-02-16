@@ -98,12 +98,12 @@ BOOST_AUTO_TEST_CASE(testCalclulationByRules3)
 
 BOOST_AUTO_TEST_CASE(testCalclulationByRules4)
 {
-	istringstream inStream("R | CAT | S\n"
-		"R|DOG|S\n"
-		"R|CAT|S\n"
-		"R|CAT_PLUS_DOG|+|CAT|DOG\n"
-		"Q|CAT|10.135\n"
-		"Q|DOG|5.851\n");
+	istringstream inStream("R|CAT|S\n"
+							"R|DOG|S\n"
+							"R|CAT|S\n"
+							"R|CAT_PLUS_DOG|+|CAT|DOG\n"
+							"Q|CAT|10.135\n"
+							"Q|DOG|5.851\n");
 	ostringstream outStream;
 	outStream.str();
 
