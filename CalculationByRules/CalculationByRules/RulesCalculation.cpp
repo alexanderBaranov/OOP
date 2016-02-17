@@ -70,16 +70,22 @@ void Print(const Values& results, ostream& outputStream)
 		return a.first < b.first;
 	});
 
+	outputStream.setf(ios::fixed);
+	outputStream.precision(2);
+
 	for (const auto& value : pairs)
 	{
+		outputStream << value.first << " : ";
+		
 		if (isalpha(value.second[0]))
 		{
-			outputStream << value.first << " : " << value.second << endl;
+			outputStream << value.second << endl;
 		}
 		else
 		{
-			outputStream << value.first << " : " << setprecision(4) << stod(value.second) << endl;
+			outputStream << stod(value.second) << endl;
 		}
+
 	}
 }
 

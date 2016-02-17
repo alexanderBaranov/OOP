@@ -7,8 +7,6 @@
 
 #include <boost\test\included\unit_test.hpp>
 #include "..\CalculationByRules\RulesCalculation.h"
-#include <string>
-#include <vector>
 
 using namespace std;
 
@@ -58,9 +56,9 @@ BOOST_AUTO_TEST_CASE(testCalclulationByRules2)
 
 	CalculationByRulesFromInputToOutputStream(inStream, outStream);
 		
-	BOOST_CHECK_EQUAL(outStream.str(), "A_CAT_PLUS_DOG3 : 20\n"
-										"CAT_PLUS_DOG : 15\n"
-										"CAT_PLUS_DOG2 : 30\n");
+	BOOST_CHECK_EQUAL(outStream.str(), "A_CAT_PLUS_DOG3 : 20.00\n"
+										"CAT_PLUS_DOG : 15.00\n"
+										"CAT_PLUS_DOG2 : 30.00\n");
 }
 
 BOOST_AUTO_TEST_CASE(testCalclulationByRules3)
@@ -86,14 +84,14 @@ BOOST_AUTO_TEST_CASE(testCalclulationByRules3)
 
 	CalculationByRulesFromInputToOutputStream(inStream, outStream);
 
-	BOOST_CHECK_EQUAL(outStream.str(), "BLACK_MINUS_YELLOW : 130\n"
-										"BLUE : 50\n"
-										"BLUE_X10 : 500\n"
-										"BLUE_X2 : 100\n"
-										"BLUE_X4 : 200\n"
-										"BLUE_X5 : 250\n"
-										"RED : -10\n"
-										"RED_PLUS_GREEN : 70\n");
+	BOOST_CHECK_EQUAL(outStream.str(), "BLACK_MINUS_YELLOW : 130.00\n"
+										"BLUE : 50.00\n"
+										"BLUE_X10 : 500.00\n"
+										"BLUE_X2 : 100.00\n"
+										"BLUE_X4 : 200.00\n"
+										"BLUE_X5 : 250.00\n"
+										"RED : -10.00\n"
+										"RED_PLUS_GREEN : 70.00\n");
 }
 
 BOOST_AUTO_TEST_CASE(testCalclulationByRules4)
@@ -110,6 +108,29 @@ BOOST_AUTO_TEST_CASE(testCalclulationByRules4)
 	CalculationByRulesFromInputToOutputStream(inStream, outStream);
 
 	BOOST_CHECK_EQUAL(outStream.str(), "CAT_PLUS_DOG : 15.99\n");
+}
+
+BOOST_AUTO_TEST_CASE(testCalclulationByRules5)
+{
+	ostringstream tempOutStream;
+	tempOutStream << "R|CAT|S\n"
+					<< "R|DOG|S\n"
+					<< "R|CAT|S\n"
+					<< "R|CAT_PLUS_DOG|+|CAT|DOG\n";
+
+	for (int operationsNumber = 0; operationsNumber < 10000; operationsNumber++)
+	{
+		tempOutStream << "R|CAT_PLUS_DOG|+|CAT_PLUS_DOG|DOG\n";
+	}
+
+	tempOutStream << "Q|CAT|1\n" << "Q|DOG|1\n";
+
+	istringstream inStream(tempOutStream.rdbuf()->str());
+	ostringstream outStream;
+
+	CalculationByRulesFromInputToOutputStream(inStream, outStream);
+
+	BOOST_CHECK_EQUAL(outStream.str(), "CAT_PLUS_DOG : 10002.00\n");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
