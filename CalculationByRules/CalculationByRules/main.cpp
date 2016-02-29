@@ -8,24 +8,11 @@
 
 using namespace std;
 
-int _tmain(int argc, _TCHAR* argv[])
+int _tmain()
 {
-	if (argc < 3)
-	{
-		cout << "Example: CalculationByRules.exe <input file> <output file>" << endl;
-
-		return 1;
-	}
-
 	try
 	{
-		ifstream inFile(argv[1]);
-		inFile.exceptions(ios::badbit);
-
-		ofstream outFile(argv[2]);
-		outFile.exceptions(ios::badbit);
-
-		CalculationByRulesFromInputToOutputStream(inFile, outFile);
+		CalculationByRulesFromInputToOutputStream(cin, cout);
 	}
 	catch (const exception& e)
 	{

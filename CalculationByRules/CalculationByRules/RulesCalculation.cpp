@@ -5,6 +5,7 @@
 #include <map>
 #include <algorithm>
 #include <iomanip>
+#include <memory>
 
 using namespace std;
 
@@ -16,151 +17,150 @@ static const string MINUS = "-";
 static const char SEPARATOR = '|';
 static const string NONE = "nan";
 
-typedef map<string, string> Values;
+typedef map<string, double> Values;
 
-Values ReadValuesFromStream(istream& inputStream)
+void ReadValuesFromStringToValues(const string& inputString, Values &values)
 {
-	map<string, string> values;
-	string line, item;
+	string item;
 
-	while (getline(inputStream, line))
+	istringstream ss(inputString);
+	ss >> std::ws;
+	string key;
+	while (getline(ss, item, SEPARATOR))
 	{
-		if (!line.empty())
+		if (item == RULE)
 		{
-			istringstream ss(line);
-			ss >> std::ws;
-			string key;
-			while (getline(ss, item, SEPARATOR))
-			{
-				if (item == RULE)
-				{
-					break;
-				}
-
-				if (item == VALUE)
-				{
-					continue;
-				}
-
-				if (isalpha(item[0]))
-				{
-					key = item;
-				}
-				else
-				{
-					values[key] = item;
-				}
-			}
+			break;
 		}
-	}
 
-	return values;
-}
-
-void Print(const Values& results, ostream& outputStream)
-{
-	vector<pair<string, string>> pairs;
-	for (auto& it : results)
-	{
-		pairs.push_back(it);
-	}
-
-	sort(pairs.begin(), pairs.end(), [](pair<string, string> const& a, pair<string, string> const& b)
-	{
-		return a.first < b.first;
-	});
-
-	outputStream.setf(ios::fixed);
-	outputStream.precision(2);
-
-	for (const auto& value : pairs)
-	{
-		outputStream << value.first << " : ";
-		
-		if (isalpha(value.second[0]))
+		if (item == VALUE)
 		{
-			outputStream << value.second << endl;
+			continue;
+		}
+
+		if (isalpha(item[0]))
+		{
+			key = item;
 		}
 		else
 		{
-			outputStream << stod(value.second) << endl;
+			values[key] = stod(item);
+		}
+	}
+}
+
+
+void Print(const Values& results, ostream& outputStream)
+{
+	outputStream.setf(ios::fixed);
+	outputStream.precision(2);
+
+	for (const auto& value : results)
+	{
+		outputStream << value.first << " : ";
+		
+		if (isnan(value.second))
+		{
+			outputStream << "nan" << endl;
+		}
+		else
+		{
+			outputStream << value.second << endl;
 		}
 
 	}
 }
 
-void CalculatFunction(const vector<string>& quote, Values& draft, Values& results)
+pair<string, double> CalculateFunctionFromRuleForValuesFromDraft(const vector<string>& rule, Values& draft)
 {
-	const string& functionName = quote[1];
-	const string& operation = quote[2];
-	const string& param1 = quote[3];
-	const string& param2 = quote[4];
-
-	if ((draft[param1] == NONE) || (draft[param2] == NONE) || draft[param1].empty() || draft[param2].empty())
+	if (rule.size() != 5)
 	{
-		draft[functionName] = NONE;
+		return{};
+	}
+
+	const string& functionName = rule[1];
+	const string& operation = rule[2];
+	const string& param1 = rule[3];
+	const string& param2 = rule[4];
+
+	auto iteratorOfParam1 = draft.find(param1);
+	auto iteratorOfParam2 = draft.find(param2);
+	if (isnan(iteratorOfParam1->second) || isnan(iteratorOfParam2->second))
+	{
+		draft[functionName] = NAN;
 	}
 	else
 	{
-		double numberOfParam1 = stod(draft[param1]);
-		double numberOfParam2 = stod(draft[param2]);
+		double resultOfOperation;
 		if (operation == PLUS)
 		{
-			numberOfParam1 += numberOfParam2;
+			resultOfOperation = iteratorOfParam1->second + iteratorOfParam2->second;
 		}
 		else if (operation == MINUS)
 		{
-			numberOfParam1 -= numberOfParam2;
+			resultOfOperation = iteratorOfParam1->second - iteratorOfParam2->second;
 		}
 
-		draft[functionName] = to_string(numberOfParam1);
+		draft[functionName] = resultOfOperation;
 	}
 
-	results[functionName] = draft[functionName];
+	return{ functionName, draft[functionName] };
 }
 
-string GetValueForParam(const string& param, Values& values)
+double GetValueForParam(const string& param, const Values& values)
 {
-	string value = values[param];
-	return !value.empty() ? value : NONE;
+	auto it = values.find(param);
+	return (it != values.end()) ? it->second : NAN;
 }
 
 void CalculationByRulesFromInputToOutputStream(istream& inputStream, ostream& outputStream)
 {
-	Values values = ReadValuesFromStream(inputStream);
+	Values values;
 	Values results;
 	Values draft;
-
-	inputStream.clear();
-	inputStream.seekg(0, inputStream.beg);
+	vector<string>rules;
 
 	vector<string> quote;
 	string line, item;
+
 	while (getline(inputStream, line))
 	{
 		if (!line.empty())
 		{
-			quote.clear();
 			istringstream ss(line);
-			while (getline(ss, item, SEPARATOR))
+			getline(ss, item, SEPARATOR);
+			if (item == VALUE)
 			{
-				if (item == VALUE)
-				{
-					break;
-				}
-
-				quote.push_back(item);
+				ReadValuesFromStringToValues(line, values);
 			}
-
-			if (!quote.empty())
+			else if (item == RULE)
 			{
-				if (quote[2] == PARAM)
+				rules.push_back(line);
+			}
+		}
+	}
+
+	for (const string& rule : rules)
+	{
+		quote.clear();
+		istringstream ss(rule);
+		while (getline(ss, item, SEPARATOR))
+		{
+			quote.push_back(item);
+		}
+
+		if (!quote.empty())
+		{
+			if (quote[2] == PARAM)
+			{
+				draft[quote[1]] = GetValueForParam(quote[1], values);
+			}
+			else 
+			{
+				auto pairResult = CalculateFunctionFromRuleForValuesFromDraft(quote, draft);
+				if (!pairResult.first.empty())
 				{
-					draft[quote[1]] = GetValueForParam(quote[1], values);
-				}
-				else 
-				{
-					CalculatFunction(quote, draft, results);
+					results[pairResult.first] = pairResult.second;
 				}
 			}
 		}
