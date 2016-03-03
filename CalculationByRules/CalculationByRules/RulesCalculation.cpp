@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <iomanip>
 #include <memory>
+#include <assert.h>
 
 using namespace std;
 
@@ -83,9 +84,14 @@ pair<string, double> CalculateFunctionFromRuleForValuesFromDraft(const vector<st
 	const string& param1 = rule[3];
 	const string& param2 = rule[4];
 
+	assert((operation != PLUS) || (operation != MINUS));
+
 	auto iteratorOfParam1 = draft.find(param1);
 	auto iteratorOfParam2 = draft.find(param2);
-	if (isnan(iteratorOfParam1->second) || isnan(iteratorOfParam2->second))
+	if ((iteratorOfParam1 == draft.end()) 
+		|| (iteratorOfParam2 == draft.end()) 
+		|| isnan(iteratorOfParam1->second) 
+		|| isnan(iteratorOfParam2->second))
 	{
 		draft[functionName] = NAN;
 	}
@@ -149,7 +155,7 @@ void CalculationByRulesFromInputToOutputStream(istream& inputStream, ostream& ou
 			quote.push_back(item);
 		}
 
-		if (!quote.empty())
+		if (quote.size() >= 2)
 		{
 			if (quote[2] == PARAM)
 			{
