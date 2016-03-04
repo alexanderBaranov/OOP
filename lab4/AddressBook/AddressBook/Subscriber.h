@@ -8,50 +8,47 @@ public:
 	CSubscriber();
 	~CSubscriber();
 
-	void SetIndex(std::string index);
-	int const& GetIndex() const;
+	void SetName(const std::string& name);
+	const std::string& GetName()  const;
 
-	void SetName(std::string name);
-	std::string const& GetName()  const;
+	void SetSurname(const std::string& surname);
+	const std::string& GetSurname()  const;
 
-	void SetSurname(std::string surname);
-	std::string const& GetSurname()  const;
+	void SetPatronymic(const std::string& patronymic);
+	const std::string& GetPatronymic()  const;
 
-	void SetPatronymic(std::string patronymic);
-	std::string const& GetPatronymic()  const;
+	void SetEmail(const std::string& email);
+	std::string GetEmail()  const;
 
-	void SetEmail(std::string email);
-	std::string const GetEmail()  const;
+	void SetTelephoneNumber(const std::string& telephoneNumber);
+	std::string GetTelephoneNumber()  const;
 
-	void SetTelephoneNumber(std::string telephoneNumber);
-	std::string const GetTelephoneNumber()  const;
+	void SetStreet(const std::string& street);
+	const std::string& GetStreet()  const;
 
-	void SetStreet(std::string street);
-	std::string const& GetStreet()  const;
+	void SetHouse(const std::string& house);
+	const std::string& GetHouse()  const;
 
-	void SetHouse(std::string house);
-	std::string const& GetHouse()  const;
+	void SetApartment(const std::string& apartment);
+	const std::string& GetApartment()  const;
 
-	void SetApartment(std::string apartment);
-	std::string const& GetApartment()  const;
+	void SetCity(const std::string& city);
+	const std::string& GetCity() const;
 
-	void SetCity(std::string city);
-	std::string const& GetCity() const;
-
-	bool FindByName(std::string name) const;
-	bool FindByAddress(std::string address) const;
-	bool FindByTelephoneNumber(std::string telephoneNumber) const;
-	bool FindByEmail(std::string email) const;
+	const CSubscriber* FindByName(const std::string& name) const;
+	const CSubscriber* FindByAddress(const std::string& address) const;
+	const CSubscriber* FindByTelephoneNumber(const std::string& telephoneNumber) const;
+	const CSubscriber* FindByEmail(const std::string& email) const;
 
 private:
-	std::vector<std::string> const CSubscriber::ParseName(std::string line) const;
-	std::vector<std::string> const ParseAddress(std::string line) const;
-	void ParseEmail(std::string line, std::vector<std::string> &outValues) const;
-	void ParseTelephoneNumbers(std::string line, std::vector<std::string> &outValues) const;
+	std::vector<std::string> ParseName(std::string line) const;
+	std::vector<std::string> ParseAddress(std::string line) const;
+	void ParseEmail(std::string line, std::vector<std::string>& outValues) const;
+	void ParseTelephoneNumbers(std::string line, std::vector<std::string>& outValues) const;
 
-	bool CompareVectors(const std::vector<std::string>&vec1, const std::vector<std::string>&vec2) const;
+	bool EqualVectors(const std::vector<std::string>&vec1, const std::vector<std::string>&vec2) const;
 	
-	std::string const GetStringObjectFromVector(const std::vector<std::string>& objs) const;
+	std::string GetStringObjectFromVector(const std::vector<std::string>& objs) const;
 
 	int m_index;
 	std::string m_name;

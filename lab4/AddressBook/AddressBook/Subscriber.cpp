@@ -15,71 +15,61 @@ CSubscriber::~CSubscriber()
 {
 }
 
-void CSubscriber::SetIndex(string index)
-{
-	m_index = stoi(index);
-}
-
-int const& CSubscriber::GetIndex() const
-{
-	return m_index;
-}
-
-void CSubscriber::SetName(string name)
+void CSubscriber::SetName(const string& name)
 {
 	m_name = name;
 }
 
-string const& CSubscriber::GetName() const
+const string& CSubscriber::GetName() const
 {
 	return m_name;
 }
 
-void CSubscriber::SetSurname(string surname)
+void CSubscriber::SetSurname(const string& surname)
 {
 	m_surname = surname;
 }
 
-string const& CSubscriber::GetSurname() const
+const string& CSubscriber::GetSurname() const
 {
 	return m_surname;
 }
 
-void CSubscriber::SetPatronymic(string patronymic)
+void CSubscriber::SetPatronymic(const string& patronymic)
 {
 	m_patronymic = patronymic;
 }
 
-string const& CSubscriber::GetPatronymic() const
+const string& CSubscriber::GetPatronymic() const
 {
 	return m_patronymic;
 }
 
-void CSubscriber::SetEmail(string email)
+void CSubscriber::SetEmail(const string& email)
 {
 	vector<string> emails;
 	ParseEmail(email, emails);
 	m_email = emails;
 }
 
-string const CSubscriber::GetEmail() const
+string CSubscriber::GetEmail() const
 {
 	return GetStringObjectFromVector(m_email);
 }
 
-void CSubscriber::SetTelephoneNumber(string telephoneNumber)
+void CSubscriber::SetTelephoneNumber(const string& telephoneNumber)
 {
 	vector<string> telephoneNumbers;
 	ParseTelephoneNumbers(telephoneNumber, telephoneNumbers);
 	m_telephoneNumber = telephoneNumbers;
 }
 
-string const CSubscriber::GetTelephoneNumber() const
+string CSubscriber::GetTelephoneNumber() const
 {
 	return GetStringObjectFromVector(m_telephoneNumber);
 }
 
-string const CSubscriber::GetStringObjectFromVector(const vector<string>& objs) const
+string CSubscriber::GetStringObjectFromVector(const vector<string>& objs) const
 {
 	string strObjs;
 
@@ -95,47 +85,47 @@ string const CSubscriber::GetStringObjectFromVector(const vector<string>& objs) 
 	return strObjs;
 }
 
-void CSubscriber::SetStreet(string street)
+void CSubscriber::SetStreet(const string& street)
 {
 	m_street = street;
 }
 
-string const& CSubscriber::GetStreet() const
+const string& CSubscriber::GetStreet() const
 {
 	return m_street;
 }
 
-void CSubscriber::SetHouse(string house)
+void CSubscriber::SetHouse(const string& house)
 {
 	m_house = house;
 }
 
-string const& CSubscriber::GetHouse() const
+const string& CSubscriber::GetHouse() const
 {
 	return  m_house;
 }
 
-void CSubscriber::SetApartment(string apartment)
+void CSubscriber::SetApartment(const string& apartment)
 {
 	m_apartment = apartment;
 }
 
-string const& CSubscriber::GetApartment() const
+const string& CSubscriber::GetApartment() const
 {
 	return m_apartment;
 }
 
-void CSubscriber::SetCity(string city)
+void CSubscriber::SetCity(const string& city)
 {
 	m_city = city;
 }
 
-string const& CSubscriber::GetCity() const
+const string& CSubscriber::GetCity() const
 {
 	return m_city;
 }
 
-vector<string> const CSubscriber::ParseName(string line) const
+vector<string> CSubscriber::ParseName(string line) const
 {
 	vector<string> values;
 	boost::regex expression("([^\\s]+)");
@@ -144,7 +134,7 @@ vector<string> const CSubscriber::ParseName(string line) const
 	return values;
 }
 
-vector<string> const CSubscriber::ParseAddress(string line) const
+vector<string> CSubscriber::ParseAddress(string line) const
 {
 	vector<string> values;
 	boost::regex expression("\\s*([^,]+)\\s*");
@@ -165,11 +155,11 @@ void CSubscriber::ParseTelephoneNumbers(string line, vector<string> &outValues) 
 	boost::regex_split(back_inserter(outValues), line, expression);
 }
 
-
-bool CSubscriber::FindByName(string name) const
+const CSubscriber* CSubscriber::FindByName(const string& name) const
 {
-	boost::algorithm::to_lower(name);
-	vector<string> names = name.length() ? ParseName(name) : vector<string>();
+	string lowercaseName(name);
+	boost::algorithm::to_lower(lowercaseName);
+	vector<string> names = lowercaseName.length() ? ParseName(lowercaseName) : vector<string>();
 
 	string nameOfBD = m_name;
 	boost::algorithm::to_lower(nameOfBD);
@@ -182,13 +172,19 @@ bool CSubscriber::FindByName(string name) const
 
 	vector<string>bdName({ nameOfBD, surnameOfBD, patronymicOfBD });
 
-	return CompareVectors(names, bdName);
+	if (EqualVectors(names, bdName))
+	{
+		return this;
+	}
+
+	return nullptr;
 }
 
-bool CSubscriber::FindByAddress(string address) const
+const CSubscriber* CSubscriber::FindByAddress(const string& address) const
 {
-	boost::algorithm::to_lower(address);
-	vector<string> addresses = address.length() ? ParseAddress(address) : vector<string>();
+	string lowercaseAddress(address);
+	boost::algorithm::to_lower(lowercaseAddress);
+	vector<string> addresses = lowercaseAddress.length() ? ParseAddress(lowercaseAddress) : vector<string>();
 
 	string street = m_street;
 	boost::algorithm::to_lower(street);
@@ -204,42 +200,49 @@ bool CSubscriber::FindByAddress(string address) const
 
 	vector<string>bdAddresses({ street, house, apartment, city});
 
-	return CompareVectors(addresses, bdAddresses);
-}
-
-bool CSubscriber::FindByTelephoneNumber(string telephoneNumber) const
-{
-	return find(m_telephoneNumber.begin(), m_telephoneNumber.end(), telephoneNumber) != m_telephoneNumber.end();
-}
-
-bool CSubscriber::FindByEmail(string email) const
-{
-	boost::algorithm::to_lower(email);
-
-	vector<string> temp;
-	for each (string email in m_email)
+	if (EqualVectors(addresses, bdAddresses))
 	{
-		boost::algorithm::to_lower(email);
-		temp.push_back(email);
+		return this;
 	}
 
-	return find(temp.begin(), temp.end(), email) != temp.end();
+	return nullptr;
 }
 
-bool CSubscriber::CompareVectors(const vector<string>&vec, const vector<string>&bdVec) const
+const CSubscriber* CSubscriber::FindByTelephoneNumber(const string& telephoneNumber) const
+{
+	if (any_of(m_telephoneNumber.begin(), m_telephoneNumber.end(), bind2nd(equal_to<string>(), telephoneNumber)))
+	{
+		return this;
+	}
+
+	return nullptr;
+}
+
+const CSubscriber* CSubscriber::FindByEmail(const string& email) const
+{
+	string lowercaseEmail(email);
+	boost::algorithm::to_lower(lowercaseEmail);
+
+	if (any_of(m_email.begin(), m_email.end(), bind2nd(equal_to<string>(), lowercaseEmail)))
+	{
+		return this;
+	}
+
+	return nullptr;
+}
+
+bool CSubscriber::EqualVectors(const vector<string>&vec, const vector<string>&bdVec) const
 {
 	if (vec.empty() || bdVec.empty())
 	{
 		return false;
 	}
 
-	int countOfEquals = 0;
-	for_each(vec.begin(), vec.end(), [&countOfEquals, &bdVec](string str)
+	bool vectorsEqual = false;
+	vectorsEqual = all_of(vec.begin(), vec.end(), [&vectorsEqual, &bdVec](const string& strOfVector1)
 	{
-		if (find(bdVec.begin(), bdVec.end(), str) != bdVec.end()){
-			countOfEquals++;
-		}
+		return any_of(bdVec.begin(), bdVec.end(), bind2nd(equal_to<string>(), strOfVector1));
 	});
 
-	return countOfEquals == vec.size();
+	return vectorsEqual;
 }
