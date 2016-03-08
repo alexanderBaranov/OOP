@@ -35,10 +35,10 @@ public:
 	void SetCity(const std::string& city);
 	const std::string& GetCity() const;
 
-	const CSubscriber* FindByName(const std::string& name) const;
-	const CSubscriber* FindByAddress(const std::string& address) const;
-	const CSubscriber* FindByTelephoneNumber(const std::string& telephoneNumber) const;
-	const CSubscriber* FindByEmail(const std::string& email) const;
+	bool HasName(const std::string& name) const;
+	bool HasAddress(const std::string& address) const;
+	bool HasPhoneNumber(const std::string& telephoneNumber) const;
+	bool HasEmail(const std::string& email) const;
 
 private:
 	std::vector<std::string> ParseName(std::string line) const;

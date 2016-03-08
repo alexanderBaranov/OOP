@@ -8,13 +8,16 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/regex.hpp>
 #include <boost/format.hpp>
+#include <boost/filesystem.hpp>
 
 using namespace std;
+
+static const string DATA_BASE = "DataBase.txt";
 
 static const int COLUMN = 10;
 
 static const string NAME = "имя";
-static const string SURNAME = "фамилие";
+static const string SURNAME = "фамилия";
 static const string PATRONYMIC = "отчество";
 static const string EMAIL = "email";
 static const string TELEPHONE_NUMBER = "телефон";
@@ -25,18 +28,25 @@ static const string CITY = "город";
 
 CAddressBook::CAddressBook(const string& dataBaseFile)
 {
-	m_updateBD = false;
-
 	LoadSubscribersFromDataBaseFile(dataBaseFile);
 }
 
-CAddressBook::~CAddressBook()
+CAddressBook::CAddressBook()
 {
+	LoadSubscribersFromDataBaseFile(DATA_BASE);
 }
 
 void CAddressBook::LoadSubscribersFromDataBaseFile(const string &dataBaseFile)
 {
+	if (!boost::filesystem::exists(dataBaseFile))
+	{
+		throw("File not exist");
+	}
+
+	m_updateBD = false;
 	m_dataBase = dataBaseFile;
+
+	m_subscribers.clear();
 
 	string contentBD = ReadInputFile(m_dataBase);
 	vector<string> values;
@@ -92,10 +102,6 @@ void CAddressBook::LoadSubscribersFromDataBaseFile(const string &dataBaseFile)
 		}
 
 		m_subscribers.push_back(move(subscriber));
-
-		//sort(m_subscribers.begin(), m_subscribers.end(), [](shared_ptr<CSubscriber> subscriber1, shared_ptr<CSubscriber> subscriber2){
-		//	return subscriber1->GetIndex() < subscriber2->GetIndex();
-		//});
 	}
 }
 
@@ -123,8 +129,6 @@ void CAddressBook::SaveSubscribers()
 
 		outFile << str << endl;
 	}
-
-	outFile.close();
 }
 
 subscribers CAddressBook::FindByName(const std::string& name) const
@@ -134,7 +138,7 @@ subscribers CAddressBook::FindByName(const std::string& name) const
 	auto it = copy_if(m_subscribers.begin(), m_subscribers.end(), back_inserter(foundSubscribers),
 		[&name](shared_ptr<CSubscriber> subscriber)
 	{
-		return subscriber->FindByName(name);
+		return subscriber->HasName(name);
 	});
 
 	return foundSubscribers;
@@ -147,7 +151,7 @@ subscribers CAddressBook::FindByAddress(const std::string& address) const
 	auto it = copy_if(m_subscribers.begin(), m_subscribers.end(), back_inserter(foundSubscribers),
 		[&address](shared_ptr<CSubscriber> subscriber)
 	{
-		return subscriber->FindByAddress(address);
+		return subscriber->HasAddress(address);
 	});
 
 	return foundSubscribers;
@@ -160,7 +164,7 @@ subscribers CAddressBook::FindByTelephone(const std::string& telephone) const
 	auto it = copy_if(m_subscribers.begin(), m_subscribers.end(), back_inserter(foundSubscribers),
 		[&telephone](shared_ptr<CSubscriber> subscriber)
 	{
-		return subscriber->FindByTelephoneNumber(telephone);
+		return subscriber->HasPhoneNumber(telephone);
 	});
 
 	return foundSubscribers;
@@ -173,13 +177,13 @@ subscribers CAddressBook::FindByEmail(const std::string& email) const
 	auto it = copy_if(m_subscribers.begin(), m_subscribers.end(), back_inserter(foundSubscribers),
 		[&email](shared_ptr<CSubscriber> subscriber)
 	{
-		return subscriber->FindByEmail(email);
+		return subscriber->HasEmail(email);
 	});
 
 	return foundSubscribers;
 }
 
-subscribers const CAddressBook::FindByAllParams(
+subscribers CAddressBook::FindByAllParams(
 	const std::string& name,
 	const std::string& address,
 	const std::string& telephone,
@@ -198,22 +202,22 @@ subscribers const CAddressBook::FindByAllParams(
 	for(const auto& subscriber : m_subscribers)
 	{
 		bool isFound = true;
-		if (!name.empty() && !subscriber->FindByName(name))
+		if (!name.empty() && !subscriber->HasName(name))
 		{
 			isFound = false;
 		}
 
-		if (isFound && !address.empty() && !subscriber->FindByAddress(address))
+		if (isFound && !address.empty() && !subscriber->HasAddress(address))
 		{
 			isFound = false;
 		}
 
-		if (isFound && !telephone.empty() && !subscriber->FindByTelephoneNumber(telephone))
+		if (isFound && !telephone.empty() && !subscriber->HasPhoneNumber(telephone))
 		{
 			isFound = false;
 		}
 
-		if (isFound && !email.empty() && !subscriber->FindByEmail(email))
+		if (isFound && !email.empty() && !subscriber->HasEmail(email))
 		{
 			isFound = false;
 		}
@@ -273,7 +277,7 @@ string CAddressBook::NewSubscriber(
 	bool setIndex = false;
 	for (size_t i = 0; i < m_subscribers.size(); i++)
 	{
-		if (m_subscribers[i]->FindByEmail(email))
+		if (m_subscribers[i]->HasEmail(email))
 		{
 			return "Такой email уже есть";
 		}
@@ -385,7 +389,6 @@ string CAddressBook::ReadInputFile(const string& fileName)
 	inFile.exceptions(ios::badbit);
 
 	string contentOfInFile((istreambuf_iterator<char>(inFile)), istreambuf_iterator<char>());
-	inFile.close();
 
 	return contentOfInFile;
 }

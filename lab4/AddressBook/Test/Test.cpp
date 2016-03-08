@@ -8,17 +8,32 @@
 #include "..\AddressBook\AddressBook.h"
 #include <string>
 #include <vector>
+#include <boost/filesystem.hpp>
 
 using namespace std;
 
-static const string DATA_BASE = "BaseData.txt";
+static const string DATA_BASE = "DataBase.txt";
 
-BOOST_AUTO_TEST_SUITE(TestsOfAddressBook)
+struct AddressBook
+{
+	AddressBook()
+	{
+		boost::filesystem::path temp = boost::filesystem::temp_directory_path();
+		temp.append(boost::filesystem::unique_path().native());
+		
+		const string& tempFile = temp.string();
+		boost::filesystem::copy_file(DATA_BASE, tempFile);
+
+		ab.LoadSubscribersFromDataBaseFile(tempFile);
+	};
+
+	CAddressBook ab;
+};
+
+BOOST_FIXTURE_TEST_SUITE(TestsOfAddressBook, AddressBook)
 
 BOOST_AUTO_TEST_CASE(testFinderOfAdreessBook)
 {
-	CAddressBook ab(DATA_BASE);
-
 	BOOST_CHECK_EQUAL(ab.FindByName("").size(), 0);
 	BOOST_CHECK_EQUAL(ab.FindByName("Jon").size(), 0);
 	BOOST_CHECK_EQUAL(ab.FindByName("Карамазов").size(), 4);
@@ -49,45 +64,52 @@ BOOST_AUTO_TEST_CASE(testFinderOfAdreessBook)
 	BOOST_CHECK_EQUAL(ab.FindByTelephone("415626").size(), 2);
 	BOOST_CHECK_EQUAL(ab.FindByTelephone("89028905678").size(), 2);
 	BOOST_CHECK_EQUAL(ab.FindByTelephone("789065").size(), 1);
-
-	//BOOST_CHECK_EQUAL(ab.Find("", ).size())
 }
 
 BOOST_AUTO_TEST_CASE(testAddToAdreessBook)
 {
-	{
-		CAddressBook ab(DATA_BASE);
-		BOOST_CHECK(ab.NewSubscriber("Добрыня", "", "Никитич", "d@mail.ru", "123123", "Богатырская", "1", "2", "Росы") == "");
-		ab.SaveSubscribers();
-	}
-	{
-		CAddressBook ab(DATA_BASE);
-		ab.UpdateSubscriber(6, "", "", "", "", "777777", "", "", "", "");
-		ab.SaveSubscribers();
-	}
-	{
-		CAddressBook ab(DATA_BASE);
-		subscribers subs = ab.FindByName("Добрыня");
-		BOOST_CHECK_EQUAL(subs.size(), 1);
-		BOOST_CHECK_EQUAL(subs[0]->GetTelephoneNumber(), "777777");
-	}
-	{
-		CAddressBook ab(DATA_BASE);
-		subscribers subs = ab.FindByName("Добрыня");
-		BOOST_CHECK_EQUAL(subs.size(), 1);
+	BOOST_CHECK(ab.NewSubscriber("Добрыня", "", "Никитич", "d@mail.ru", "123123", "Богатырская", "1", "2", "Росы") == "");
+	ab.SaveSubscribers();
 
-		BOOST_CHECK(ab.NewSubscriber("Добрыня", "", "Никитич", "d@mail.ru", "123123", "Богатырская", "1", "2", "Росы") == "Такой email уже есть");
+	subscribers subs = ab.FindByName("Добрыня");
+	BOOST_CHECK_EQUAL(subs.size(), 1);
+}
 
-		ab.DeleteSubscriber(6);
+BOOST_AUTO_TEST_CASE(testUpdateSubscriber)
+{
+	BOOST_CHECK(ab.NewSubscriber("Добрыня", "", "Никитич", "d@mail.ru", "123123", "Богатырская", "1", "2", "Росы") == "");
+	ab.SaveSubscribers();
 
-		ab.SaveSubscribers();
-	}
-	{
-		CAddressBook ab(DATA_BASE);
-		subscribers subs = ab.FindByName("Добрыня");
-		BOOST_CHECK_EQUAL(subs.size(), 0);
-		BOOST_CHECK_EQUAL(ab.GetSubscribers().size(), 6);
-	}
+	ab.UpdateSubscriber(6, "", "", "", "", "777777", "", "", "", "");
+	ab.SaveSubscribers();
+
+	subscribers subs = ab.FindByName("Добрыня");
+	BOOST_CHECK_EQUAL(subs.size(), 1);
+	BOOST_CHECK_EQUAL(subs[0]->GetTelephoneNumber(), "777777");
+}
+
+BOOST_AUTO_TEST_CASE(testAddExistingSubscriber)
+{
+	BOOST_CHECK(ab.NewSubscriber("Добрыня", "", "Никитич", "d@mail.ru", "123123", "Богатырская", "1", "2", "Росы") == "");
+	ab.SaveSubscribers();
+
+	subscribers subs = ab.FindByName("Добрыня");
+	BOOST_CHECK_EQUAL(subs.size(), 1);
+
+	BOOST_CHECK(ab.NewSubscriber("Добрыня", "", "Никитич", "d@mail.ru", "123123", "Богатырская", "1", "2", "Росы") == "Такой email уже есть");
+}
+
+BOOST_AUTO_TEST_CASE(testDeleteSubscriber)
+{
+	BOOST_CHECK(ab.NewSubscriber("Добрыня", "", "Никитич", "d@mail.ru", "123123", "Богатырская", "1", "2", "Росы") == "");
+	ab.SaveSubscribers();
+
+	ab.DeleteSubscriber(6);
+	ab.SaveSubscribers();
+
+	subscribers subs = ab.FindByName("Добрыня");
+	BOOST_CHECK_EQUAL(subs.size(), 0);
+	BOOST_CHECK_EQUAL(ab.GetSubscribers().size(), 6);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

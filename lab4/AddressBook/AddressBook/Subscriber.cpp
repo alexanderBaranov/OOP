@@ -155,7 +155,7 @@ void CSubscriber::ParseTelephoneNumbers(string line, vector<string> &outValues) 
 	boost::regex_split(back_inserter(outValues), line, expression);
 }
 
-const CSubscriber* CSubscriber::FindByName(const string& name) const
+bool CSubscriber::HasName(const string& name) const
 {
 	string lowercaseName(name);
 	boost::algorithm::to_lower(lowercaseName);
@@ -172,15 +172,10 @@ const CSubscriber* CSubscriber::FindByName(const string& name) const
 
 	vector<string>bdName({ nameOfBD, surnameOfBD, patronymicOfBD });
 
-	if (EqualVectors(names, bdName))
-	{
-		return this;
-	}
-
-	return nullptr;
+	return EqualVectors(names, bdName);
 }
 
-const CSubscriber* CSubscriber::FindByAddress(const string& address) const
+bool CSubscriber::HasAddress(const string& address) const
 {
 	string lowercaseAddress(address);
 	boost::algorithm::to_lower(lowercaseAddress);
@@ -200,35 +195,20 @@ const CSubscriber* CSubscriber::FindByAddress(const string& address) const
 
 	vector<string>bdAddresses({ street, house, apartment, city});
 
-	if (EqualVectors(addresses, bdAddresses))
-	{
-		return this;
-	}
-
-	return nullptr;
+	return EqualVectors(addresses, bdAddresses);
 }
 
-const CSubscriber* CSubscriber::FindByTelephoneNumber(const string& telephoneNumber) const
+bool CSubscriber::HasPhoneNumber(const string& telephoneNumber) const
 {
-	if (any_of(m_telephoneNumber.begin(), m_telephoneNumber.end(), bind2nd(equal_to<string>(), telephoneNumber)))
-	{
-		return this;
-	}
-
-	return nullptr;
+	return any_of(m_telephoneNumber.begin(), m_telephoneNumber.end(), bind2nd(equal_to<string>(), telephoneNumber));
 }
 
-const CSubscriber* CSubscriber::FindByEmail(const string& email) const
+bool CSubscriber::HasEmail(const string& email) const
 {
 	string lowercaseEmail(email);
 	boost::algorithm::to_lower(lowercaseEmail);
 
-	if (any_of(m_email.begin(), m_email.end(), bind2nd(equal_to<string>(), lowercaseEmail)))
-	{
-		return this;
-	}
-
-	return nullptr;
+	return any_of(m_email.begin(), m_email.end(), bind2nd(equal_to<string>(), lowercaseEmail));
 }
 
 bool CSubscriber::EqualVectors(const vector<string>&vec, const vector<string>&bdVec) const

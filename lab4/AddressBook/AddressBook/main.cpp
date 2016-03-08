@@ -6,8 +6,6 @@
 
 using namespace std;
 
-static const string DATA_BASE = "BaseData.txt";
-
 void PrintSubscribers(const subscribers values)
 {
 	if (values.empty())
@@ -343,7 +341,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	try
 	{
-		auto addressBook = make_shared<CAddressBook>(DATA_BASE);
+		auto addressBook = make_shared<CAddressBook>();
 		
 		string command;
 		while (command != "Q")

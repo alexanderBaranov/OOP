@@ -9,11 +9,10 @@ class CAddressBook
 public:
 	CAddressBook(const std::string& dataBaseFile);
 	CAddressBook();
-	~CAddressBook();
 	
 	void LoadSubscribersFromDataBaseFile(const std::string &dataBaseFile);
 
-	subscribers const FindByAllParams(
+	subscribers FindByAllParams(
 		const std::string& name,
 		const std::string& address,
 		const std::string& telephone,
@@ -67,8 +66,6 @@ private:
 
 	std::string ReadInputFile(const std::string& fileName);
 	void ParseBaseData(std::string line, std::vector<std::string> &outValues);
-	//void ParseString(std::string line, vector<std::string> &outValues);
-	//std::shared_ptr<CSubscriber> CAddressBook::ParseInputData(std::string line);
 
 	subscribers m_subscribers;
 	bool m_updateBD;
