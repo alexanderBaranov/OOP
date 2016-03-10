@@ -82,9 +82,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Text Include="BaseData.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="..\AddressBook\AddressBook.h" />
     <ClInclude Include="..\AddressBook\Subscriber.h" />
     <ClInclude Include="stdafx.h" />
@@ -98,6 +95,9 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Test.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="DataBase.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
