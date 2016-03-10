@@ -20,13 +20,18 @@ struct AddressBook
 	{
 		boost::filesystem::path temp = boost::filesystem::temp_directory_path();
 		temp.append(boost::filesystem::unique_path().native());
-		
-		const string& tempFile = temp.string();
+		m_tempFile = temp.string();
 		boost::filesystem::copy_file(DATA_BASE, tempFile);
 
 		ab.LoadSubscribersFromDataBaseFile(tempFile);
 	};
 
+	~AddressBook()
+	{
+		boost::filesystem::remove(m_tempFile);
+	};
+
+	string m_tempFile;
 	CAddressBook ab;
 };
 
