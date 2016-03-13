@@ -11,6 +11,7 @@
 #include <boost/filesystem.hpp>
 
 using namespace std;
+using namespace boost::filesystem;
 
 static const string DATA_BASE = "DataBase.txt";
 
@@ -18,20 +19,20 @@ struct AddressBook
 {
 	AddressBook()
 	{
-		boost::filesystem::path temp = boost::filesystem::temp_directory_path();
-		temp.append(boost::filesystem::unique_path().native());
-		m_tempFile = temp.string();
-		boost::filesystem::copy_file(DATA_BASE, tempFile);
+		path m_tempFile = temp_directory_path();
+		m_tempFile /= unique_path();
 
-		ab.LoadSubscribersFromDataBaseFile(tempFile);
+		copy_file(DATA_BASE, m_tempFile);
+
+		ab.LoadSubscribersFromDataBaseFile(m_tempFile.string());
 	};
 
 	~AddressBook()
 	{
-		boost::filesystem::remove(m_tempFile);
+		remove(m_tempFile);
 	};
 
-	string m_tempFile;
+	path m_tempFile;
 	CAddressBook ab;
 };
 
@@ -73,7 +74,8 @@ BOOST_AUTO_TEST_CASE(testFinderOfAdreessBook)
 
 BOOST_AUTO_TEST_CASE(testAddToAdreessBook)
 {
-	BOOST_CHECK(ab.NewSubscriber("Добрыня", "", "Никитич", "d@mail.ru", "123123", "Богатырская", "1", "2", "Росы") == "");
+	string error;
+	BOOST_CHECK(ab.AddNewSubscriber("Добрыня", "", "Никитич", "d@mail.ru", "123123", "Богатырская", "1", "2", "Росы", error));
 	ab.SaveSubscribers();
 
 	subscribers subs = ab.FindByName("Добрыня");
@@ -82,7 +84,8 @@ BOOST_AUTO_TEST_CASE(testAddToAdreessBook)
 
 BOOST_AUTO_TEST_CASE(testUpdateSubscriber)
 {
-	BOOST_CHECK(ab.NewSubscriber("Добрыня", "", "Никитич", "d@mail.ru", "123123", "Богатырская", "1", "2", "Росы") == "");
+	string error;
+	BOOST_CHECK(ab.AddNewSubscriber("Добрыня", "", "Никитич", "d@mail.ru", "123123", "Богатырская", "1", "2", "Росы", error));
 	ab.SaveSubscribers();
 
 	ab.UpdateSubscriber(6, "", "", "", "", "777777", "", "", "", "");
@@ -95,18 +98,21 @@ BOOST_AUTO_TEST_CASE(testUpdateSubscriber)
 
 BOOST_AUTO_TEST_CASE(testAddExistingSubscriber)
 {
-	BOOST_CHECK(ab.NewSubscriber("Добрыня", "", "Никитич", "d@mail.ru", "123123", "Богатырская", "1", "2", "Росы") == "");
+	string error;
+	BOOST_CHECK(ab.AddNewSubscriber("Добрыня", "", "Никитич", "d@mail.ru", "123123", "Богатырская", "1", "2", "Росы", error));
 	ab.SaveSubscribers();
 
 	subscribers subs = ab.FindByName("Добрыня");
 	BOOST_CHECK_EQUAL(subs.size(), 1);
 
-	BOOST_CHECK(ab.NewSubscriber("Добрыня", "", "Никитич", "d@mail.ru", "123123", "Богатырская", "1", "2", "Росы") == "Такой email уже есть");
+	BOOST_CHECK(!ab.AddNewSubscriber("Добрыня", "", "Никитич", "d@mail.ru", "123123", "Богатырская", "1", "2", "Росы", error));
+	BOOST_CHECK_EQUAL(error, "Такой email уже есть");
 }
 
 BOOST_AUTO_TEST_CASE(testDeleteSubscriber)
 {
-	BOOST_CHECK(ab.NewSubscriber("Добрыня", "", "Никитич", "d@mail.ru", "123123", "Богатырская", "1", "2", "Росы") == "");
+	string error;
+	BOOST_CHECK(ab.AddNewSubscriber("Добрыня", "", "Никитич", "d@mail.ru", "123123", "Богатырская", "1", "2", "Росы", error));
 	ab.SaveSubscribers();
 
 	ab.DeleteSubscriber(6);

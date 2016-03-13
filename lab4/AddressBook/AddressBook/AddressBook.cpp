@@ -48,57 +48,35 @@ void CAddressBook::LoadSubscribersFromDataBaseFile(const string &dataBaseFile)
 
 	m_subscribers.clear();
 
-	string contentBD = ReadInputFile(m_dataBase);
-	vector<string> values;
-	ParseBaseData(contentBD, values);
+	ifstream inFile(m_dataBase);
+	inFile.exceptions(ios::badbit);
 
-	for (size_t i = 0; i < values.size(); i++)
+	string lineContentBD;
+	while (getline(inFile, lineContentBD))
 	{
-		auto subscriber= make_shared<CSubscriber>();
+		auto subscriber = make_shared<CSubscriber>();
+		vector<string> values = ParseDataBase(lineContentBD);
+		for (size_t i = 0; i < values.size(); i++)
+		{
+			typedef void (CSubscriber::*StringPropertySetter)(const string& value);
 
-		if (values[i] == NAME)
-		{
-			subscriber->SetName(values[++i]);
-		}
-		
-		if (values[++i] == SURNAME)
-		{
-			subscriber->SetSurname(values[++i]);
-		}
-		
-		if (values[++i] == PATRONYMIC)
-		{
-			subscriber->SetPatronymic(values[++i]);
-		}
-		
-		if (values[++i] == EMAIL)
-		{
-			subscriber->SetEmail(values[++i]);
-		}
-		
-		if (values[++i] == TELEPHONE_NUMBER)
-		{
-			subscriber->SetTelephoneNumber(values[++i]);
-		}
-		
-		if (values[++i] == STREET)
-		{
-			subscriber->SetStreet(values[++i]);
-		}
-		
-		if (values[++i] == HOUSE)
-		{
-			subscriber->SetHouse(values[++i]);
-		}
-		
-		if (values[++i] == APARTMENT)
-		{
-			subscriber->SetApartment(values[++i]);
-		}
-		
-		if (values[++i] == CITY)
-		{
-			subscriber->SetCity(values[++i]);
+			auto SetSubscriberPropertyForKey = [&](string key, StringPropertySetter setter){
+
+				if (values.at(i) == key)
+				{
+					((*subscriber).*setter)(values.at(++i));
+				}
+			};
+
+			SetSubscriberPropertyForKey(NAME, &CSubscriber::SetName);
+			SetSubscriberPropertyForKey(SURNAME, &CSubscriber::SetSurname);
+			SetSubscriberPropertyForKey(PATRONYMIC, &CSubscriber::SetPatronymic);
+			SetSubscriberPropertyForKey(EMAIL, &CSubscriber::SetEmail);
+			SetSubscriberPropertyForKey(TELEPHONE_NUMBER, &CSubscriber::SetTelephoneNumber);
+			SetSubscriberPropertyForKey(STREET, &CSubscriber::SetStreet);
+			SetSubscriberPropertyForKey(HOUSE, &CSubscriber::SetHouse);
+			SetSubscriberPropertyForKey(APARTMENT, &CSubscriber::SetApartment);
+			SetSubscriberPropertyForKey(CITY, &CSubscriber::SetCity);
 		}
 
 		m_subscribers.push_back(move(subscriber));
@@ -117,18 +95,24 @@ void CAddressBook::SaveSubscribers()
 
 	for (const auto& subscriber : m_subscribers)
 	{
-		string str(NAME + "[" + subscriber->GetName() + "],");
-		str.append(SURNAME + "[" + subscriber->GetSurname() + "],");
-		str.append(PATRONYMIC + "[" + subscriber->GetPatronymic() + "],");
-		str.append(EMAIL + "[" + subscriber->GetEmail() + "],");
-		str.append(TELEPHONE_NUMBER + "[" + subscriber->GetTelephoneNumber() + "],");
-		str.append(STREET + "[" + subscriber->GetStreet() + "],");
-		str.append(HOUSE + "[" + subscriber->GetHouse() + "],");
-		str.append(APARTMENT + "[" + subscriber->GetApartment() + "],");
-		str.append(CITY + "[" + subscriber->GetCity() + "];");
+		string str;
+		AppendProperty(str, NAME, subscriber->GetName());
+		AppendProperty(str, SURNAME, subscriber->GetSurname());
+		AppendProperty(str, PATRONYMIC, subscriber->GetPatronymic());
+		AppendProperty(str, EMAIL, subscriber->GetEmail());
+		AppendProperty(str, TELEPHONE_NUMBER, subscriber->GetTelephoneNumber());
+		AppendProperty(str, STREET, subscriber->GetStreet());
+		AppendProperty(str, HOUSE, subscriber->GetHouse());
+		AppendProperty(str, APARTMENT, subscriber->GetApartment());
+		AppendProperty(str, CITY, subscriber->GetCity());
 
 		outFile << str << endl;
 	}
+}
+
+void CAddressBook::AppendProperty(string& str, const string& property, const string& value)
+{
+	str.append(property + "[" + value + "]");
 }
 
 subscribers CAddressBook::FindByName(const std::string& name) const
@@ -136,7 +120,7 @@ subscribers CAddressBook::FindByName(const std::string& name) const
 	subscribers foundSubscribers;
 
 	auto it = copy_if(m_subscribers.begin(), m_subscribers.end(), back_inserter(foundSubscribers),
-		[&name](shared_ptr<CSubscriber> subscriber)
+		[&name](const shared_ptr<CSubscriber>& subscriber)
 	{
 		return subscriber->HasName(name);
 	});
@@ -149,7 +133,7 @@ subscribers CAddressBook::FindByAddress(const std::string& address) const
 	subscribers foundSubscribers;
 
 	auto it = copy_if(m_subscribers.begin(), m_subscribers.end(), back_inserter(foundSubscribers),
-		[&address](shared_ptr<CSubscriber> subscriber)
+		[&address](const shared_ptr<CSubscriber>& subscriber)
 	{
 		return subscriber->HasAddress(address);
 	});
@@ -162,7 +146,7 @@ subscribers CAddressBook::FindByTelephone(const std::string& telephone) const
 	subscribers foundSubscribers;
 
 	auto it = copy_if(m_subscribers.begin(), m_subscribers.end(), back_inserter(foundSubscribers),
-		[&telephone](shared_ptr<CSubscriber> subscriber)
+		[&telephone](const shared_ptr<CSubscriber>& subscriber)
 	{
 		return subscriber->HasPhoneNumber(telephone);
 	});
@@ -175,7 +159,7 @@ subscribers CAddressBook::FindByEmail(const std::string& email) const
 	subscribers foundSubscribers;
 
 	auto it = copy_if(m_subscribers.begin(), m_subscribers.end(), back_inserter(foundSubscribers),
-		[&email](shared_ptr<CSubscriber> subscriber)
+		[&email](const shared_ptr<CSubscriber>& subscriber)
 	{
 		return subscriber->HasEmail(email);
 	});
@@ -242,36 +226,37 @@ void CAddressBook::UpdateSubscriber(const int index,
 	const std::string& surname,
 	const std::string& patronymic,
 	const std::string& email,
-	const std::string& telephonNamber,
+	const std::string& phoneNumber,
 	const std::string& street,
 	const std::string& house,
 	const std::string& apartment,
 	const std::string& city)
 {
-	auto& subscriber = m_subscribers[index];
+	auto& subscriber = m_subscribers.at(index);
 	ModifySubscriber(
 		subscriber,
 		name,
 		surname,
 		patronymic,
 		email,
-		telephonNamber,
+		phoneNumber,
 		street,
 		house,
 		apartment,
 		city);
 }
 
-string CAddressBook::NewSubscriber(
+bool CAddressBook::AddNewSubscriber(
 	const std::string& name,
 	const std::string& surname,
 	const std::string& patronymic,
 	const std::string& email,
-	const std::string& telephonNamber,
+	const std::string& phoneNumber,
 	const std::string& street,
 	const std::string& house,
 	const std::string& apartment,
-	const std::string& city)
+	const std::string& city,
+	std::string& error)
 {
 	int newIndex = m_subscribers.size();
 	bool setIndex = false;
@@ -279,7 +264,8 @@ string CAddressBook::NewSubscriber(
 	{
 		if (m_subscribers[i]->HasEmail(email))
 		{
-			return "Такой email уже есть";
+			error = "Такой email уже есть";
+			return false;
 		}
 	}
 
@@ -290,7 +276,7 @@ string CAddressBook::NewSubscriber(
 		surname,
 		patronymic,
 		email,
-		telephonNamber,
+		phoneNumber,
 		street,
 		house,
 		apartment,
@@ -298,84 +284,50 @@ string CAddressBook::NewSubscriber(
 	{
 		m_subscribers.push_back(subscriber);
 	}
+	else
+	{
+		error = "Данные не обновлены.";
+		return false;
+	}
 
-	return "";
+	return true;
 }
 
-bool CAddressBook::ModifySubscriber(shared_ptr<CSubscriber>& subscriber,
+bool CAddressBook::ModifySubscriber(const shared_ptr<CSubscriber>& subscriber,
 								const std::string& name,
 								const std::string& surname,
 								const std::string& patronymic,
 								const std::string& email,
-								const std::string& telephonNamber,
+								const std::string& phoneNumber,
 								const std::string& street,
 								const std::string& house,
 								const std::string& apartment,
 								const std::string& city)
 {
-	bool isModify = false;
-	if (!name.empty())
-	{
-		subscriber->SetName(name);
-		isModify = true;
-	}
+	typedef void (CSubscriber::*StringPropertySetter)(const string& value);
 
-	if (!surname.empty())
-	{
-		subscriber->SetSurname(surname);
-		isModify = true;
-	}
+	auto UpdateSubscriberProperty = [&](StringPropertySetter setter, const string& value){
+		if (!value.empty())
+		{
+			((*subscriber).*setter)(value);
+			m_updateBD = true;
+		}
+	};
 
-	if (!patronymic.empty())
-	{
-		subscriber->SetPatronymic(patronymic);
-		isModify = true;
-	}
+	UpdateSubscriberProperty(&CSubscriber::SetName, name);
+	UpdateSubscriberProperty(&CSubscriber::SetSurname, surname);
+	UpdateSubscriberProperty(&CSubscriber::SetPatronymic, patronymic);
 
-	if (!email.empty())
-	{
-		string lowercaseEmail(email);
-		boost::algorithm::to_lower(lowercaseEmail);
-		subscriber->SetEmail(lowercaseEmail);
-		isModify = true;
-	}
+	string lowercaseEmail(email);
+	boost::algorithm::to_lower(lowercaseEmail);
+	UpdateSubscriberProperty(&CSubscriber::SetEmail, lowercaseEmail);
+	UpdateSubscriberProperty(&CSubscriber::SetTelephoneNumber, phoneNumber);
+	UpdateSubscriberProperty(&CSubscriber::SetStreet, street);
+	UpdateSubscriberProperty(&CSubscriber::SetHouse, house);
+	UpdateSubscriberProperty(&CSubscriber::SetApartment, apartment);
+	UpdateSubscriberProperty(&CSubscriber::SetCity, city);
 
-	if (!telephonNamber.empty())
-	{
-		subscriber->SetTelephoneNumber(telephonNamber);
-		isModify = true;
-	}
-
-	if (!street.empty())
-	{
-		subscriber->SetStreet(street);
-		isModify = true;
-	}
-
-	if (!house.empty())
-	{
-		subscriber->SetHouse(house);
-		isModify = true;
-	}
-
-	if (!apartment.empty())
-	{
-		subscriber->SetApartment(apartment);
-		isModify = true;
-	}
-
-	if (!city.empty())
-	{
-		subscriber->SetCity(city);
-		isModify = true;
-	}
-
-	if (isModify)
-	{
-		m_updateBD = true;
-	}
-
-	return isModify;
+	return m_updateBD;
 }
 
 subscribers CAddressBook::GetSubscribers()
@@ -383,20 +335,13 @@ subscribers CAddressBook::GetSubscribers()
 	return m_subscribers;
 }
 
-string CAddressBook::ReadInputFile(const string& fileName)
+vector<string> CAddressBook::ParseDataBase(string line)
 {
-	ifstream inFile(fileName);
-	inFile.exceptions(ios::badbit);
-
-	string contentOfInFile((istreambuf_iterator<char>(inFile)), istreambuf_iterator<char>());
-
-	return contentOfInFile;
-}
-
-void CAddressBook::ParseBaseData(string line, vector<string> &outValues)
-{
+	vector<string> outValues;
 	boost::regex expression("(?:\\s*(\\w+)\\s*\\[([^\\]]*)\\]\\s*)");
 	boost::regex_split(back_inserter(outValues), line, expression);
+
+	return outValues;
 }
 
 bool CAddressBook::Updated()

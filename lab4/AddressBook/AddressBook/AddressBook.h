@@ -1,6 +1,7 @@
 #pragma once
 #include "Subscriber.h"
 #include <memory>
+#include <functional>
 
 typedef std::vector<std::shared_ptr<CSubscriber>> subscribers;
 
@@ -29,22 +30,23 @@ public:
 						const std::string& surname,
 						const std::string& patronymic,
 						const std::string& email,
-						const std::string& telephonNamber,
+						const std::string& phoneNumber,
 						const std::string& street,
 						const std::string& house,
 						const std::string& apartment,
 						const std::string& city);
 
-	std::string NewSubscriber(
+	bool AddNewSubscriber(
 		const std::string& name,
 		const std::string& surname,
 		const std::string& patronymic,
 		const std::string& email,
-		const std::string& telephonNamber,
+		const std::string& phoneNumber,
 		const std::string& street,
 		const std::string& house,
 		const std::string& apartment,
-		const std::string& city);
+		const std::string& city, 
+		std::string& error);
 	
 	subscribers GetSubscribers();
 
@@ -53,19 +55,23 @@ public:
 	bool Updated();
 
 private:
-	bool ModifySubscriber(std::shared_ptr<CSubscriber>& subscriber,
+	bool ModifySubscriber(const std::shared_ptr<CSubscriber>& subscriber,
 						const std::string& name,
 						const std::string& surname,
 						const std::string& patronymic,
 						const std::string& email,
-						const std::string& telephonNamber,
+						const std::string& phoneNumber,
 						const std::string& street,
 						const std::string& house,
 						const std::string& apartment,
 						const std::string& city);
 
-	std::string ReadInputFile(const std::string& fileName);
-	void ParseBaseData(std::string line, std::vector<std::string> &outValues);
+	std::vector<std::string> ParseDataBase(std::string line);
+	
+	void CAddressBook::AppendProperty(
+		std::string& str,
+		const std::string& property,  
+		const std::string& value);
 
 	subscribers m_subscribers;
 	bool m_updateBD;

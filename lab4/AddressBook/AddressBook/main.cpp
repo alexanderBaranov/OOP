@@ -202,7 +202,7 @@ void NewDataOfSubscriber(
 	cout << endl;
 }
 
-string AddSubscriber(const shared_ptr<CAddressBook>addressBook)
+bool AddNewSubscriber(const shared_ptr<CAddressBook>addressBook, string& error)
 {
 	cout << "¬ведите данные нового абонента:" << endl;
 	
@@ -227,7 +227,7 @@ string AddSubscriber(const shared_ptr<CAddressBook>addressBook)
 		apartment,
 		city);
 
-	return addressBook->NewSubscriber(name, surname, patronymic, email, telephonNamber, street, house, apartment, city);
+	return addressBook->AddNewSubscriber(name, surname, patronymic, email, telephonNamber, street, house, apartment, city, error);
 }
 
 
@@ -363,9 +363,9 @@ int _tmain(int argc, _TCHAR* argv[])
 
 			if (command == "2")
 			{
-				string error = AddSubscriber(addressBook);
+				string error;
 
-				if (!error.empty())
+				if (!AddNewSubscriber(addressBook, error))
 					cout << error << endl;
 			}
 
