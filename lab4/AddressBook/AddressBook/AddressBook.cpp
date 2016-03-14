@@ -40,7 +40,7 @@ void CAddressBook::LoadSubscribersFromDataBaseFile(const string &dataBaseFile)
 {
 	if (!boost::filesystem::exists(dataBaseFile))
 	{
-		throw("File not exist");
+		throw exception("File of data base not exist");
 	}
 
 	m_updateBD = false;
@@ -60,11 +60,12 @@ void CAddressBook::LoadSubscribersFromDataBaseFile(const string &dataBaseFile)
 		{
 			typedef void (CSubscriber::*StringPropertySetter)(const string& value);
 
-			auto SetSubscriberPropertyForKey = [&](string key, StringPropertySetter setter){
+			auto SetSubscriberPropertyForKey = [&](const string& key, StringPropertySetter setter){
 
 				if (values.at(i) == key)
 				{
 					((*subscriber).*setter)(values.at(++i));
+					++i;
 				}
 			};
 
@@ -108,6 +109,8 @@ void CAddressBook::SaveSubscribers()
 
 		outFile << str << endl;
 	}
+
+	m_updateBD = false;
 }
 
 void CAddressBook::AppendProperty(string& str, const string& property, const string& value)
@@ -306,11 +309,13 @@ bool CAddressBook::ModifySubscriber(const shared_ptr<CSubscriber>& subscriber,
 {
 	typedef void (CSubscriber::*StringPropertySetter)(const string& value);
 
+	bool subscriberUpdated = false;
 	auto UpdateSubscriberProperty = [&](StringPropertySetter setter, const string& value){
 		if (!value.empty())
 		{
 			((*subscriber).*setter)(value);
 			m_updateBD = true;
+			subscriberUpdated = true;
 		}
 	};
 
@@ -327,7 +332,7 @@ bool CAddressBook::ModifySubscriber(const shared_ptr<CSubscriber>& subscriber,
 	UpdateSubscriberProperty(&CSubscriber::SetApartment, apartment);
 	UpdateSubscriberProperty(&CSubscriber::SetCity, city);
 
-	return m_updateBD;
+	return subscriberUpdated;
 }
 
 subscribers CAddressBook::GetSubscribers()
@@ -344,7 +349,7 @@ vector<string> CAddressBook::ParseDataBase(string line)
 	return outValues;
 }
 
-bool CAddressBook::Updated()
+bool CAddressBook::Updated() const
 {
 	return m_updateBD;
 }

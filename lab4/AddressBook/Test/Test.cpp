@@ -14,12 +14,13 @@ using namespace std;
 using namespace boost::filesystem;
 
 static const string DATA_BASE = "DataBase.txt";
+static const string DATA_BASE_2 = "DataBase2.txt";
 
 struct AddressBook
 {
 	AddressBook()
 	{
-		path m_tempFile = temp_directory_path();
+		m_tempFile = temp_directory_path();
 		m_tempFile /= unique_path();
 
 		copy_file(DATA_BASE, m_tempFile);
@@ -76,6 +77,7 @@ BOOST_AUTO_TEST_CASE(testAddToAdreessBook)
 {
 	string error;
 	BOOST_CHECK(ab.AddNewSubscriber("Добрыня", "", "Никитич", "d@mail.ru", "123123", "Богатырская", "1", "2", "Росы", error));
+	BOOST_CHECK(!ab.AddNewSubscriber("", "", "", "", "", "", "", "", "", error));
 	ab.SaveSubscribers();
 
 	subscribers subs = ab.FindByName("Добрыня");
@@ -121,6 +123,47 @@ BOOST_AUTO_TEST_CASE(testDeleteSubscriber)
 	subscribers subs = ab.FindByName("Добрыня");
 	BOOST_CHECK_EQUAL(subs.size(), 0);
 	BOOST_CHECK_EQUAL(ab.GetSubscribers().size(), 6);
+}
+
+void CheckSubscriberData(
+	const std::shared_ptr<CSubscriber>& subsciber,
+	const string& name,
+	const string& surname,
+	const string& patronymic,
+	const string& email,
+	const string& phoneNumber,
+	const string& street,
+	const string& house,
+	const string& apartment,
+	const string& city)
+{
+	BOOST_CHECK_EQUAL(subsciber->GetName(), name);
+	BOOST_CHECK_EQUAL(subsciber->GetSurname(), surname);
+	BOOST_CHECK_EQUAL(subsciber->GetPatronymic(), patronymic);
+	BOOST_CHECK_EQUAL(subsciber->GetEmail(), email);
+	BOOST_CHECK_EQUAL(subsciber->GetTelephoneNumber(), phoneNumber);
+	BOOST_CHECK_EQUAL(subsciber->GetStreet(), street);
+	BOOST_CHECK_EQUAL(subsciber->GetHouse(), house);
+	BOOST_CHECK_EQUAL(subsciber->GetApartment(), apartment);
+	BOOST_CHECK_EQUAL(subsciber->GetCity(), city);
+}
+
+BOOST_AUTO_TEST_CASE(testCheckResultsOfParseData)
+{
+	CAddressBook ab2(DATA_BASE_2);
+	
+	subscribers subs =  ab2.FindByEmail("email");
+	BOOST_CHECK_EQUAL(subs.size(), 1);
+	CheckSubscriberData(subs[0], "фамилие", "де бержерак", "email", "email", "", "", "", "", "");
+
+	subs = ab2.FindByEmail("телефон");
+	BOOST_CHECK_EQUAL(subs.size(), 1);
+	CheckSubscriberData(subs[0], "сергей", "петров", "николаевич", "телефон", "город", "фамилие", "фамилие", "фамилие", "фамилие");
+}
+
+BOOST_AUTO_TEST_CASE(testCheckForTheAbsenceOfDataBase)
+{
+	BOOST_CHECK_THROW(CAddressBook ab2(""), std::exception);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
