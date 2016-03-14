@@ -314,6 +314,23 @@ bool CAddressBook::ModifySubscriber(shared_ptr<CSubscriber>& subscriber,
 								const std::string& city)
 {
 	bool isModify = false;
+
+/*
+	// Указатель на метод класса CSubscriber, которая принимаеть const string& и возвращает void
+	typedef void (CSubscriber::*StringPropertySetter)(const string& value);
+
+	auto UpdateSubscriberProperty = [&](StringPropertySetter setter, const string& value){
+		if (!value.empty())
+		{
+			// Вызываем у объекта subscriber метод, адрес которого хранится в указателе setter
+			// subscriber нужен, чтобы сеттеру неявно передать this
+			((*subscriber).*setter)(value);
+			isModify = true;
+		}
+	};
+
+	UpdateSubscriberProperty(&CSubscriber::SetName, name);
+*/
 	if (!name.empty())
 	{
 		subscriber->SetName(name);
