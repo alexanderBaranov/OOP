@@ -4,8 +4,11 @@
 #include <boost/regex.hpp>
 #include <boost/fusion/sequence/comparison/equal_to.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/algorithm/cxx11/all_of.hpp>
+#include <boost/algorithm/cxx11/any_of.hpp>
 
 using namespace std;
+using namespace boost::algorithm;
 
 CSubscriber::CSubscriber()
 {
@@ -200,7 +203,7 @@ bool CSubscriber::HasAddress(const string& address) const
 
 bool CSubscriber::HasPhoneNumber(const string& telephoneNumber) const
 {
-	return any_of(m_telephoneNumber.begin(), m_telephoneNumber.end(), bind2nd(equal_to<string>(), telephoneNumber));
+	return any_of(m_telephoneNumber, bind2nd(equal_to<string>(), telephoneNumber));
 }
 
 bool CSubscriber::HasEmail(const string& email) const
@@ -208,7 +211,7 @@ bool CSubscriber::HasEmail(const string& email) const
 	string lowercaseEmail(email);
 	boost::algorithm::to_lower(lowercaseEmail);
 
-	return any_of(m_email.begin(), m_email.end(), bind2nd(equal_to<string>(), lowercaseEmail));
+	return any_of(m_email, bind2nd(equal_to<string>(), lowercaseEmail));
 }
 
 bool CSubscriber::EqualVectors(const vector<string>&vec, const vector<string>&bdVec) const
@@ -218,11 +221,8 @@ bool CSubscriber::EqualVectors(const vector<string>&vec, const vector<string>&bd
 		return false;
 	}
 
-	bool vectorsEqual = false;
-	vectorsEqual = all_of(vec.begin(), vec.end(), [&vectorsEqual, &bdVec](const string& strOfVector1)
-	{
-		return any_of(bdVec.begin(), bdVec.end(), bind2nd(equal_to<string>(), strOfVector1));
+	return all_of(vec, [&](const string& strOfVector1){
+		return any_of(bdVec, bind2nd(equal_to<string>(), strOfVector1));
 	});
 
-	return vectorsEqual;
 }

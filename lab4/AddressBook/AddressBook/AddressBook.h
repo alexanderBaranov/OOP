@@ -52,7 +52,7 @@ public:
 
 	void SaveSubscribers();
 
-	bool Updated();
+	bool Updated() const;
 
 private:
 	bool ModifySubscriber(const std::shared_ptr<CSubscriber>& subscriber,
@@ -66,9 +66,9 @@ private:
 						const std::string& apartment,
 						const std::string& city);
 
-	std::vector<std::string> ParseDataBase(std::string line);
+	static std::vector<std::string> ParseDataBase(std::string line);
 	
-	void CAddressBook::AppendProperty(
+	static void CAddressBook::AppendProperty(
 		std::string& str,
 		const std::string& property,  
 		const std::string& value);

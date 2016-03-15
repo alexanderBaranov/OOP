@@ -6,7 +6,7 @@
 
 using namespace std;
 
-void PrintSubscribers(const subscribers values)
+void PrintSubscribers(const subscribers& values)
 {
 	if (values.empty())
 	{
@@ -31,7 +31,7 @@ void PrintSubscribers(const subscribers values)
 	}
 }
 
-void FindByName(const shared_ptr<CAddressBook>addressBook)
+void FindByName(const shared_ptr<CAddressBook>& addressBook)
 {
 	cout << "Пример ввода: Иванов Иван Иванович" << endl;
 	cout << "Введите ФИО: ";
@@ -44,7 +44,7 @@ void FindByName(const shared_ptr<CAddressBook>addressBook)
 	PrintSubscribers(addressBook->FindByName(name));
 }
 
-void FindByAddress(const shared_ptr<CAddressBook>addressBook)
+void FindByAddress(const shared_ptr<CAddressBook>& addressBook)
 {
 	cout << "Пример ввода: Москва, Шаболовка, 37, 54" << endl;
 	cout << "Введите адрес: ";
@@ -57,7 +57,7 @@ void FindByAddress(const shared_ptr<CAddressBook>addressBook)
 	PrintSubscribers(addressBook->FindByAddress(address));
 }
 
-void FindByEmail(const shared_ptr<CAddressBook>addressBook)
+void FindByEmail(const shared_ptr<CAddressBook>& addressBook)
 {
 	cout << "Пример ввода: ivanov@mail.ru" << endl;
 	cout << "Введите email: ";
@@ -70,7 +70,7 @@ void FindByEmail(const shared_ptr<CAddressBook>addressBook)
 	PrintSubscribers(addressBook->FindByEmail(email));
 }
 
-void FindByTelephoneNumber(const shared_ptr<CAddressBook>addressBook)
+void FindByTelephoneNumber(const shared_ptr<CAddressBook>& addressBook)
 {
 	cout << "Пример ввода: 89021111111, либо 737777" << endl;
 	cout << "Введите номер телефона: ";
@@ -83,7 +83,7 @@ void FindByTelephoneNumber(const shared_ptr<CAddressBook>addressBook)
 	PrintSubscribers(addressBook->FindByTelephone(number));
 }
 
-void FindByAllParams(const shared_ptr<CAddressBook>addressBook)
+void FindByAllParams(const shared_ptr<CAddressBook>& addressBook)
 {
 	cout << "Введите имя (пример: Иванов Иван Иванович): ";
 	string name;
@@ -105,7 +105,7 @@ void FindByAllParams(const shared_ptr<CAddressBook>addressBook)
 	PrintSubscribers(addressBook->FindByAllParams(name, address, number, email));
 }
 
-void Find(const shared_ptr<CAddressBook>addressBook, const string command)
+void Find(const shared_ptr<CAddressBook>& addressBook, string command)
 {
 	if (command == "1")
 	{
@@ -145,7 +145,7 @@ void FinderInstruction()
 	cout << "Q. Выйти в главное меню" << endl << endl;
 }
 
-void FindSubscriber(const shared_ptr<CAddressBook>addressBook)
+void FindSubscriber(const shared_ptr<CAddressBook>& addressBook)
 {
 	string command;
 	while (command != "Q")
@@ -202,7 +202,7 @@ void NewDataOfSubscriber(
 	cout << endl;
 }
 
-bool AddNewSubscriber(const shared_ptr<CAddressBook>addressBook, string& error)
+bool AddNewSubscriber(const shared_ptr<CAddressBook>& addressBook, string& error)
 {
 	cout << "Введите данные нового абонента:" << endl;
 	
@@ -232,7 +232,7 @@ bool AddNewSubscriber(const shared_ptr<CAddressBook>addressBook, string& error)
 
 
 
-void EditSubScriber(const shared_ptr<CAddressBook>addressBook, int index)
+void EditSubScriber(const shared_ptr<CAddressBook>& addressBook, int index)
 {
 	cout << "Введите новые данные для пользователя:" << endl;
 	string name;
@@ -269,12 +269,12 @@ void EditSubScriber(const shared_ptr<CAddressBook>addressBook, int index)
 		city);
 }
 
-void DeleteSubscriber(const shared_ptr<CAddressBook>addressBook, const int index)
+void DeleteSubscriber(const shared_ptr<CAddressBook>& addressBook, const int index)
 {
 	addressBook->DeleteSubscriber(index);
 }
 
-void UpdateSubscriber(const shared_ptr<CAddressBook>addressBook)
+void UpdateSubscriber(const shared_ptr<CAddressBook>& addressBook)
 {
 	string command;
 	while (command != "Q")
