@@ -80,15 +80,15 @@ void GetStudentsFromUniversity(shared_ptr<CUniversityProcess>univerProcess)
 		cout << "Список cтудентов, обучающихся в \"" << name << "\":" << endl;
 		
 		int count = 0;
-		for_each(students.begin(), students.end(), [](const shared_ptr<CStudent>stud)
+		for_each(students.begin(), students.end(), [&](const shared_ptr<CStudent>stud)
 		{
-			cout << stud->Name() << " " 
-				<< stud->Gender() << " " 
-				<< stud->Growth() << " " 
-				<< stud->Age() << " " 
-				<< stud->Weight() << " " 
-				<< stud->NumberOfYearsStudy() << " " 
-				<< stud->UniversityName() << endl;
+			cout << stud->GetName() << " " 
+				<< univerProcess->GetStringFromEnumGender(stud->GetGender()) << " "
+				<< stud->GetGrowth() << " "
+				<< stud->GetAge() << " "
+				<< stud->GetWeight() << " "
+				<< stud->GetNumberOfYearsStudy() << " "
+				<< stud->GetUniversity().lock()->GetName() << endl;
 		});
 	}
 	else
@@ -120,16 +120,16 @@ void GetListStudents(shared_ptr<CUniversityProcess>univerProcess)
 	if (!students.empty())
 	{
 		int count = 0;
-		for_each(students.begin(), students.end(), [&count](const shared_ptr<CStudent>stud)
+		for_each(students.begin(), students.end(), [&](const shared_ptr<CStudent>stud)
 		{
 			cout << count << "." 
-				<< stud->Name() << " "
-				<< stud->Gender() << " "
-				<< stud->Growth() << " "
-				<< stud->Age() << " "
-				<< stud->Weight() << " "
-				<< stud->NumberOfYearsStudy() << " "
-				<< stud->UniversityName() << endl;
+				<< stud->GetName() << " "
+				<< univerProcess->GetStringFromEnumGender(stud->GetGender()) << " "
+				<< stud->GetGrowth() << " "
+				<< stud->GetAge() << " "
+				<< stud->GetWeight() << " "
+				<< stud->GetNumberOfYearsStudy() << " "
+				<< stud->GetUniversity().lock()->GetName() << endl;
 
 			count++;
 		});

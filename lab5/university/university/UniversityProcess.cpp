@@ -8,17 +8,17 @@
 
 using namespace std;
 
-static const string kName = "им€";
-static const string kGender = "пол";
-static const string kAge = "возраст";
-static const string kGrowth = "рост";
-static const string kWeight = "вес";
-static const string kUniversity = "университет";
-static const string kNumberOfYearsStudy = "проучилс€";
+static const string NAME = "им€";
+static const string GENDER = "пол";
+static const string MALE = "м";
+static const string FEMALE = "ж";
+static const string AGE = "возраст";
+static const string GROWTH = "рост";
+static const string WEIGHT = "вес";
+static const string UNIVERSITY = "университет";
+static const string NUMBER_OF_YEARS_STUDY = "проучилс€";
 
-CUniversityProcess::CUniversityProcess(
-	std::string listOfUniversity, 
-	std::string listOfStudents)
+CUniversityProcess::CUniversityProcess(const string& listOfUniversity, const string& listOfStudents)
 	:m_universitiesFile(listOfUniversity),
 	m_studentsFile(listOfStudents)
 {
@@ -26,17 +26,13 @@ CUniversityProcess::CUniversityProcess(
 	m_updated = false;
 }
 
-CUniversityProcess::~CUniversityProcess()
-{
-}
-
 void CUniversityProcess::Load(
-	const std::string listOfUniversity, 
-	const std::string listOfStudents)
+	const string& listOfUniversity, 
+	const string& listOfStudents)
 {
 	string contentListOfUniversity = ReadInputFile(listOfUniversity);
 	vector<string> values;
-	ParseWordsSeparatedByCommas(contentListOfUniversity, values);
+	values = ParseWordsSeparatedByCommas(contentListOfUniversity);
 
 	for (const string& val : values)
 	{
@@ -50,51 +46,52 @@ void CUniversityProcess::Load(
 	values.clear();
 
 	string contentListOfStudents = ReadInputFile(listOfStudents);
-	ParseBaseData(contentListOfStudents, values);
+	values = ParseDataBase(contentListOfStudents);
 
 	for (size_t i = 0; i < values.size(); i++)
 	{
-		string name, gender, age, growth, weight, university, numberOfYearsStudy;
+		string name, age, growth, weight, university, numberOfYearsStudy;
+		Gender gender;
 
-		if (values[i] == kName)
+		if (values[i] == NAME)
 		{
 			name = values[++i];
 		}
 
-		if (values[++i] == kGender)
+		if (values[++i] == GENDER)
 		{
-			gender = values[++i];
+			gender = GetEnumGenderFromString(values[++i]);
 		}
 
-		if (values[++i] == kAge)
+		if (values[++i] == AGE)
 		{
 			age = values[++i];
 		}
 
-		if (values[++i] == kGrowth)
+		if (values[++i] == GROWTH)
 		{
 			growth = values[++i];
 		}
 
-		if (values[++i] == kWeight)
+		if (values[++i] == WEIGHT)
 		{
 			weight = values[++i];
 		}
 
-		if (values[++i] == kUniversity)
+		if (values[++i] == UNIVERSITY)
 		{
 			university = values[++i];
 		}
 
-		if (values[++i] == kNumberOfYearsStudy)
+		if (values[++i] == NUMBER_OF_YEARS_STUDY)
 		{
 			numberOfYearsStudy = values[++i];
 		}
 
-		const auto univer = FindUniversity(university);
+		const auto& univer = FindUniversity(university);
 		if (univer)
 		{
-			m_students.push_back(make_shared<CStudent>(name, 
+			univer->AddStudent(make_shared<CStudent>(name,
 													gender, 
 													stod(growth), 
 													stod(weight), 
@@ -114,45 +111,87 @@ void CUniversityProcess::Save()
 
 	ofstream outUniversitiesFile(m_universitiesFile);
 	outUniversitiesFile.exceptions(ios::badbit);
+	
+	ofstream outStudentsFile(m_studentsFile);
+	outStudentsFile.exceptions(ios::badbit);
 
-	for (size_t i = 0; i < m_universities.size(); i++)
-	{
-		string str(m_universities[i]->GetName());
+	for (const auto& univer : m_universities)
+	{ 
+		string str(univer->GetName());
 		outUniversitiesFile << "\"" << str << "\"" << endl;
+
+		for (const auto& student : univer->GetStudents())
+		{
+			string str;
+			AppendProperty(str, NAME, student->GetName());
+			AppendProperty(str, GENDER, GetStringFromEnumGender(student->GetGender()));
+			AppendProperty(str, AGE, to_string(student->GetAge()));
+			AppendProperty(str, GROWTH, to_string(student->GetGrowth()));
+			AppendProperty(str, WEIGHT, to_string(student->GetWeight()));
+			AppendProperty(str, UNIVERSITY, univer->GetName());
+			AppendProperty(str, NUMBER_OF_YEARS_STUDY, to_string(student->GetNumberOfYearsStudy()));
+
+			outStudentsFile << str << endl;
+		}
 	}
 
 	outUniversitiesFile.close();
 
-	ofstream outStudentsFile(m_studentsFile);
-	outStudentsFile.exceptions(ios::badbit);
-
-	for (const auto& students : m_students)
-	{
-		string str(kName + "[" + students->Name() + "], ");
-		str.append(kGender + "[" + students->Gender() + "], ");
-		str.append(kAge + "[" + to_string(students->Age()) + "], ");
-		str.append(kGrowth + "[" + to_string(students->Growth()) + "], ");
-		str.append(kWeight + "[" + to_string(students->Weight()) + "], ");
-		str.append(kUniversity + "[" + students->UniversityName() + "], ");
-		str.append(kNumberOfYearsStudy + "[" + to_string(students->NumberOfYearsStudy()) + "];");
-
-		outStudentsFile << str << endl;
-	}
-
 	outStudentsFile.close();
+
+	m_updated = false;
 }
 
-const universites CUniversityProcess::GetListUniversites() const
+string CUniversityProcess::GetStringFromEnumGender(Gender gender)
+{
+	string strGender;
+	if (gender == Gender::Male)
+	{
+		strGender = MALE;
+	}
+	else if (gender == Gender::Female)
+	{
+		strGender = FEMALE;
+	}
+
+	return strGender;
+}
+
+Gender CUniversityProcess::GetEnumGenderFromString(const std::string& strGender)
+{
+	Gender gender = Gender::Male;
+	if (strGender == FEMALE)
+	{
+		gender = Gender::Female;
+	}
+
+	return gender;
+}
+
+void CUniversityProcess::AppendProperty(string& str, const string& property, const string& value)
+{
+	str.append(property + "[" + value + "]");
+}
+
+const universites& CUniversityProcess::GetListUniversites() const
 {
 	return m_universities;
 }
 
-const students CUniversityProcess::GetListStudents() const
+students CUniversityProcess::GetListStudents() const
 {
-	return m_students;
+	students students;
+
+	for (const auto& univer : m_universities)
+	{
+		const auto& studentsFromUniver = univer->GetStudents();
+		students.insert(students.end(), studentsFromUniver.begin(), studentsFromUniver.end());
+	}
+
+	return students;
 }
 
-bool CUniversityProcess::ReplaceUniversity(const std::string oldName, const std::string newName)
+bool CUniversityProcess::ReplaceUniversity(const string& oldName, const string& newName)
 {
 	auto univer = FindUniversity(newName);
 	if (newName.empty() || univer)
@@ -173,7 +212,7 @@ bool CUniversityProcess::ReplaceUniversity(const std::string oldName, const std:
 	return true;
 }
 
-bool CUniversityProcess::DeleteUniversity(const std::string name)
+bool CUniversityProcess::DeleteUniversity(const string& name)
 {
 	const auto univer = FindUniversity(name);
 	if (!univer)
@@ -181,11 +220,11 @@ bool CUniversityProcess::DeleteUniversity(const std::string name)
 		return false;
 	}
 
-	m_students.erase(remove_if(m_students.begin(), m_students.end(), [&univer](shared_ptr<CStudent> student)
-		{
-			return (student->UniversityName().compare(univer->GetName()) == 0);
-		})
-		, m_students.end());
+	//m_students.erase(remove_if(m_students.begin(), m_students.end(), [&univer](shared_ptr<CStudent> student)
+	//	{
+	//		return student->GetUniversity() == univer;
+	//	})
+	//	, m_students.end());
 
 	m_universities.erase(find(m_universities.begin(), m_universities.end(),univer));
 
@@ -194,7 +233,7 @@ bool CUniversityProcess::DeleteUniversity(const std::string name)
 	return true;
 }
 
-const students CUniversityProcess::GetListStudentsFromUniversity(const std::string universityName) const
+students CUniversityProcess::GetListStudentsFromUniversity(const string& universityName) const
 {
 	const auto univer = FindUniversity(universityName);
 	if (!univer)
@@ -202,22 +241,17 @@ const students CUniversityProcess::GetListStudentsFromUniversity(const std::stri
 		return students();
 	}
 
-	students findedStudents;
-	auto it_beg = m_students.begin();
-	auto it_end = m_students.end();
-	for (; it_beg != it_end; it_beg++)
-	{
-		const CStudent *student = it_beg->get();
-		if (student->UniversityName().compare(univer->GetName()) == 0)
-		{
-			findedStudents.push_back(*it_beg);
-		}
-	}
+	//students foundStudents;
+	//auto it = copy_if(m_students.begin(), m_students.end(), back_inserter(foundStudents),
+	//	[&](const shared_ptr<CStudent>& student)
+	//{
+	//	return student->GetUniversity() == univer;
+	//});
 
-	return findedStudents;
+	return univer->GetStudents();
 }
 
-bool CUniversityProcess::AddNewUniversity(const std::string newName)
+bool CUniversityProcess::AddNewUniversity(const string& newName)
 {
 	const auto univer = FindUniversity(newName);
 	if (newName.empty() || univer)
@@ -232,100 +266,118 @@ bool CUniversityProcess::AddNewUniversity(const std::string newName)
 	return true;
 }
 
-std::shared_ptr<CUniversity> CUniversityProcess::FindUniversity(const std::string universityName) const
+std::shared_ptr<CUniversity> CUniversityProcess::FindUniversity(const string& universityName) const
 {
 	if (m_universities.empty())
 	{
-		return false;
+		return nullptr;
 	}
 
 	const auto it = find_if(m_universities.begin(), m_universities.end(), [&universityName](const shared_ptr<CUniversity>& university)
 	{
-		return university->GetName().compare(universityName) == 0;
+		return university->GetName() == universityName;
 	});
 
 	return it != m_universities.end() ? *it : nullptr;
 }
 
-bool CUniversityProcess::UpdateStudentData(const int listNumber,
-	const std::string name,
-	const double growth,
-	const double weight,
-	const int age,
-	const std::string universityName,
-	const int numberOfYearsStudy)
+bool CUniversityProcess::UpdateStudentData(
+	int listNumber,
+	const string& name,
+	double growth,
+	double weight,
+	int age,
+	const string& universityName,
+	int numberOfYearsStudy)
 {
-	if ((size_t)listNumber > m_students.size() - 1)
+	students students = GetListStudents();
+
+	if ((size_t)listNumber > students.size() - 1)
 	{
 		return false;
 	}
 
-	auto student = m_students[listNumber];
+	bool studentUpdated = false;
+	auto student = students.at(listNumber);
 
 	if (!name.empty())
 	{
 		student->SetName(name);
+		studentUpdated = true;
 	}
 
 	if (growth)
 	{
 		student->SetGrowth(growth);
+		studentUpdated = true;
 	}
 
 	if (weight)
 	{
 		student->SetWeight(weight);
+		studentUpdated = true;
 	}
 
 	if (age)
 	{
 		student->SetAge(age);
+		studentUpdated = true;
 	}
 
 	if (numberOfYearsStudy)
 	{
 		student->SetNumberOfYearsStudy(numberOfYearsStudy);
+		studentUpdated = true;
 	}
 
-	const auto univer = FindUniversity(universityName);
+	const auto& univer = FindUniversity(universityName);
 	if (univer)
 	{
 		student->SetUniversity(univer);
+		studentUpdated = true;
 	}
 
-	m_updated = true;
+	m_updated = studentUpdated;
 
-	return true;
+	return studentUpdated;
 }
 
-bool CUniversityProcess::DeleteStudent(const int listNumber)
+bool CUniversityProcess::DeleteStudent(int listNumber)
 {
-	if ((size_t)listNumber > m_students.size() - 1)
+	students students = GetListStudents();
+	if ((size_t)listNumber > students.size() - 1)
 	{
 		return false;
 	}
 
-	m_students.erase(m_students.begin() + listNumber);
+	auto student = students.at(listNumber);
+	auto& univer = find_if(m_universities.begin(), m_universities.end(), [&](const shared_ptr<CUniversity>& univer)
+	{
+		return univer.get() == student->GetUniversity()._Get();
+	});
+
+	univer->get()->RemoveStudent(student);
 	m_updated = true;
 
 	return true;
 }
 
-bool CUniversityProcess::AddNewStudent(const std::string name,
-									const std::string gender,
-									const double growth,
-									const double weight,
-									const int age,
-									const std::string university,
-									const int numberOfYearsStudy)
+bool CUniversityProcess::AddNewStudent(const string& name,
+									const string& gender,
+									double growth,
+									double weight,
+									int age,
+									const string& university,
+									int numberOfYearsStudy)
 {
-	const auto univer = FindUniversity(university);
+	const auto& univer = FindUniversity(university);
 	if (name.empty() || !univer)
 	{
 		return false;
 	}
 
-	m_students.push_back(make_shared<CStudent>(name, gender, growth, weight, age, univer, numberOfYearsStudy));
+	
+	univer.get()->AddStudent(make_shared<CStudent>(name, GetEnumGenderFromString(gender), growth, weight, age, univer, numberOfYearsStudy));
 
 	m_updated = true;
 
@@ -337,7 +389,7 @@ bool CUniversityProcess::Updated()
 	return m_updated;
 }
 
-std::string CUniversityProcess::ReadInputFile(const std::string fileName)
+string CUniversityProcess::ReadInputFile(const string& fileName)
 {
 	ifstream inFile(fileName);
 	inFile.exceptions(ios::badbit);
@@ -348,14 +400,20 @@ std::string CUniversityProcess::ReadInputFile(const std::string fileName)
 	return contentOfInFile;
 }
 
-void CUniversityProcess::ParseBaseData(std::string line, std::vector<std::string> &outValues)
+vector<string> CUniversityProcess::ParseDataBase(string line)
 {
+	vector<string> outValues;
 	boost::regex expression("(?:\\s*(\\w+)\\s*\\[([^\\]]*)\\]\\s*)");
 	boost::regex_split(back_inserter(outValues), line, expression);
+
+	return outValues;
 }
 
-void CUniversityProcess::ParseWordsSeparatedByCommas(std::string line, std::vector<std::string> &outValues)
+vector<string> CUniversityProcess::ParseWordsSeparatedByCommas(string line)
 {
+	vector<string> outValues;
 	boost::regex expression("(?:\\s*\\\"([^\"]*)\\\"\\s*)"); /*([^, \\s]\\w + )*/
 	boost::regex_split(back_inserter(outValues), line, expression);
+
+	return outValues;
 }
