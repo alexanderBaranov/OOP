@@ -3,11 +3,12 @@
 
 using namespace std;
 
-CPerson::CPerson(const std::string name,
-				const std::string gender,
-				const double growth,
-				const double weight,
-				const int age)
+CPerson::CPerson(
+				const std::string& name,
+				Gender gender,
+				double growth,
+				double weight,
+				int age)
 	: m_age(age),
 	m_gender(gender),
 	m_name(name),
@@ -16,24 +17,18 @@ CPerson::CPerson(const std::string name,
 {
 }
 
-
-CPerson::~CPerson()
-{
-}
-
-
-const std::string CPerson::Gender() const
+Gender CPerson::GetGender() const
 {
 	return m_gender;
 }
 
 
-const int CPerson::Age() const
+int CPerson::GetAge() const
 {
 	return m_age;
 }
 
-void CPerson::SetAge(const int newAge)
+void CPerson::SetAge(int newAge)
 {
 	if (newAge > m_age)
 	{
@@ -41,22 +36,22 @@ void CPerson::SetAge(const int newAge)
 	}
 }
 
-const std::string CPerson::Name() const
+const string& CPerson::GetName() const
 {
 	return m_name;
 }
 
-void CPerson::SetName(const std::string newName)
+void CPerson::SetName(const string& newName)
 {
 	m_name = newName;
 }
 
-const double CPerson::Growth() const
+double CPerson::GetGrowth() const
 {
 	return m_growth;
 }
 
-void CPerson::SetGrowth(const double newGrowth)
+void CPerson::SetGrowth(double newGrowth)
 {
 	if (newGrowth > m_growth)
 	{
@@ -64,13 +59,13 @@ void CPerson::SetGrowth(const double newGrowth)
 	}
 }
 
-const double CPerson::Weight() const
+double CPerson::GetWeight() const
 {
 	return m_weight;
 }
 
 
-void CPerson::SetWeight(const double newWeight)
+void CPerson::SetWeight(double newWeight)
 {
 	m_weight = newWeight;
 }

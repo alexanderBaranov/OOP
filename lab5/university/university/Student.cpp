@@ -6,34 +6,32 @@ using namespace std;
 static const int kMinYearsStudy = 1;
 static const int kMaxYearsStudy = 5;
 
-CStudent::CStudent(const std::string name,
-	const std::string gender,
-	const double growth,
-	const double weight,
-	const int age,
-	const std::shared_ptr<CUniversity> university,
-	const int numberOfYearsStudy)
-:CPerson(name, gender, growth, weight, age),
-m_university(university)
+CStudent::CStudent(
+				const string& name,
+				Gender gender,
+				double growth,
+				double weight,
+				int age,
+				const weak_ptr<const CUniversity>& university,
+				int numberOfYearsStudy)
+	:CPerson(name, gender, growth, weight, age)
 {
 	SetNumberOfYearsStudy(numberOfYearsStudy);
+
+	m_university = university;
 }
 
-CStudent::~CStudent()
-{
-}
-
-const int CStudent::NumberOfYearsStudy() const
+int CStudent::GetNumberOfYearsStudy() const
 {
 	return m_numberOfYearsStudy;
 }
 
-const std::string CStudent::UniversityName() const
+const weak_ptr<const CUniversity>& CStudent::GetUniversity() const
 {
-	return m_university->GetName();
+	return m_university;
 }
 
-void CStudent::SetNumberOfYearsStudy(const int year)
+void CStudent::SetNumberOfYearsStudy(int year)
 {
 	if ((year >= kMinYearsStudy) && (year <= kMaxYearsStudy))
 	{
@@ -41,7 +39,7 @@ void CStudent::SetNumberOfYearsStudy(const int year)
 	}
 }
 
-void CStudent::SetUniversity(const std::shared_ptr<CUniversity> university)
+void CStudent::SetUniversity(const std::shared_ptr<const CUniversity>& university)
 {
 	m_university = university;
 }

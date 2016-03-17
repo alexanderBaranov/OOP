@@ -6,23 +6,22 @@
 class CStudent :public CPerson
 {
 public:
-	CStudent(const std::string name, 
-		const std::string gender,
-		const double growth,
-		const double weight,
-		const int age,
-		const std::shared_ptr<CUniversity> university,
-		const int numberOfYearsStudy);
-
-	~CStudent();
+	CStudent(const std::string& name, 
+		Gender gender,
+		double growth,
+		double weight,
+		int age,
+		const std::weak_ptr<const CUniversity>& university,
+		int numberOfYearsStudy);
 	
-	const int NumberOfYearsStudy() const;
-	const std::string UniversityName() const;
-	void SetNumberOfYearsStudy(const int year);
-	void SetUniversity(const std::shared_ptr<CUniversity> university);
+	int GetNumberOfYearsStudy() const;
+	void SetNumberOfYearsStudy(int year);
+
+	const std::weak_ptr<const CUniversity>& GetUniversity() const;
+	void SetUniversity(const std::shared_ptr<const CUniversity>& university);
 
 private:
-	std::shared_ptr<CUniversity> m_university;
+	std::weak_ptr<const CUniversity> m_university;
 	int m_numberOfYearsStudy;
 };
 

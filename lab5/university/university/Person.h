@@ -1,34 +1,38 @@
 #pragma once
 #include <string>
 
+enum class Gender
+{
+	Male,
+	Female
+};
+
 class CPerson
 {
 public:
 	CPerson(
-		const std::string name,
-		const std::string gender,
-		const double growth,
-		const double weight,
-		const int age);
+		const std::string& name,
+		Gender gender,
+		double growth,
+		double weight,
+		int age);
 
-	~CPerson();
+	Gender GetGender() const;
 
-	const std::string Gender() const;
-	
-	const int Age() const;
-	void SetAge(const int newAge);
-	
-	const std::string Name() const;
-	void SetName(const std::string newName);
+	int GetAge() const;
+	void SetAge(int newAge);
 
-	const double Growth() const;
-	void SetGrowth(const double newGrowth);
+	const std::string& GetName() const;
+	void SetName(const std::string& newName);
 
-	const double Weight() const;
-	void SetWeight(const double newWeight);
+	double GetGrowth() const;
+	void SetGrowth(double newGrowth);
+
+	double GetWeight() const;
+	void SetWeight(double newWeight);
 
 private:
-	std::string m_gender;
+	Gender m_gender;
 	std::string m_name;
 	
 	double m_growth;
