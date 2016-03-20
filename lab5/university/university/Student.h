@@ -11,13 +11,13 @@ public:
 		double growth,
 		double weight,
 		int age,
-		const std::weak_ptr<const CUniversity>& university,
+		const std::shared_ptr<const CUniversity>& university,
 		int numberOfYearsStudy);
 	
 	int GetNumberOfYearsStudy() const;
 	void SetNumberOfYearsStudy(int year);
 
-	const std::weak_ptr<const CUniversity>& GetUniversity() const;
+	std::shared_ptr<const CUniversity> GetUniversity() const;
 	void SetUniversity(const std::shared_ptr<const CUniversity>& university);
 
 private:

@@ -3,8 +3,8 @@
 
 using namespace std;
 
-static const int kMinYearsStudy = 1;
-static const int kMaxYearsStudy = 5;
+static const int MIN_YEARS_STUDY = 1;
+static const int MAX_YEARS_STUDY = 5;
 
 CStudent::CStudent(
 				const string& name,
@@ -12,7 +12,7 @@ CStudent::CStudent(
 				double growth,
 				double weight,
 				int age,
-				const weak_ptr<const CUniversity>& university,
+				const shared_ptr<const CUniversity>& university,
 				int numberOfYearsStudy)
 	:CPerson(name, gender, growth, weight, age)
 {
@@ -26,14 +26,14 @@ int CStudent::GetNumberOfYearsStudy() const
 	return m_numberOfYearsStudy;
 }
 
-const weak_ptr<const CUniversity>& CStudent::GetUniversity() const
+shared_ptr<const CUniversity> CStudent::GetUniversity() const
 {
-	return m_university;
+	return m_university.lock();
 }
 
 void CStudent::SetNumberOfYearsStudy(int year)
 {
-	if ((year >= kMinYearsStudy) && (year <= kMaxYearsStudy))
+	if ((year >= MIN_YEARS_STUDY) && (year <= MAX_YEARS_STUDY))
 	{
 		m_numberOfYearsStudy = year;
 	}
