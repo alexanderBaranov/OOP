@@ -47,11 +47,11 @@ BOOST_FIXTURE_TEST_SUITE(TestsOfUnivercity, UniversityFixture)
 
 BOOST_AUTO_TEST_CASE(testEmpty)
 {
-	CUniversityManagement universityProcess;
-	Universites univers = universityProcess.GetUniversites();
+	CUniversityManagement universityManagement;
+	Universites univers = universityManagement.GetUniversites();
 	BOOST_CHECK_EQUAL(univers.size(), 0);
 
-	Students students = universityProcess.GetStudents();
+	Students students = universityManagement.GetStudents();
 	BOOST_CHECK_EQUAL(students.size(), 0);
 
 	BOOST_CHECK_THROW(CUniversityManagement univerProcess2("univer.txt", "stud.txt"), exception);
@@ -135,6 +135,23 @@ BOOST_AUTO_TEST_CASE(testUpdateStudent)
 	BOOST_CHECK_EQUAL(students[2]->GetName(), "Вика");
 
 	BOOST_CHECK(univerProcess.UpdateStudentData(2, "Женя", 0, 0, 0, "", 0));
+}
+
+BOOST_AUTO_TEST_CASE(testAddNewStudent)
+{
+	Students students = univerProcess.GetStudents();
+	BOOST_CHECK_EQUAL(students.size(), 3);
+	BOOST_CHECK_EQUAL(students[0]->GetName(), "Петруха");
+	BOOST_CHECK_EQUAL(students[1]->GetName(), "Валя");
+	BOOST_CHECK_EQUAL(students[2]->GetName(), "Женя");
+
+	BOOST_CHECK(univerProcess.AddNewStudent("Игорь", "м", 190, 70, 22, "margtu", 2));
+
+	students = univerProcess.GetStudents();
+	BOOST_CHECK_EQUAL(students.size(), 4);
+	BOOST_CHECK_EQUAL(students[3]->GetName(), "Игорь");
+
+	univerProcess.SaveChanges();
 }
 
 BOOST_AUTO_TEST_CASE(testWriteChangesToInputFiles)

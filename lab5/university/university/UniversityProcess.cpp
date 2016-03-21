@@ -43,6 +43,8 @@ void CUniversityManagement::LoadListsStudentsAndUniversitesFromFiles(
 	vector<string> values;
 	values = ParseWordsSeparatedByCommas(contentListOfUniversity);
 
+	m_universities.clear();
+
 	for (const string& val : values)
 	{
 		const auto univer = FindUniversity(val);
@@ -54,59 +56,65 @@ void CUniversityManagement::LoadListsStudentsAndUniversitesFromFiles(
 
 	values.clear();
 
-	string contentListOfStudents = ReadInputFile(m_studentsFile);
-	values = ParseDataBase(contentListOfStudents);
+	ifstream inFileOfStudents(m_studentsFile);
+	inFileOfStudents.exceptions(ios::badbit);
 
-	for (size_t i = 0; i < values.size(); i++)
+	string lineOfFile;
+	while (getline(inFileOfStudents, lineOfFile))
 	{
-		string name, age, growth, weight, university, numberOfYearsStudy;
-		Gender gender;
+		vector<string> values = ParseDataBase(lineOfFile);
 
-		if (values[i] == NAME)
+		for (size_t i = 0; i < values.size(); i++)
 		{
-			name = values[++i];
-		}
+			string name, age, growth, weight, university, numberOfYearsStudy;
+			Gender gender;
 
-		if (values[++i] == GENDER)
-		{
-			gender = GetEnumGenderFromString(values[++i]);
-		}
+			if (values[i] == NAME)
+			{
+				name = values[++i];
+			}
 
-		if (values[++i] == AGE)
-		{
-			age = values[++i];
-		}
+			if (values[++i] == GENDER)
+			{
+				gender = GetEnumGenderFromString(values[++i]);
+			}
 
-		if (values[++i] == GROWTH)
-		{
-			growth = values[++i];
-		}
+			if (values[++i] == AGE)
+			{
+				age = values[++i];
+			}
 
-		if (values[++i] == WEIGHT)
-		{
-			weight = values[++i];
-		}
+			if (values[++i] == GROWTH)
+			{
+				growth = values[++i];
+			}
 
-		if (values[++i] == UNIVERSITY)
-		{
-			university = values[++i];
-		}
+			if (values[++i] == WEIGHT)
+			{
+				weight = values[++i];
+			}
 
-		if (values[++i] == NUMBER_OF_YEARS_STUDY)
-		{
-			numberOfYearsStudy = values[++i];
-		}
+			if (values[++i] == UNIVERSITY)
+			{
+				university = values[++i];
+			}
 
-		const auto& univer = FindUniversity(university);
-		if (univer)
-		{
-			univer->AddStudent(make_shared<CStudent>(name,
-													gender, 
-													stod(growth), 
-													stod(weight), 
-													stoi(age), 
-													univer, 
-													stoi(numberOfYearsStudy)));
+			if (values[++i] == NUMBER_OF_YEARS_STUDY)
+			{
+				numberOfYearsStudy = values[++i];
+			}
+
+			const auto& univer = FindUniversity(university);
+			if (univer)
+			{
+				univer->AddStudent(make_shared<CStudent>(name,
+					gender,
+					stod(growth),
+					stod(weight),
+					stoi(age),
+					univer,
+					stoi(numberOfYearsStudy)));
+			}
 		}
 	}
 }
