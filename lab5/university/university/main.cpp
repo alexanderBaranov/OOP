@@ -3,180 +3,255 @@
 
 #include "stdafx.h"
 #include "UniversityProcess.h"
-#include <iostream>
 #include <locale>
 #include <windows.h>
 #include <algorithm>
 #include <atlconv.h>
+#include <functional>
+#include <iostream>
+#include <sstream>
+#include <boost/range/algorithm/find_if.hpp>
 
 using namespace std;
+using namespace std::placeholders;
+using namespace boost::range;
 
-void GetListUnivesities(shared_ptr<CUniversityProcess>univerProcess)
+struct MenuItem
 {
-	cout << "Список университетов:" << endl;
-	universites univers = univerProcess->GetListUniversites();
+	string command;
+	string description;
+	function<bool(istream & input, ostream & output, const shared_ptr<CUniversityManagement>& univerProcess)> action;
+};
+
+class CMenu
+{
+public:
+	template <typename MenuItems>
+	CMenu(MenuItems && items, shared_ptr<CUniversityManagement>&& univerProcess)
+		:m_items(begin(items), end(items))
+		, m_univerProcess(move(univerProcess))
+	{
+		for (auto& item : m_items)
+		{
+			cout << item.command << ". " << item.description << endl;
+		}
+	}
+
+	~CMenu()
+	{
+		if (m_univerProcess->Updated())
+		{
+			cout << "Сохранить изменения? (y(да)/n(нет): ";
+			string command;
+			cin >> command;
+
+			if (command == "y")
+			{
+				m_univerProcess->SaveChanges();
+			}
+		}
+	}
+
+	void InteractWithUser(istream & input, ostream & output)
+	{
+		string line;
+		string command;
+		while (getline(input, line))
+		{
+			istringstream cmdStream(line);
+			if (cmdStream >> command)
+			{
+				auto it = find_if(m_items, [&](const MenuItem& item){
+					return item.command == command;
+				});
+
+				if (it != m_items.end())
+				{
+					if (!it->action(input, output, m_univerProcess))
+					{
+						break;
+					}
+				}
+				else
+				{
+					output << "Command " << command << " is not recognized" << endl;
+				}
+			}
+		}
+	}
+
+private:
+	vector<MenuItem> m_items;
+	shared_ptr<CUniversityManagement> m_univerProcess;
+};
+
+bool GetListUnivesities(istream & input, ostream & output, const shared_ptr<CUniversityManagement>& univerProcess)
+{
+	output << "Список университетов:" << endl;
+	Universites univers = univerProcess->GetUniversites();
 
 	if (!univers.empty())
 	{
-		for_each(univers.begin(), univers.end(), [](const shared_ptr<CUniversity>univer)
+		for_each(univers.begin(), univers.end(), [&](const shared_ptr<CUniversity>univer)
 		{
-			cout << univer->GetName() << endl;
+			output << univer->GetName() << endl;
 		});
 	}
 	else
 	{
-		cout << "Список университетов пуст." << endl;
+		output << "Список университетов пуст." << endl;
 	}
+
+	return true;
 }
 
-void RenameUniversity(shared_ptr<CUniversityProcess>univerProcess)
+bool RenameUniversity(istream & input, ostream & output, const shared_ptr<CUniversityManagement>& univerProcess)
 {
-	cout << "Введите название заменяемого университета: ";
-	
-	cin.ignore();
+	output << "Введите название заменяемого университета: ";
 
 	string oldName;
-	getline(cin, oldName);
+	getline(input, oldName);
 
-	cout << "Введите новое имя университета: ";
+	output << "Введите новое имя университета: ";
 
 	string newName;
-	getline(cin, newName);
+	getline(input, newName);
 
-	if (!univerProcess->ReplaceUniversity(oldName, newName))
+	if (!univerProcess->RenameUniversity(oldName, newName))
 	{
-		cout << "Не удалось изменить название университета" << endl;
+		output << "Не удалось изменить название университета" << endl;
 	}
+
+	return true;
 }
 
-void DeleteUniversity(shared_ptr<CUniversityProcess>univerProcess)
+bool DeleteUniversity(istream & input, ostream & output, const shared_ptr<CUniversityManagement>& univerProcess)
 {
 	cout << "Введите название удаляемого университета: ";
 
-	cin.ignore();
-
 	string name;
-	getline(cin, name);
+	getline(input, name);
 
 	if (!univerProcess->DeleteUniversity(name))
 	{
-		cout << "Не удалось удалить \""<< name <<"\" университет" << endl;
+		output << "Не удалось удалить \"" << name << "\" университет" << endl;
 	}
+
+	return true;
 }
 
-void GetStudentsFromUniversity(shared_ptr<CUniversityProcess>univerProcess)
+void PrintStudents(ostream & output, const Students& students, const shared_ptr<CUniversityManagement>& univerProcess)
 {
-	cout << "Введите название университета: ";
+	int count = 0;
+	for (const auto& stud : students)
+	{
+		output << count << "."
+			<< stud->GetName() << " "
+			<< univerProcess->GetStringFromEnumGender(stud->GetGender()) << " "
+			<< stud->GetGrowth() << " "
+			<< stud->GetAge() << " "
+			<< stud->GetWeight() << " "
+			<< stud->GetNumberOfYearsStudy() << " "
+			<< stud->GetUniversity()->GetName() << endl;
 
-	cin.ignore();
+		count++;
+	};
+}
+
+bool GetStudentsFromUniversity(istream & input, ostream & output, const shared_ptr<CUniversityManagement>& univerProcess)
+{
+	output << "Введите название университета: ";
 
 	string name;
-	getline(cin, name);
+	getline(input, name);
 
-	students students = univerProcess->GetListStudentsFromUniversity(name);
+	Students students = univerProcess->GetStudentsFromUniversity(name);
 
 	if (students.size())
 	{
-		cout << "Список cтудентов, обучающихся в \"" << name << "\":" << endl;
-		
-		int count = 0;
-		for_each(students.begin(), students.end(), [&](const shared_ptr<CStudent>stud)
-		{
-			cout << stud->GetName() << " " 
-				<< univerProcess->GetStringFromEnumGender(stud->GetGender()) << " "
-				<< stud->GetGrowth() << " "
-				<< stud->GetAge() << " "
-				<< stud->GetWeight() << " "
-				<< stud->GetNumberOfYearsStudy() << " "
-				<< stud->GetUniversity().lock()->GetName() << endl;
-		});
+		output << "Список cтудентов, обучающихся в \"" << name << "\":" << endl;
+
+		PrintStudents(output, students, univerProcess);
 	}
 	else
 	{
-		cout << "Не удалось найти университет с таким названием" << endl;
+		output << "Cтудентов в этом университете нет" << endl;
 	}
 
+	return true;
 }
 
-void AddUniversity(shared_ptr<CUniversityProcess>univerProcess)
+bool AddUniversity(istream & input, ostream & output, const shared_ptr<CUniversityManagement>& univerProcess)
 {
-	cout << "Введите название добавляемого университета: ";
-
-	cin.ignore();
+	output << "Введите название добавляемого университета: ";
 
 	string name;
-	getline(cin, name);
+	getline(input, name);
 
 	if (!univerProcess->AddNewUniversity(name))
 	{
-		cout << "Не удалось добавить университет с таким названием." << endl;
+		output << "Не удалось добавить университет с таким названием." << endl;
 	}
+
+	return true;
 }
 
-void GetListStudents(shared_ptr<CUniversityProcess>univerProcess)
+bool GetListStudents(istream & input, ostream & output, const shared_ptr<CUniversityManagement>& univerProcess)
 {
-	cout << "Список студентов:" << endl;
-	students students = univerProcess->GetListStudents();
+	output << "Список студентов:" << endl;
+	Students students = univerProcess->GetStudents();
 	if (!students.empty())
 	{
-		int count = 0;
-		for_each(students.begin(), students.end(), [&](const shared_ptr<CStudent>stud)
-		{
-			cout << count << "." 
-				<< stud->GetName() << " "
-				<< univerProcess->GetStringFromEnumGender(stud->GetGender()) << " "
-				<< stud->GetGrowth() << " "
-				<< stud->GetAge() << " "
-				<< stud->GetWeight() << " "
-				<< stud->GetNumberOfYearsStudy() << " "
-				<< stud->GetUniversity().lock()->GetName() << endl;
-
-			count++;
-		});
+		PrintStudents(output, students, univerProcess);
 	}
 	else
 	{
-		cout << "Список университетов пуст." << endl;
+		output << "Список университетов пуст." << endl;
 	}
+
+	return true;
 }
 
-void StudentData(string& name,
+void StudentData(istream & input, 
+	ostream & output, 
+	string& name,
 	double& growth,
 	double& weight,
 	int& age,
 	string& university,
 	int& numberOfYearsStudy)
 {
-	cin.ignore();
+	input.ignore();
 
-	cout << "Имя: ";
-	getline(cin, name);
+	output << "Имя: ";
+	getline(input, name);
 
-	cout << "Рост: ";
-	cin >> growth;
+	output << "Рост: ";
+	input >> growth;
 
-	cout << "Вес: ";
-	cin >> weight;
+	output << "Вес: ";
+	input >> weight;
 
-	cout << "Лет: ";
-	cin >> age;
+	output << "Лет: ";
+	input >> age;
 
-	cin.ignore();
-	cout << "Университет: ";
-	getline(cin, university);
+	input.ignore();
 
-	cout << "Сколько проучился: ";
-	cin >> numberOfYearsStudy;
+	output << "Университет: ";
+	getline(input, university);
+
+	output << "Сколько проучился: ";
+	input >> numberOfYearsStudy;
 }
 
 
-void UpdateStudent(shared_ptr<CUniversityProcess>univerProcess)
+bool UpdateStudent(istream & input, ostream & output, const shared_ptr<CUniversityManagement>& univerProcess)
 {
-	GetListStudents(univerProcess);
-	cout << "Выберите из списка студента по его порядковому номеру, которого хотите обновить: ";
+	GetListStudents(input, output, univerProcess);
+	output << "Выберите из списка студента по его порядковому номеру, которого хотите обновить: ";
 
 	int number;
-	cin >> number;
+	input >> number;
 
 	string name;
 	double growth;
@@ -185,7 +260,9 @@ void UpdateStudent(shared_ptr<CUniversityProcess>univerProcess)
 	string university;
 	int numberOfYearsStudy;
 
-	StudentData(name,
+	StudentData(input,
+		output,
+		name,
 		growth,
 		weight,
 		age,
@@ -194,27 +271,31 @@ void UpdateStudent(shared_ptr<CUniversityProcess>univerProcess)
 
 	if (!univerProcess->UpdateStudentData(number, name, growth, weight, age, university, numberOfYearsStudy))
 	{
-		cout << "Не удалось обновить студента" << endl;
+		output << "Не удалось обновить студента" << endl;
 	}
+
+	return true;
 }
 
-void DeleteStudent(shared_ptr<CUniversityProcess>univerProcess)
+bool DeleteStudent(istream & input, ostream & output, const shared_ptr<CUniversityManagement>& univerProcess)
 {
-	GetListStudents(univerProcess);
+	GetListStudents(input, output, univerProcess);
 	cout << "Выберите из списка студента по его порядковому номеру, которого хотите удалить: ";
 
 	int number;
-	cin >> number;
+	input >> number;
 
 	if (!univerProcess->DeleteStudent(number))
 	{
-		cout << "Не удалось удалить студента" << endl;
+		output << "Не удалось удалить студента" << endl;
 	}
+
+	return true;
 }
 
-void AddStudent(shared_ptr<CUniversityProcess>univerProcess)
+bool AddStudent(istream & input, ostream & output, const shared_ptr<CUniversityManagement>& univerProcess)
 {
-	cout << "Введите данные нового студента: " << endl;
+	output << "Введите данные нового студента: " << endl;
 	
 	string name;
 	string gender;
@@ -224,21 +305,30 @@ void AddStudent(shared_ptr<CUniversityProcess>univerProcess)
 	string university;
 	int numberOfYearsStudy;
 
-	StudentData(name,
+	StudentData(input, 
+		output,
+		name,
 		growth,
 		weight,
 		age,
 		university,
 		numberOfYearsStudy);
 
-	cin.ignore();
-	cout << "Пол: " << endl;
-	getline(cin, gender);
+	input.ignore();
+	output << "Пол: " << endl;
+	getline(input, gender);
 
 	if (!univerProcess->AddNewStudent(name, gender, growth, weight, age, university, numberOfYearsStudy))
 	{
-		cout << "Не удалось добавить студента" << endl;
+		output << "Не удалось добавить студента" << endl;
 	}
+
+	return true;
+}
+
+bool Quit(istream & /*input*/, ostream & /*output*/, const shared_ptr<CUniversityManagement>& /*univerProcess*/)
+{
+	return false;
 }
 
 int _tmain(int argc, _TCHAR* argv[])
@@ -269,77 +359,24 @@ int _tmain(int argc, _TCHAR* argv[])
 	try
 	{
 		USES_CONVERSION;
-		
-		auto univerProcess = make_shared<CUniversityProcess>(W2A(argv[1]), W2A(argv[2]));
-		
-		string command;
-		while (command != "Q")
-		{
-			cout << endl <<  "Выберите действие:" << endl;
-			cout << "1. Вывести список университетов" << endl;
-			cout << "2. Переименовать университет" << endl;
-			cout << "3. Удалить университет" << endl;
-			cout << "4. Вывести список студентов университета" << endl;
-			cout << "5. Добавить университет" << endl;
-			cout << "6. Вывести список студентов" << endl;
-			cout << "7. Обновить данные о студенте" << endl;
-			cout << "8. Удалить студента" << endl;
-			cout << "9. Добавить студента" << endl;
-			cout << "Q. Выход" << endl;
 
-			cout << "Команда: ";
-			cin >> command;
-			cout << endl;
+		cout << endl << "Выберите действие:" << endl;
 
-			if (command == "1")
-			{
-				GetListUnivesities(univerProcess);
-			}
-			else if (command == "2")
-			{
-				RenameUniversity(univerProcess);
-			}
-			else if (command == "3")
-			{
-				DeleteUniversity(univerProcess);
-			}
-			else if (command == "4")
-			{
-				GetStudentsFromUniversity(univerProcess);
-			}
-			else if (command == "5")
-			{
-				AddUniversity(univerProcess);
-			}
-			else if (command == "6")
-			{
-				GetListStudents(univerProcess);
-			}
-			else if (command == "7")
-			{
-				UpdateStudent(univerProcess);
-			}
-			else if (command == "8")
-			{
-				DeleteStudent(univerProcess);
-			}
-			else if (command == "9")
-			{
-				AddStudent(univerProcess);
-			}
-		}
+		const MenuItem items[] = {
+			{ "1", "Вывести список университетов", GetListUnivesities },
+			{ "2", "Переименовать университет", RenameUniversity },
+			{ "3", "Удалить университет", DeleteUniversity },
+			{ "4", "Вывести список студентов университета", GetStudentsFromUniversity},
+			{ "5", "Добавить университет", AddUniversity },
+			{ "6", "Вывести список студентов", GetListStudents },
+			{ "7", "Обновить данные о студенте", UpdateStudent },
+			{ "8", "Удалить студента", DeleteStudent },
+			{ "9", "Добавить студента", AddStudent },
+			{ "Q", "Выход", Quit}
+		};
 
-		if (univerProcess->Updated())
-		{
-			cout << "Сохранить изменения? (y(да)/n(нет): ";
-			string command;
-			cin >> command;
-
-			if (command == "y")
-			{
-				univerProcess->Save();
-			}
-		}
+		CMenu menu(items, make_shared<CUniversityManagement>(W2A(argv[1]), W2A(argv[2])));
+		menu.InteractWithUser(cin, cout);
 	}
 	catch (const exception &error)
 	{

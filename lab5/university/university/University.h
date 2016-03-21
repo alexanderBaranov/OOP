@@ -5,8 +5,8 @@
 
 class CStudent;
 
-typedef std::shared_ptr<CStudent> student;
-typedef std::vector<std::shared_ptr<CStudent>> students;
+typedef std::shared_ptr<CStudent> CStudentPtr;
+typedef std::vector<CStudentPtr> Students;
 
 class CUniversity
 {
@@ -16,13 +16,13 @@ public:
 	const std::string GetName() const;
 	void SetName(const std::string name);
 
-	void AddStudent(student& student);
-	void RemoveStudent(student& student);
+	void AddStudent(const CStudentPtr& student);
+	void RemoveStudent(const CStudentPtr& student);
 
-	const students& GetStudents();
+	const Students& GetStudents();
 
 private:
 	std::string m_name;
-	students m_students;
+	Students m_students;
 };
 

@@ -6,58 +6,79 @@
 #define BOOST_TEST_MODULE TestsOfUnivercities
 
 #include <boost\test\included\unit_test.hpp>
+#include <boost/filesystem.hpp>
 
 using namespace std;
+using namespace boost::filesystem;
 
-static const string kStudentsFile = "students.txt";
-static const string kUniversitiesFile = "universities.txt";
+static const string STUDENTS_FILE = "students.txt";
+static const string UNIVERSITIES_FILE = "universities.txt";
 
 struct UniversityFixture
 {
-	CUniversityProcess univerProcess = CUniversityProcess(kUniversitiesFile, kStudentsFile);
+	UniversityFixture()
+	{
+		path tempPath = temp_directory_path();
+		
+		m_tempFileOfUniversities = tempPath;
+		m_tempFileOfUniversities /= unique_path();
+
+		m_tempFileOfStudents = tempPath;
+		m_tempFileOfStudents /= unique_path();
+
+		copy_file(STUDENTS_FILE, m_tempFileOfStudents);
+		copy_file(UNIVERSITIES_FILE, m_tempFileOfUniversities);
+
+		univerProcess = CUniversityManagement(m_tempFileOfUniversities.string(), m_tempFileOfStudents.string());
+	};
+
+	~UniversityFixture()
+	{
+		remove(m_tempFileOfUniversities);
+		remove(m_tempFileOfStudents);
+	};
+
+	path m_tempFileOfUniversities;
+	path m_tempFileOfStudents;
+	CUniversityManagement univerProcess;
 };
 
 BOOST_FIXTURE_TEST_SUITE(TestsOfUnivercity, UniversityFixture)
 
 BOOST_AUTO_TEST_CASE(testEmpty)
 {
-	universites univers = univerProcess.GetListUniversites();
-	BOOST_CHECK_EQUAL(univers.size(), 3);
+	CUniversityManagement universityProcess;
+	Universites univers = universityProcess.GetUniversites();
+	BOOST_CHECK_EQUAL(univers.size(), 0);
 
-	students students = univerProcess.GetListStudents();
-	BOOST_CHECK_EQUAL(students.size(), 3);
+	Students students = universityProcess.GetStudents();
+	BOOST_CHECK_EQUAL(students.size(), 0);
 
-	CUniversityProcess univerProcess2("univer.txt", "stud.txt");
-
-	univers = univerProcess2.GetListUniversites();
-	BOOST_CHECK(univers.empty());
-
-	students = univerProcess2.GetListStudents();
-	BOOST_CHECK(students.empty());
+	BOOST_CHECK_THROW(CUniversityManagement univerProcess2("univer.txt", "stud.txt"), exception);
 }
 
 BOOST_AUTO_TEST_CASE(testReadStudents)
 {
-	students students = univerProcess.GetListStudentsFromUniversity("margtu");
+	Students students = univerProcess.GetStudentsFromUniversity("margtu");
 	BOOST_CHECK_EQUAL(students[0]->GetName(), "Валя");
 	BOOST_CHECK_EQUAL(students.size(), 2);
 }
 
 BOOST_AUTO_TEST_CASE(testReplaceUniversities)
 {
-	BOOST_CHECK(univerProcess.ReplaceUniversity("margtu", "ips"));
-	BOOST_CHECK(!univerProcess.ReplaceUniversity("asdasd", "ips"));
-	BOOST_CHECK(!univerProcess.ReplaceUniversity("", "ips"));
-	BOOST_CHECK(!univerProcess.ReplaceUniversity("margtu", ""));
+	BOOST_CHECK(univerProcess.RenameUniversity("margtu", "ips"));
+	BOOST_CHECK(!univerProcess.RenameUniversity("asdasd", "ips"));
+	BOOST_CHECK(!univerProcess.RenameUniversity("", "ips"));
+	BOOST_CHECK(!univerProcess.RenameUniversity("margtu", ""));
 
-	students students = univerProcess.GetListStudentsFromUniversity("margtu");
+	Students students = univerProcess.GetStudentsFromUniversity("margtu");
 	BOOST_CHECK(students.empty());
 
-	students = univerProcess.GetListStudentsFromUniversity("ips");
+	students = univerProcess.GetStudentsFromUniversity("ips");
 	BOOST_CHECK_EQUAL(students[0]->GetName(), "Валя");
 	BOOST_CHECK_EQUAL(students.size(), 2);
 
-	BOOST_CHECK(univerProcess.ReplaceUniversity("ips", "margtu"));
+	BOOST_CHECK(univerProcess.RenameUniversity("ips", "margtu"));
 }
 
 BOOST_AUTO_TEST_CASE(testDeleteAndAdd)
@@ -66,18 +87,18 @@ BOOST_AUTO_TEST_CASE(testDeleteAndAdd)
 	BOOST_CHECK(!univerProcess.DeleteUniversity(""));
 	BOOST_CHECK(univerProcess.DeleteUniversity("margtu"));
 	
-	universites univers = univerProcess.GetListUniversites();
+	Universites univers = univerProcess.GetUniversites();
 	BOOST_CHECK_EQUAL(univers.size(), 2);
 	BOOST_CHECK_EQUAL(univers[0]->GetName(), "mgu");
 
-	students students = univerProcess.GetListStudents();
+	Students students = univerProcess.GetStudents();
 	BOOST_CHECK_EQUAL(students.size(), 1);
 
 	BOOST_CHECK(!univerProcess.AddNewUniversity(""));
 	BOOST_CHECK(univerProcess.AddNewUniversity("margtu"));
 	BOOST_CHECK(!univerProcess.AddNewUniversity("margtu"));
 
-	univers = univerProcess.GetListUniversites();
+	univers = univerProcess.GetUniversites();
 	BOOST_CHECK_EQUAL(univers.size(), 3);
 	BOOST_CHECK_EQUAL(univers[0]->GetName(), "mgu");
 	BOOST_CHECK_EQUAL(univers[1]->GetName(), "mosi");
@@ -86,7 +107,7 @@ BOOST_AUTO_TEST_CASE(testDeleteAndAdd)
 	BOOST_CHECK(univerProcess.AddNewStudent("Валя", "ж", 190, 70, 22, "margtu", 2));
 	BOOST_CHECK(univerProcess.AddNewStudent("Женя", "ж", 190, 70, 22, "margtu", 2));
 
-	students = univerProcess.GetListStudents();
+	students = univerProcess.GetStudents();
 	BOOST_CHECK_EQUAL(students.size(), 3);
 	BOOST_CHECK_EQUAL(students[0]->GetName(), "Петруха");
 	BOOST_CHECK_EQUAL(students[1]->GetName(), "Валя");
@@ -95,7 +116,7 @@ BOOST_AUTO_TEST_CASE(testDeleteAndAdd)
 	BOOST_CHECK(!univerProcess.DeleteStudent(20));
 	BOOST_CHECK(univerProcess.DeleteStudent(2));
 	
-	students = univerProcess.GetListStudents();
+	students = univerProcess.GetStudents();
 	BOOST_CHECK_EQUAL(students.size(), 2);
 	BOOST_CHECK_EQUAL(students[0]->GetName(), "Петруха");
 	BOOST_CHECK_EQUAL(students[1]->GetName(), "Валя");
@@ -107,7 +128,7 @@ BOOST_AUTO_TEST_CASE(testUpdateStudent)
 {
 	BOOST_CHECK(univerProcess.UpdateStudentData(2, "Вика", 0, 0, 0, "", 0));
 	
-	students students = univerProcess.GetListStudents();
+	Students students = univerProcess.GetStudents();
 	BOOST_CHECK_EQUAL(students.size(), 3);
 	BOOST_CHECK_EQUAL(students[0]->GetName(), "Петруха");
 	BOOST_CHECK_EQUAL(students[1]->GetName(), "Валя");
@@ -116,67 +137,61 @@ BOOST_AUTO_TEST_CASE(testUpdateStudent)
 	BOOST_CHECK(univerProcess.UpdateStudentData(2, "Женя", 0, 0, 0, "", 0));
 }
 
-//BOOST_AUTO_TEST_CASE(testWriteChangesToInputFiles)
-//{
-//	univerProcess.Save();
-//
-//	students students;
-//	universites univers;
-//
-//	{
-//		CUniversityProcess univerProcess2(kUniversitiesFile, kStudentsFile);
-//		students = univerProcess2.GetListStudents();
-//		BOOST_CHECK_EQUAL(students.size(), 3);
-//		BOOST_CHECK_EQUAL(students[0]->GetName(), "Петруха");
-//		BOOST_CHECK_EQUAL(students[1]->GetName(), "Валя");
-//		BOOST_CHECK_EQUAL(students[2]->GetName(), "Женя");
-//
-//		BOOST_CHECK(univerProcess2.AddNewStudent("Игорь", "м", 190, 70, 22, "margtu", 2));
-//
-//		students = univerProcess2.GetListStudents();
-//		BOOST_CHECK_EQUAL(students.size(), 4);
-//		BOOST_CHECK_EQUAL(students[3]->GetName(), "Игорь");
-//
-//		univerProcess2.Save();
-//	}
-//	{
-//		CUniversityProcess univerProcess2(kUniversitiesFile, kStudentsFile);
-//
-//		students = univerProcess2.GetListStudents();
-//		BOOST_CHECK_EQUAL(students.size(), 4);
-//		BOOST_CHECK_EQUAL(students[3]->GetName(), "Игорь");
-//
-//		univerProcess2.DeleteStudent(3);
-//
-//		univerProcess2.AddNewUniversity("asd");
-//		univers = univerProcess2.GetListUniversites();
-//		BOOST_CHECK_EQUAL(univers.size(), 4);
-//		BOOST_CHECK_EQUAL(univers[3]->GetName(), "asd");
-//
-//		univerProcess2.Save();
-//	}
-//	{
-//		CUniversityProcess univerProcess2(kUniversitiesFile, kStudentsFile);
-//		univers = univerProcess2.GetListUniversites();
-//		BOOST_CHECK_EQUAL(univers.size(), 4);
-//		BOOST_CHECK_EQUAL(univers[3]->GetName(), "asd");
-//
-//		univerProcess2.DeleteUniversity("asd");
-//
-//		students = univerProcess2.GetListStudents();
-//		BOOST_CHECK_EQUAL(students.size(), 3);
-//
-//		univerProcess2.Save();
-//	}
-//	{
-//		CUniversityProcess univerProcess2(kUniversitiesFile, kStudentsFile);
-//		
-//		students = univerProcess2.GetListStudents();
-//		BOOST_CHECK_EQUAL(students.size(), 3);
-//
-//		univers = univerProcess2.GetListUniversites();
-//		BOOST_CHECK_EQUAL(univers.size(), 3);
-//	}
-//}
+BOOST_AUTO_TEST_CASE(testWriteChangesToInputFiles)
+{
+	univerProcess.SaveChanges();
+
+	Students students;
+	Universites univers;
+
+	{
+		students = univerProcess.GetStudents();
+		BOOST_CHECK_EQUAL(students.size(), 3);
+		BOOST_CHECK_EQUAL(students[0]->GetName(), "Петруха");
+		BOOST_CHECK_EQUAL(students[1]->GetName(), "Валя");
+		BOOST_CHECK_EQUAL(students[2]->GetName(), "Женя");
+
+		BOOST_CHECK(univerProcess.AddNewStudent("Игорь", "м", 190, 70, 22, "margtu", 2));
+
+		students = univerProcess.GetStudents();
+		BOOST_CHECK_EQUAL(students.size(), 4);
+		BOOST_CHECK_EQUAL(students[3]->GetName(), "Игорь");
+
+		univerProcess.SaveChanges();
+	}
+	{
+		students = univerProcess.GetStudents();
+		BOOST_CHECK_EQUAL(students.size(), 4);
+		BOOST_CHECK_EQUAL(students[3]->GetName(), "Игорь");
+
+		univerProcess.DeleteStudent(3);
+
+		univerProcess.AddNewUniversity("asd");
+		univers = univerProcess.GetUniversites();
+		BOOST_CHECK_EQUAL(univers.size(), 4);
+		BOOST_CHECK_EQUAL(univers[3]->GetName(), "asd");
+
+		univerProcess.SaveChanges();
+	}
+	{
+		univers = univerProcess.GetUniversites();
+		BOOST_CHECK_EQUAL(univers.size(), 4);
+		BOOST_CHECK_EQUAL(univers[3]->GetName(), "asd");
+
+		univerProcess.DeleteUniversity("asd");
+
+		students = univerProcess.GetStudents();
+		BOOST_CHECK_EQUAL(students.size(), 3);
+
+		univerProcess.SaveChanges();
+	}
+	{	
+		students = univerProcess.GetStudents();
+		BOOST_CHECK_EQUAL(students.size(), 3);
+
+		univers = univerProcess.GetUniversites();
+		BOOST_CHECK_EQUAL(univers.size(), 3);
+	}
+}
 
 BOOST_AUTO_TEST_SUITE_END()

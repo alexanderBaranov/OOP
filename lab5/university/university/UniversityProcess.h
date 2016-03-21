@@ -4,21 +4,26 @@
 #include "University.h"
 #include "Student.h"
 
-typedef std::vector<std::shared_ptr<CUniversity>> universites;
+typedef std::shared_ptr<CUniversity> CUniversityPtr;
+typedef std::vector<CUniversityPtr> Universites;
 
-class CUniversityProcess
+class CUniversityManagement
 {
 public:
-	CUniversityProcess(const std::string& listOfUniversity, const std::string& listOfStudents);
+	CUniversityManagement(const std::string& fileNameOfUniversites, const std::string& fileNameOfStudents);
+	CUniversityManagement() = default;
 
-	void Load(const std::string& listOfUniversity, const std::string& listOfStudents);
-	void Save();
+	void LoadListsStudentsAndUniversitesFromFiles(
+		const std::string& fileNameOfUniversites,
+		const std::string& fileNameOfStudents);
 
-	const universites& GetListUniversites() const;
-	students GetListStudents() const;
-	students GetListStudentsFromUniversity(const std::string& universityName) const;
+	void SaveChanges();
+
+	const Universites& GetUniversites() const;
+	Students GetStudents() const;
+	Students GetStudentsFromUniversity(const std::string& universityName) const;
 	
-	bool ReplaceUniversity(const std::string& oldName, const std::string& newName);
+	bool RenameUniversity(const std::string& oldName, const std::string& newName);
 	
 	bool DeleteUniversity(const std::string& name);
 	bool DeleteStudent(int listNumber);
@@ -40,22 +45,23 @@ public:
 		const std::string& universityName,
 		int numberOfYearsStudy);
 
-	bool Updated();
+	bool Updated() const;
 
 	std::string GetStringFromEnumGender(Gender gender);
 	Gender GetEnumGenderFromString(const std::string& strGender);
+
 private:
 	static std::string ReadInputFile(const std::string& fileName);
-	static std::vector<std::string> CUniversityProcess::ParseDataBase(std::string line);
+	static std::vector<std::string> ParseDataBase(std::string line);
 	std::vector<std::string> ParseWordsSeparatedByCommas(std::string line);
-	std::shared_ptr<CUniversity> FindUniversity(const std::string& universityName) const;
+	CUniversityPtr FindUniversity(const std::string& universityName) const;
 	static void AppendProperty(
 		std::string& str,
 		const std::string& property,
 		const std::string& value);
 
-	universites m_universities;
-	students m_students;
+	Universites m_universities;
+	Students m_students;
 	bool m_updated;
 
 	std::string m_universitiesFile;
