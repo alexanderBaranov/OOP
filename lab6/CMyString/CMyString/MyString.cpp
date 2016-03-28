@@ -1,34 +1,33 @@
 #include "stdafx.h"
 #include "MyString.h"
+#include <assert.h>
 
 using namespace std;
 
 CMyString::CMyString() throw()
 {
 	m_size = 0;
-	m_chars.reset((char*)malloc(m_size + 1));
-	*m_chars = '\0';
+	m_chars = make_unique<char[]>('\0');
 }
 
 CMyString::CMyString(const char * pString)
-:m_size(strlen(pString))
 {
-	m_chars.reset((char*)malloc(m_size + 1));
+	assert(pString);
+
+	m_size = strlen(pString);
+	m_chars.reset(new char[m_size + 1]);
 	memcpy(m_chars.get(), pString, m_size + 1);
 }
 
 CMyString::CMyString(const char * pString, unsigned length)
-:m_size(length)
 {
-	size_t strLen = strlen(pString);
-	if (length > strLen)
-	{
-		m_size = strLen;
-	}
+	assert(pString);
 
-	m_chars.reset((char*)malloc(m_size + 1));
+	m_size = length;
+
+	m_chars.reset(new char[m_size + 1]);
+	memset(m_chars.get(), '\0', m_size + 1);
 	memcpy(m_chars.get(), pString, m_size);
-	m_chars.get()[m_size] = '\0';
 }
 
 CMyString::CMyString(CMyString const& other)
@@ -44,11 +43,16 @@ CMyString::CMyString(CMyString && other)
 CMyString::CMyString(std::string const& stlString)
 : m_size(stlString.length())
 {
-	m_chars.reset((char*)malloc(m_size + 1));
+	m_chars.reset(new char[m_size + 1]);
 	memcpy(m_chars.get(), stlString.c_str(), m_size + 1);
 }
 
-unsigned CMyString::GetLength() const
+bool CMyString::Empty()const
+{
+	return !m_size;
+}
+
+size_t CMyString::GetLength() const
 {
 	return m_size;
 }
@@ -62,7 +66,7 @@ CMyString const CMyString::SubString(unsigned start, unsigned length /*= UINT_MA
 {
 	if (start + length > m_size)
 	{
-		return nullptr;
+		return *this;
 	}
 	
 	return CMyString(m_chars.get() + start, length);
@@ -73,24 +77,26 @@ void CMyString::Clear()
 	m_chars.reset(nullptr);
 }
 
-char& CMyString::operator[](const int index) const
+char& CMyString::operator[](size_t index)
 {
-	if ((size_t)index > m_size)
+	if ((index > m_size)
+		|| ((m_size == 0) && (index == 0)))
 	{
-		return m_chars.get()[0];
+		throw exception("string subscript out of range");
 	}
 
 	return m_chars.get()[index];
 }
 
-bool CMyString::operator==(const CMyString &other) const
+const char& CMyString::operator[](size_t index) const
 {
-	return strcmp(m_chars.get(), other.GetStringData()) == 0;
-}
+	if ((index > m_size) 
+		|| ((m_size == 0) && (index == 0)))
+	{
+		throw exception("string subscript out of range");
+	}
 
-bool CMyString::operator!=(const CMyString &other) const
-{
-	return strcmp(m_chars.get(), other.GetStringData()) != 0;
+	return m_chars.get()[index];
 }
 
 CMyString& CMyString::operator+=(const CMyString &other)
@@ -106,38 +112,6 @@ CMyString& CMyString::operator+=(const CMyString &other)
 	return *this;
 }
 
-CMyString CMyString::StringConcatenation(const char *str) const
-{
-	if (!str)
-	{
-		return nullptr;
-	}
-
-	size_t length = m_size + strlen(str) + 1;
-	std::unique_ptr<char, deleter> chars;
-	chars.reset((char*)malloc(length));
-
-	strcpy_s(chars.get(), length, m_chars.get());
-	strcat_s(chars.get(), length, str);
-
-	return CMyString(chars.get());
-}
-
-CMyString CMyString::operator+(const char *other) const
-{
-	return StringConcatenation(other);
-}
-
-CMyString CMyString::operator+(const std::string &other) const
-{
-	return StringConcatenation(other.c_str());
-}
-
-CMyString CMyString::operator+(const CMyString &other) const
-{
-	return StringConcatenation(other.GetStringData());
-}
-
 CMyString& CMyString::operator=(const CMyString &other)
 {
 	if (this == &other)
@@ -146,12 +120,48 @@ CMyString& CMyString::operator=(const CMyString &other)
 	}
 
 	m_size = other.GetLength();
-	m_chars.reset((char*)malloc(m_size + 1));
+	m_chars.reset(new char [m_size + 1]);
 	memcpy(m_chars.get(), other.GetStringData(), m_size + 1);
 
 	return *this;
 }
 
-CMyString::~CMyString() throw()
+size_t GetComprasionSize(const CMyString &leftString, const CMyString &rightString)
 {
+	size_t sizeOfLeftString = leftString.GetLength();
+	size_t sizeOfRightString = rightString.GetLength();
+	return (sizeOfLeftString > sizeOfRightString) ? sizeOfLeftString : sizeOfRightString;
+}
+
+bool operator ==(const CMyString &leftString, const CMyString &rightString)
+{
+	size_t cmpSize = GetComprasionSize(leftString, rightString);
+	return memcmp(leftString.GetStringData(), rightString.GetStringData(), cmpSize) == 0;
+}
+
+bool operator !=(const CMyString &leftString, const CMyString &rightString)
+{
+	size_t cmpSize = GetComprasionSize(leftString, rightString);
+	return memcmp(leftString.GetStringData(), rightString.GetStringData(), cmpSize) != 0;
+}
+
+CMyString operator +(const CMyString &leftString, const CMyString &rightString)
+{
+	if (leftString.Empty() && rightString.Empty() )
+	{
+		return nullptr;
+	}
+
+	size_t sizeOfLeftString = leftString.GetLength();
+	size_t sizeOfRightString = rightString.GetLength();
+
+	size_t length = leftString.GetLength() + rightString.GetLength() + 1;
+	std::unique_ptr<char[]> chars(new char[length]);
+
+	memcpy(chars.get(), leftString.GetStringData(), sizeOfLeftString);
+	memcpy(chars.get() + sizeOfLeftString, rightString.GetStringData(), sizeOfRightString);
+	
+	chars.get()[length - 1] = '\0';
+
+	return CMyString(chars.get(), length-1);
 }
