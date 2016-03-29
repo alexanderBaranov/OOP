@@ -39,7 +39,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	{
 		USES_CONVERSION;
 
-		CUniversityApp universityApp(make_shared<CUniversityManagement>(W2A(argv[1]), W2A(argv[2])));
+		CUniversityApp universityApp(make_unique<CUniversityManagement>(W2A(argv[1]), W2A(argv[2])));
 		universityApp.Run();
 	}
 	catch (const exception &error)

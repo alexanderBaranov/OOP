@@ -152,37 +152,7 @@ void CUniversityManagement::SaveChanges()
 		}
 	}
 
-	outUniversitiesFile.close();
-
-	outStudentsFile.close();
-
 	m_updated = false;
-}
-
-string CUniversityManagement::GetStringFromEnumGender(Gender gender)
-{
-	string strGender;
-	if (gender == Gender::Male)
-	{
-		strGender = MALE;
-	}
-	else if (gender == Gender::Female)
-	{
-		strGender = FEMALE;
-	}
-
-	return strGender;
-}
-
-Gender CUniversityManagement::GetEnumGenderFromString(const std::string& strGender)
-{
-	Gender gender = Gender::Male;
-	if (strGender == FEMALE)
-	{
-		gender = Gender::Female;
-	}
-
-	return gender;
 }
 
 void CUniversityManagement::AppendProperty(string& str, const string& property, const string& value)
@@ -292,17 +262,32 @@ bool CUniversityManagement::UpdateStudentData(
 	double weight,
 	int age,
 	const string& universityName,
-	int numberOfYearsStudy)
+	int numberOfYearsStudy,
+	string& error)
 {
 	Students students = GetStudents();
 
 	if ((size_t)listNumber > students.size() - 1)
 	{
+		error = "Студент не найден.";
 		return false;
 	}
 
-	bool studentUpdated = false;
 	auto student = students.at(listNumber);
+	bool studentUpdated = false;
+
+	const auto& univer = FindUniversity(universityName);
+	if (univer)
+	{
+		univer->AddStudent(student);
+
+		studentUpdated = true;
+	}
+	else if (!universityName.empty())
+	{
+		error = "Такой университет не существует.";
+		return false;
+	}
 
 	if (!name.empty())
 	{
@@ -334,18 +319,6 @@ bool CUniversityManagement::UpdateStudentData(
 		studentUpdated = true;
 	}
 
-	const auto& univer = FindUniversity(universityName);
-	if (univer)
-	{
-		auto oldUniver = FindUniversity(student->GetUniversity()->GetName());
-		oldUniver->RemoveStudent(student);
-
-		student->SetUniversity(univer);
-		univer->AddStudent(student);
-
-		studentUpdated = true;
-	}
-
 	m_updated = studentUpdated;
 
 	return studentUpdated;
@@ -354,7 +327,7 @@ bool CUniversityManagement::UpdateStudentData(
 bool CUniversityManagement::DeleteStudent(int listNumber)
 {
 	Students students = GetStudents();
-	if ((size_t)listNumber > students.size() - 1)
+	if (!students.empty() && ((size_t)listNumber > students.size() - 1))
 	{
 		return false;
 	}
@@ -365,14 +338,21 @@ bool CUniversityManagement::DeleteStudent(int listNumber)
 		return univer == student->GetUniversity();
 	});
 
-	univer->get()->RemoveStudent(student);
-	m_updated = true;
+	if (univer != m_universities.end())
+	{
+		(*univer)->RemoveStudent(student);
+		m_updated = true;
+	}
+	else
+	{
+		return false;
+	}
 
 	return true;
 }
 
 bool CUniversityManagement::AddNewStudent(const string& name,
-									const string& gender,
+									Gender gender,
 									double growth,
 									double weight,
 									int age,
@@ -386,7 +366,7 @@ bool CUniversityManagement::AddNewStudent(const string& name,
 	}
 
 	
-	univer.get()->AddStudent(make_shared<CStudent>(name, GetEnumGenderFromString(gender), growth, weight, age, univer, numberOfYearsStudy));
+	univer.get()->AddStudent(make_shared<CStudent>(name, gender, growth, weight, age, univer, numberOfYearsStudy));
 
 	m_updated = true;
 
@@ -425,4 +405,30 @@ vector<string> CUniversityManagement::ParseWordsSeparatedByCommas(string line)
 	boost::regex_split(back_inserter(outValues), line, expression);
 
 	return outValues;
+}
+
+string GetStringFromEnumGender(Gender gender)
+{
+	string strGender;
+	if (gender == Gender::Male)
+	{
+		strGender = MALE;
+	}
+	else if (gender == Gender::Female)
+	{
+		strGender = FEMALE;
+	}
+
+	return strGender;
+}
+
+Gender GetEnumGenderFromString(const std::string& strGender)
+{
+	Gender gender = Gender::Male;
+	if (strGender == FEMALE)
+	{
+		gender = Gender::Female;
+	}
+
+	return gender;
 }

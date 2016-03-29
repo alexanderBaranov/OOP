@@ -104,8 +104,8 @@ BOOST_AUTO_TEST_CASE(testDeleteAndAdd)
 	BOOST_CHECK_EQUAL(univers[1]->GetName(), "mosi");
 	BOOST_CHECK_EQUAL(univers[2]->GetName(), "margtu");
 	
-	BOOST_CHECK(univerProcess.AddNewStudent("Валя", "ж", 190, 70, 22, "margtu", 2));
-	BOOST_CHECK(univerProcess.AddNewStudent("Женя", "ж", 190, 70, 22, "margtu", 2));
+	BOOST_CHECK(univerProcess.AddNewStudent("Валя", GetEnumGenderFromString("ж"), 190, 70, 22, "margtu", 2));
+	BOOST_CHECK(univerProcess.AddNewStudent("Женя", GetEnumGenderFromString("ж"), 190, 70, 22, "margtu", 2));
 
 	students = univerProcess.GetStudents();
 	BOOST_CHECK_EQUAL(students.size(), 3);
@@ -121,12 +121,13 @@ BOOST_AUTO_TEST_CASE(testDeleteAndAdd)
 	BOOST_CHECK_EQUAL(students[0]->GetName(), "Петруха");
 	BOOST_CHECK_EQUAL(students[1]->GetName(), "Валя");
 
-	BOOST_CHECK(univerProcess.AddNewStudent("Женя", "ж", 190, 70, 22, "margtu", 2));
+	BOOST_CHECK(univerProcess.AddNewStudent("Женя", GetEnumGenderFromString("ж"), 190, 70, 22, "margtu", 2));
 }
 
 BOOST_AUTO_TEST_CASE(testUpdateStudent)
 {
-	BOOST_CHECK(univerProcess.UpdateStudentData(2, "Вика", 0, 0, 0, "", 0));
+	string error;
+	BOOST_CHECK(univerProcess.UpdateStudentData(2, "Вика", 0, 0, 0, "", 0, error));
 	
 	Students students = univerProcess.GetStudents();
 	BOOST_CHECK_EQUAL(students.size(), 3);
@@ -134,7 +135,7 @@ BOOST_AUTO_TEST_CASE(testUpdateStudent)
 	BOOST_CHECK_EQUAL(students[1]->GetName(), "Валя");
 	BOOST_CHECK_EQUAL(students[2]->GetName(), "Вика");
 
-	BOOST_CHECK(univerProcess.UpdateStudentData(2, "Женя", 0, 0, 0, "", 0));
+	BOOST_CHECK(univerProcess.UpdateStudentData(2, "Женя", 0, 0, 0, "", 0, error));
 }
 
 BOOST_AUTO_TEST_CASE(testAddNewStudent)
@@ -145,7 +146,7 @@ BOOST_AUTO_TEST_CASE(testAddNewStudent)
 	BOOST_CHECK_EQUAL(students[1]->GetName(), "Валя");
 	BOOST_CHECK_EQUAL(students[2]->GetName(), "Женя");
 
-	BOOST_CHECK(univerProcess.AddNewStudent("Игорь", "м", 190, 70, 22, "margtu", 2));
+	BOOST_CHECK(univerProcess.AddNewStudent("Игорь", GetEnumGenderFromString("м"), 190, 70, 22, "margtu", 2));
 
 	students = univerProcess.GetStudents();
 	BOOST_CHECK_EQUAL(students.size(), 4);
@@ -168,7 +169,7 @@ BOOST_AUTO_TEST_CASE(testWriteChangesToInputFiles)
 		BOOST_CHECK_EQUAL(students[1]->GetName(), "Валя");
 		BOOST_CHECK_EQUAL(students[2]->GetName(), "Женя");
 
-		BOOST_CHECK(univerProcess.AddNewStudent("Игорь", "м", 190, 70, 22, "margtu", 2));
+		BOOST_CHECK(univerProcess.AddNewStudent("Игорь", GetEnumGenderFromString("м"), 190, 70, 22, "margtu", 2));
 
 		students = univerProcess.GetStudents();
 		BOOST_CHECK_EQUAL(students.size(), 4);
@@ -209,6 +210,27 @@ BOOST_AUTO_TEST_CASE(testWriteChangesToInputFiles)
 		univers = univerProcess.GetUniversites();
 		BOOST_CHECK_EQUAL(univers.size(), 3);
 	}
+}
+
+BOOST_AUTO_TEST_CASE(testUpdateStudentData)
+{
+	string error;
+	BOOST_CHECK(univerProcess.UpdateStudentData(2, "Вика", 0, 0, 0, "mgu", 0, error));
+
+	Students students = univerProcess.GetStudentsFromUniversity("mgu");
+	BOOST_CHECK_EQUAL(students.size(), 2);
+	BOOST_CHECK_EQUAL(students[1]->GetName(), "Вика");
+	BOOST_CHECK_EQUAL(students[1]->GetUniversity()->GetName(), "mgu");
+
+	students = univerProcess.GetStudentsFromUniversity("margtu");
+	BOOST_CHECK_EQUAL(students.size(), 1);
+	BOOST_CHECK_EQUAL(students[0]->GetName(), "Валя");
+}
+
+BOOST_AUTO_TEST_CASE(testErrorUpdateStudentData)
+{
+	string error;
+	BOOST_CHECK(!univerProcess.UpdateStudentData(2, "Вика", 0, 0, 0, "mgu12", 0, error));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

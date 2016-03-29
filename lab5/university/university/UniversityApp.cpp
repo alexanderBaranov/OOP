@@ -5,7 +5,7 @@
 using namespace std;
 using namespace std::placeholders;
 
-CUniversityApp::CUniversityApp(const std::shared_ptr<CUniversityManagement>&& univerManagment)
+CUniversityApp::CUniversityApp(std::unique_ptr<CUniversityManagement>&& univerManagment)
 	:m_universityManagement(move(univerManagment))
 {
 }
@@ -98,7 +98,7 @@ void CUniversityApp::PrintStudents(ostream & output, const Students& students)
 	{
 		output << count << "."
 			<< stud->GetName() << " "
-			<< m_universityManagement->GetStringFromEnumGender(stud->GetGender()) << " "
+			<< GetStringFromEnumGender(stud->GetGender()) << " "
 			<< stud->GetGrowth() << " "
 			<< stud->GetAge() << " "
 			<< stud->GetWeight() << " "
@@ -220,9 +220,10 @@ bool CUniversityApp::UpdateStudent(istream & input, ostream & output)
 		university,
 		numberOfYearsStudy);
 
-	if (!m_universityManagement->UpdateStudentData(number, name, growth, weight, age, university, numberOfYearsStudy))
+	string error;
+	if (!m_universityManagement->UpdateStudentData(number, name, growth, weight, age, university, numberOfYearsStudy, error))
 	{
-		output << "Не удалось обновить студента" << endl;
+		output << "Не удалось обновить студента. " << error << endl;
 	}
 
 	return true;
@@ -269,7 +270,7 @@ bool CUniversityApp::AddStudent(istream & input, ostream & output)
 	output << "Пол: " << endl;
 	getline(input, gender);
 
-	if (!m_universityManagement->AddNewStudent(name, gender, growth, weight, age, university, numberOfYearsStudy))
+	if (!m_universityManagement->AddNewStudent(name, GetEnumGenderFromString(gender), growth, weight, age, university, numberOfYearsStudy))
 	{
 		output << "Не удалось добавить студента" << endl;
 	}
