@@ -64,7 +64,7 @@ private:
 class CUniversityApp
 {
 public:
-	CUniversityApp(const std::shared_ptr<CUniversityManagement>&& univerManagment);
+	CUniversityApp(std::unique_ptr<CUniversityManagement>&& univerManagment);
 
 	void Run();
 
@@ -95,6 +95,6 @@ private:
 	bool Quit(std::istream& input, std::ostream& output);
 
 
-	std::shared_ptr<CUniversityManagement> m_universityManagement;
+	std::unique_ptr<CUniversityManagement> m_universityManagement;
 };
 

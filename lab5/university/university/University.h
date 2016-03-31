@@ -8,7 +8,7 @@ class CStudent;
 typedef std::shared_ptr<CStudent> CStudentPtr;
 typedef std::vector<CStudentPtr> Students;
 
-class CUniversity
+class CUniversity :public std::enable_shared_from_this<CUniversity>
 {
 public:
 	CUniversity(std::string name);

@@ -7,6 +7,9 @@
 typedef std::shared_ptr<CUniversity> CUniversityPtr;
 typedef std::vector<CUniversityPtr> Universites;
 
+std::string GetStringFromEnumGender(Gender gender);
+Gender GetEnumGenderFromString(const std::string& strGender);
+
 class CUniversityManagement
 {
 public:
@@ -30,7 +33,7 @@ public:
 
 	bool AddNewUniversity(const std::string& newName);	
 	bool AddNewStudent(const std::string& name,
-					const std::string& gender,
+					Gender gender,
 					double growth,
 					double weight,
 					int age,
@@ -43,12 +46,10 @@ public:
 		double weight,
 		int age,
 		const std::string& universityName,
-		int numberOfYearsStudy);
+		int numberOfYearsStudy,
+		std::string& error);
 
 	bool Updated() const;
-
-	std::string GetStringFromEnumGender(Gender gender);
-	Gender GetEnumGenderFromString(const std::string& strGender);
 
 private:
 	static std::string ReadInputFile(const std::string& fileName);
