@@ -3,6 +3,7 @@
 
 enum class Gender
 {
+	Unknown,
 	Male,
 	Female
 };

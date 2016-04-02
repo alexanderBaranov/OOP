@@ -18,7 +18,7 @@ const string CUniversity::GetName() const
 }
 
 
-void CUniversity::SetName(const string name)
+void CUniversity::SetName(const string& name)
 {
 	m_name = name;
 }

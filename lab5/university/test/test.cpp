@@ -127,7 +127,7 @@ BOOST_AUTO_TEST_CASE(testDeleteAndAdd)
 BOOST_AUTO_TEST_CASE(testUpdateStudent)
 {
 	string error;
-	BOOST_CHECK(univerProcess.UpdateStudentData(2, "Вика", 0, 0, 0, "", 0, error));
+	BOOST_CHECK(univerProcess.UpdateStudentData(2, "Вика", 160, 60, 0, "", 0, error));
 	
 	Students students = univerProcess.GetStudents();
 	BOOST_CHECK_EQUAL(students.size(), 3);
@@ -135,7 +135,7 @@ BOOST_AUTO_TEST_CASE(testUpdateStudent)
 	BOOST_CHECK_EQUAL(students[1]->GetName(), "Валя");
 	BOOST_CHECK_EQUAL(students[2]->GetName(), "Вика");
 
-	BOOST_CHECK(univerProcess.UpdateStudentData(2, "Женя", 0, 0, 0, "", 0, error));
+	BOOST_CHECK(univerProcess.UpdateStudentData(2, "Женя", 160, 50, 0, "", 0, error));
 }
 
 BOOST_AUTO_TEST_CASE(testAddNewStudent)
@@ -215,7 +215,7 @@ BOOST_AUTO_TEST_CASE(testWriteChangesToInputFiles)
 BOOST_AUTO_TEST_CASE(testUpdateStudentData)
 {
 	string error;
-	BOOST_CHECK(univerProcess.UpdateStudentData(2, "Вика", 0, 0, 0, "mgu", 0, error));
+	BOOST_CHECK(univerProcess.UpdateStudentData(2, "Вика", 160, 50, 0, "mgu", 0, error));
 
 	Students students = univerProcess.GetStudentsFromUniversity("mgu");
 	BOOST_CHECK_EQUAL(students.size(), 2);
@@ -230,7 +230,32 @@ BOOST_AUTO_TEST_CASE(testUpdateStudentData)
 BOOST_AUTO_TEST_CASE(testErrorUpdateStudentData)
 {
 	string error;
-	BOOST_CHECK(!univerProcess.UpdateStudentData(2, "Вика", 0, 0, 0, "mgu12", 0, error));
+	BOOST_CHECK(!univerProcess.UpdateStudentData(2, "Вика", 160, 50, 0, "mgu12", 0, error));
+}
+
+BOOST_AUTO_TEST_CASE(testSetInvalidGender)
+{
+	BOOST_CHECK(univerProcess.AddNewStudent("Валя", GetEnumGenderFromString("Жен"), 190, 70, 22, "margtu", 2));
+
+	Students students = univerProcess.GetStudents();
+	BOOST_CHECK_EQUAL(students[3]->GetName(), "Валя");
+	BOOST_CHECK(students[3]->GetGender() == Gender::Unknown);
+
+	BOOST_CHECK_EQUAL(GetStringFromEnumGender(students[3]->GetGender()), "");
+}
+
+BOOST_AUTO_TEST_CASE(testCheckMinGrowth)
+{
+	string error;
+	BOOST_CHECK(!univerProcess.UpdateStudentData(2, "Женя", 0, 50, 0, "", 0, error));
+	BOOST_CHECK(!error.empty());
+}
+
+BOOST_AUTO_TEST_CASE(testCheckMinWeight)
+{
+	string error;
+	BOOST_CHECK(!univerProcess.UpdateStudentData(2, "Женя", 160, 0, 0, "", 0, error));
+	BOOST_CHECK(!error.empty());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -43,10 +43,10 @@ bool CUniversityApp::GetListUnivesities(istream & input, ostream & output)
 
 	if (!univers.empty())
 	{
-		for_each(univers.begin(), univers.end(), [&](const shared_ptr<CUniversity>univer)
+		for(const auto& univer : univers)
 		{
 			output << univer->GetName() << endl;
-		});
+		};
 	}
 	else
 	{

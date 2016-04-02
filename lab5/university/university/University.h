@@ -14,7 +14,7 @@ public:
 	CUniversity(std::string name);
 
 	const std::string GetName() const;
-	void SetName(const std::string name);
+	void SetName(const std::string& name);
 
 	void AddStudent(const CStudentPtr& student);
 	void RemoveStudent(const CStudentPtr& student);

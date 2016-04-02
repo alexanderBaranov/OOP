@@ -19,6 +19,9 @@ static const string WEIGHT = "вес";
 static const string UNIVERSITY = "университет";
 static const string NUMBER_OF_YEARS_STUDY = "проучился";
 
+static int MIN_GROWTH = 50;
+static int MIN_WEIGHT = 6;
+
 CUniversityManagement::CUniversityManagement(const string& fileNameOfUniversites, const string& fileNameOfStudents)
 {
 	LoadListsStudentsAndUniversitesFromFiles(fileNameOfUniversites, fileNameOfStudents);
@@ -289,21 +292,31 @@ bool CUniversityManagement::UpdateStudentData(
 		return false;
 	}
 
-	if (!name.empty())
-	{
-		student->SetName(name);
-		studentUpdated = true;
-	}
-
-	if (growth)
+	if (growth >= MIN_GROWTH)
 	{
 		student->SetGrowth(growth);
 		studentUpdated = true;
 	}
+	else
+	{
+		error = "Рост студента должен быть больше " + to_string(MIN_GROWTH) + " см.";
+		return false;
+	}
 
-	if (weight)
+	if (weight >= MIN_WEIGHT)
 	{
 		student->SetWeight(weight);
+		studentUpdated = true;
+	}
+	else
+	{
+		error = "Вес студента должен быть больше " + to_string(MIN_WEIGHT) + " кг.";
+		return false;
+	}
+
+	if (!name.empty())
+	{
+		student->SetName(name);
 		studentUpdated = true;
 	}
 
@@ -327,7 +340,7 @@ bool CUniversityManagement::UpdateStudentData(
 bool CUniversityManagement::DeleteStudent(int listNumber)
 {
 	Students students = GetStudents();
-	if (!students.empty() && ((size_t)listNumber > students.size() - 1))
+	if ((size_t)listNumber >= students.size())
 	{
 		return false;
 	}
@@ -409,7 +422,7 @@ vector<string> CUniversityManagement::ParseWordsSeparatedByCommas(string line)
 
 string GetStringFromEnumGender(Gender gender)
 {
-	string strGender;
+	string strGender = "";
 	if (gender == Gender::Male)
 	{
 		strGender = MALE;
@@ -424,10 +437,14 @@ string GetStringFromEnumGender(Gender gender)
 
 Gender GetEnumGenderFromString(const std::string& strGender)
 {
-	Gender gender = Gender::Male;
+	Gender gender = Gender::Unknown;
 	if (strGender == FEMALE)
 	{
 		gender = Gender::Female;
+	}
+	else if (strGender == MALE)
+	{
+		gender = Gender::Male;
 	}
 
 	return gender;
