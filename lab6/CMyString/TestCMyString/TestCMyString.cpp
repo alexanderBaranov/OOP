@@ -38,12 +38,21 @@ BOOST_AUTO_TEST_CASE(testConstructors)
 		BOOST_CHECK_EQUAL(data, "cat");
 		BOOST_CHECK_EQUAL(data[str.GetLength()], '\0');
 	}
-	
+
 	{
 		CMyString str1("catdog");
 		CMyString str2 = str1.SubString(0, 3);
 		BOOST_CHECK_EQUAL(str2.GetStringData(), "cat");
 		BOOST_CHECK_EQUAL(str2[3], '\0');
+	}
+	{
+		CMyString str;
+		BOOST_CHECK_EQUAL(str.GetStringData(), "");
+	}
+	{
+		CMyString str("", 30);
+		BOOST_CHECK_EQUAL(str.GetStringData(), "");
+		BOOST_CHECK_EQUAL(str.GetLength(), 30);
 	}
 }
 
@@ -62,6 +71,16 @@ BOOST_AUTO_TEST_CASE(testOperatorPlus)
 	char str5[4] = "dog";
 	str3 = str1 + str5;
 	BOOST_CHECK_EQUAL(str3.GetStringData(), "catdog");
+
+	CMyString str6("cat");
+	CMyString str7;
+	CMyString str8 = str6 + str7;
+	
+	BOOST_CHECK_EQUAL(str8.GetStringData(), "cat");
+
+	CMyString str9 = str7 + str6;
+
+	BOOST_CHECK_EQUAL(str9.GetStringData(), "cat");
 }
 
 BOOST_AUTO_TEST_CASE(testOperatorSquareBrackets)
@@ -101,6 +120,8 @@ BOOST_AUTO_TEST_CASE(testStringConcatenation)
 	BOOST_CHECK(CMyString("hello ") + std::string("world") == CMyString("hello world"));
 	BOOST_CHECK(CMyString("hello ") + "world" == CMyString("hello world"));
 	BOOST_CHECK(std::string("hello ") + CMyString("world") == CMyString("hello world"));
+
+	BOOST_CHECK(CMyString() + CMyString("1") == CMyString("1"));
 }
 
 BOOST_AUTO_TEST_CASE(testSubstring)
@@ -109,12 +130,20 @@ BOOST_AUTO_TEST_CASE(testSubstring)
 	CMyString fer = str.SubString(0, 6);
 
 	BOOST_CHECK_EQUAL(fer.GetStringData(), "Hello");
+	BOOST_CHECK_EQUAL(str.SubString(3, 5).GetStringData(), "lo");
+	BOOST_CHECK_EQUAL(str.SubString(10, 5).GetStringData(), "");
 }
 
 BOOST_AUTO_TEST_CASE(testIndexedAccess)
 {
-	CMyString hello;
-	BOOST_CHECK_THROW(hello[0] = 'A', std::exception);
+	CMyString str;
+	BOOST_CHECK(str[0] == '\0');
+	BOOST_CHECK_THROW(str[1], std::exception);
+
+	CMyString hello("Hello");
+	BOOST_CHECK(hello[0] == 'H');
+	BOOST_CHECK_EQUAL(hello[5], '\0');
+	BOOST_CHECK_THROW(hello[6], std::exception);
 }
 
 BOOST_AUTO_TEST_CASE(testStringComparison1)
@@ -125,10 +154,10 @@ BOOST_AUTO_TEST_CASE(testStringComparison1)
 	BOOST_CHECK(stdstr == stdstr);
 	BOOST_CHECK(mystr == stdstr);
 	BOOST_CHECK(!(stdstr == hello));
-	BOOST_CHECK(!(mystr == hello)); // проверка не прошла
+	BOOST_CHECK(!(mystr == hello));
 
 	BOOST_CHECK(stdstr != hello);
-	BOOST_CHECK(mystr != hello); // проверка не прошла
+	BOOST_CHECK(mystr != hello);
 }
 
 BOOST_AUTO_TEST_CASE(testStringConcatenation2)
@@ -136,7 +165,24 @@ BOOST_AUTO_TEST_CASE(testStringConcatenation2)
 	std::string stdstr("Hello\0World", 11);
 	CMyString mystr(stdstr);
 	BOOST_CHECK_EQUAL((stdstr + stdstr).length(), 22u);
-	BOOST_CHECK_EQUAL((mystr + mystr).GetLength(), 22u); // проверка не пройдет
+	BOOST_CHECK_EQUAL((mystr + mystr).GetLength(), 22u);
+}
+
+BOOST_AUTO_TEST_CASE(testStringClear)
+{
+	CMyString mystr("Hello");
+	mystr.Clear();
+	BOOST_CHECK_EQUAL(mystr.GetStringData(), "");
+}
+
+BOOST_AUTO_TEST_CASE(testAssignEmptyString)
+{
+	CMyString str1("Hello");
+	CMyString str2;
+	str1 = str2;
+
+	BOOST_CHECK(str1 == "");
+	BOOST_CHECK_EQUAL(str1[0], '\0');
 }
 
 BOOST_AUTO_TEST_SUITE_END()
