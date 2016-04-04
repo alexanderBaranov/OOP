@@ -10,50 +10,30 @@
 
 using namespace std;
 
+template <size_t N>
+void ExpectZeroTerminatedStringData(CMyString const& s, const char(&data)[N])
+{
+	static_assert(N > 0, "Non-zero array is expected");
+	BOOST_REQUIRE_EQUAL(s[N - 1], '\0');
+	BOOST_REQUIRE_EQUAL(s.GetLength(), N - 1);
+	BOOST_REQUIRE_EQUAL(memcmp(s.GetStringData(), data, N), 0u);
+	BOOST_REQUIRE_EQUAL(s.GetStringData()[s.GetLength()], '\0');
+}
+
 BOOST_AUTO_TEST_SUITE(TestsOfCMyString)
 
 BOOST_AUTO_TEST_CASE(testConstructors)
 {
-	{
-		CMyString str("cat");
-		const char *data = str.GetStringData();
-		BOOST_CHECK_EQUAL(data, "cat");
-		BOOST_CHECK_EQUAL(data[str.GetLength()], '\0');
-	}
-	{
-		CMyString str("catdog", 3);
-		const char *data = str.GetStringData();
-		BOOST_CHECK_EQUAL(data, "cat");
-		BOOST_CHECK_EQUAL(data[str.GetLength()], '\0');
-	}
-	{
-		CMyString str("cat", 3);
-		const char *data = str.GetStringData();
-		BOOST_CHECK_EQUAL(data, "cat");
-		BOOST_CHECK_EQUAL(data[str.GetLength()], '\0');
-	}
-	{
-		CMyString str("cat", 10);
-		const char *data = str.GetStringData();
-		BOOST_CHECK_EQUAL(data, "cat");
-		BOOST_CHECK_EQUAL(data[str.GetLength()], '\0');
-	}
+	ExpectZeroTerminatedStringData(CMyString("cat"), "cat");
+	ExpectZeroTerminatedStringData(CMyString("catdog", 3), "cat");
+	ExpectZeroTerminatedStringData(CMyString("cat", 3), "cat");	
+	ExpectZeroTerminatedStringData(CMyString("cat\0dog\0pie", 10), "cat\0dog\0pi");
+	ExpectZeroTerminatedStringData(CMyString(""), "");
+	ExpectZeroTerminatedStringData(CMyString("Hello\0", 5), "Hello");
 
-	{
-		CMyString str1("catdog");
-		CMyString str2 = str1.SubString(0, 3);
-		BOOST_CHECK_EQUAL(str2.GetStringData(), "cat");
-		BOOST_CHECK_EQUAL(str2[3], '\0');
-	}
-	{
-		CMyString str;
-		BOOST_CHECK_EQUAL(str.GetStringData(), "");
-	}
-	{
-		CMyString str("", 30);
-		BOOST_CHECK_EQUAL(str.GetStringData(), "");
-		BOOST_CHECK_EQUAL(str.GetLength(), 30);
-	}
+	CMyString str("", 30);
+	BOOST_CHECK_EQUAL(str.GetStringData(), "");
+	BOOST_CHECK_EQUAL(str.GetLength(), 30);
 }
 
 BOOST_AUTO_TEST_CASE(testOperatorPlus)
@@ -61,26 +41,20 @@ BOOST_AUTO_TEST_CASE(testOperatorPlus)
 	CMyString str1("cat");
 	CMyString str2("dog");
 	CMyString str3 = str1 + str2;
-	BOOST_CHECK_EQUAL(str3.GetStringData(), "catdog");
-	BOOST_CHECK_EQUAL(str3.GetStringData()[str3.GetLength()], '\0');
+	ExpectZeroTerminatedStringData(str3, "catdog");
 
-	string str4("dog");
+	char str4[4] = "dog";
 	str3 = str1 + str4;
-	BOOST_CHECK_EQUAL(str3.GetStringData(), "catdog");
-
-	char str5[4] = "dog";
-	str3 = str1 + str5;
-	BOOST_CHECK_EQUAL(str3.GetStringData(), "catdog");
+	ExpectZeroTerminatedStringData(str3, "catdog");
 
 	CMyString str6("cat");
 	CMyString str7;
 	CMyString str8 = str6 + str7;
 	
-	BOOST_CHECK_EQUAL(str8.GetStringData(), "cat");
+	ExpectZeroTerminatedStringData(str8, "cat");
 
-	CMyString str9 = str7 + str6;
-
-	BOOST_CHECK_EQUAL(str9.GetStringData(), "cat");
+	CMyString str9(str7 + str6);
+	ExpectZeroTerminatedStringData(str9, "cat");
 }
 
 BOOST_AUTO_TEST_CASE(testOperatorSquareBrackets)
@@ -101,9 +75,7 @@ BOOST_AUTO_TEST_CASE(testOperatorPlusEqual)
 {
 	CMyString str1("cat");
 	CMyString str2("dog");
-	str1 += str2;
-	BOOST_CHECK_EQUAL(str1.GetStringData(), "catdog");
-	BOOST_CHECK_EQUAL(str1[str1.GetLength()], '\0');
+	ExpectZeroTerminatedStringData(str1 += str2, "catdog");
 }
 
 BOOST_AUTO_TEST_CASE(testStringComparison)
@@ -127,23 +99,24 @@ BOOST_AUTO_TEST_CASE(testStringConcatenation)
 BOOST_AUTO_TEST_CASE(testSubstring)
 {
 	CMyString str("Hello");
-	CMyString fer = str.SubString(0, 6);
 
-	BOOST_CHECK_EQUAL(fer.GetStringData(), "Hello");
-	BOOST_CHECK_EQUAL(str.SubString(3, 5).GetStringData(), "lo");
-	BOOST_CHECK_EQUAL(str.SubString(10, 5).GetStringData(), "");
+	ExpectZeroTerminatedStringData(str.SubString(0, 6), "Hello");
+	ExpectZeroTerminatedStringData(str.SubString(3, 5), "lo");
+	ExpectZeroTerminatedStringData(str.SubString(10, 5), "");
+	ExpectZeroTerminatedStringData(str.SubString(5, 10), "");
+	ExpectZeroTerminatedStringData(str.SubString(0, 10), "Hello");
 }
 
 BOOST_AUTO_TEST_CASE(testIndexedAccess)
 {
 	CMyString str;
 	BOOST_CHECK(str[0] == '\0');
-	BOOST_CHECK_THROW(str[1], std::exception);
+	BOOST_CHECK_THROW(str[1], std::out_of_range);
 
 	CMyString hello("Hello");
 	BOOST_CHECK(hello[0] == 'H');
 	BOOST_CHECK_EQUAL(hello[5], '\0');
-	BOOST_CHECK_THROW(hello[6], std::exception);
+	BOOST_CHECK_THROW(hello[6], std::out_of_range);
 }
 
 BOOST_AUTO_TEST_CASE(testStringComparison1)
