@@ -5,7 +5,7 @@
 class CMyString
 {
 public:
-	CMyString() throw();
+	CMyString();
 
 	CMyString(const char * pString);
 
@@ -22,7 +22,7 @@ public:
 	size_t GetLength()const;
 	const char* GetStringData()const;
 
-	CMyString const SubString(unsigned start, unsigned length = UINT_MAX)const;
+	CMyString const SubString(size_t start, size_t length = UINT_MAX)const;
 
 	void Clear();
 
@@ -34,6 +34,8 @@ public:
 	const char& operator [](size_t index)const;
 
 private:
+
+	void SetEmptyString();
 
 	std::unique_ptr<char[]> m_chars;
 	size_t m_size;

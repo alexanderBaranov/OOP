@@ -4,10 +4,9 @@
 
 using namespace std;
 
-CMyString::CMyString() throw()
+CMyString::CMyString()
 {
-	m_size = 0;
-	m_chars = make_unique<char[]>('\0');
+	SetEmptyString();
 }
 
 CMyString::CMyString(const char * pString)
@@ -26,8 +25,8 @@ CMyString::CMyString(const char * pString, unsigned length)
 	m_size = length;
 
 	m_chars.reset(new char[m_size + 1]);
-	memset(m_chars.get(), '\0', m_size + 1);
 	memcpy(m_chars.get(), pString, m_size);
+	m_chars.get()[m_size] = '\0';
 }
 
 CMyString::CMyString(CMyString const& other)
@@ -47,7 +46,14 @@ CMyString::CMyString(std::string const& stlString)
 	memcpy(m_chars.get(), stlString.c_str(), m_size + 1);
 }
 
-bool CMyString::Empty()const
+void CMyString::SetEmptyString()
+{
+	m_size = 0;
+	m_chars.reset(new char[1]);
+	m_chars.get()[0] = '\0';
+}
+
+bool CMyString::Empty() const
 {
 	return !m_size;
 }
@@ -59,14 +65,19 @@ size_t CMyString::GetLength() const
 
 const char* CMyString::GetStringData() const
 {
-	return m_chars.get();
+	return m_size ? m_chars.get() : "";
 }
 
-CMyString const CMyString::SubString(unsigned start, unsigned length /*= UINT_MAX*/) const
+CMyString const CMyString::SubString(size_t start, size_t length /*= UINT_MAX*/) const
 {
+	if (start >= m_size)
+	{
+		return CMyString();
+	}
+
 	if (start + length > m_size)
 	{
-		return *this;
+		return CMyString(m_chars.get() + start, m_size - start);
 	}
 	
 	return CMyString(m_chars.get() + start, length);
@@ -74,13 +85,15 @@ CMyString const CMyString::SubString(unsigned start, unsigned length /*= UINT_MA
 
 void CMyString::Clear()
 {
-	m_chars.reset(nullptr);
+	if (m_size)
+	{
+		SetEmptyString();
+	}
 }
 
 char& CMyString::operator[](size_t index)
 {
-	if ((index > m_size)
-		|| ((m_size == 0) && (index == 0)))
+	if ((index > m_size) || (index < 0))
 	{
 		throw exception("string subscript out of range");
 	}
@@ -90,8 +103,7 @@ char& CMyString::operator[](size_t index)
 
 const char& CMyString::operator[](size_t index) const
 {
-	if ((index > m_size) 
-		|| ((m_size == 0) && (index == 0)))
+	if ((index > m_size) || (index < 0))
 	{
 		throw exception("string subscript out of range");
 	}
@@ -126,30 +138,30 @@ CMyString& CMyString::operator=(const CMyString &other)
 	return *this;
 }
 
-size_t GetComprasionSize(const CMyString &leftString, const CMyString &rightString)
+int CompairStrings(const CMyString &leftString, const CMyString &rightString)
 {
 	size_t sizeOfLeftString = leftString.GetLength();
 	size_t sizeOfRightString = rightString.GetLength();
-	return (sizeOfLeftString > sizeOfRightString) ? sizeOfLeftString : sizeOfRightString;
+
+	size_t cmpSize = (sizeOfLeftString > sizeOfRightString) ? sizeOfLeftString : sizeOfRightString;
+	return memcmp(leftString.GetStringData(), rightString.GetStringData(), cmpSize);
 }
 
 bool operator ==(const CMyString &leftString, const CMyString &rightString)
 {
-	size_t cmpSize = GetComprasionSize(leftString, rightString);
-	return memcmp(leftString.GetStringData(), rightString.GetStringData(), cmpSize) == 0;
+	return CompairStrings(leftString, rightString) == 0;
 }
 
 bool operator !=(const CMyString &leftString, const CMyString &rightString)
 {
-	size_t cmpSize = GetComprasionSize(leftString, rightString);
-	return memcmp(leftString.GetStringData(), rightString.GetStringData(), cmpSize) != 0;
+	return CompairStrings(leftString, rightString) != 0;
 }
 
 CMyString operator +(const CMyString &leftString, const CMyString &rightString)
 {
 	if (leftString.Empty() && rightString.Empty() )
 	{
-		return nullptr;
+		return "";
 	}
 
 	size_t sizeOfLeftString = leftString.GetLength();
