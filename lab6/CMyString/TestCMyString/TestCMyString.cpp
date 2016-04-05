@@ -158,4 +158,19 @@ BOOST_AUTO_TEST_CASE(testAssignEmptyString)
 	BOOST_CHECK_EQUAL(str1[0], '\0');
 }
 
+BOOST_AUTO_TEST_CASE(after_moving_the_object_must_be_in_a_valid_state)
+{
+	CMyString donor("Hello");
+	CMyString acceptor("world");
+	// Operator = must return the reference to the left argument
+	BOOST_CHECK_EQUAL(&(acceptor = move(donor)), &acceptor);
+	ExpectZeroTerminatedStringData(acceptor, "Hello");
+	ExpectZeroTerminatedStringData(donor, "");
+
+	// Donor must be in a valid state
+	donor += "new content";
+	ExpectZeroTerminatedStringData(donor, "new content");
+
+}
+
 BOOST_AUTO_TEST_SUITE_END()
