@@ -9,7 +9,7 @@ public:
 
 	CMyString(const char * pString);
 
-	CMyString(const char * pString, unsigned length);
+	CMyString(const char * pString, size_t length);
 
 	CMyString(CMyString const& other);
 
@@ -22,11 +22,12 @@ public:
 	size_t GetLength()const;
 	const char* GetStringData()const;
 
-	CMyString const SubString(size_t start, size_t length = UINT_MAX)const;
+	CMyString SubString(size_t start, size_t length = UINT_MAX)const;
 
 	void Clear();
 
 	CMyString& operator =(const CMyString &other);
+	CMyString& operator =(CMyString &&other);
 
 	CMyString& operator +=(const CMyString &other);
 
