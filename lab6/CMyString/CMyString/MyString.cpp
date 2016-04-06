@@ -39,6 +39,9 @@ CMyString::CMyString(CMyString const& other)
 CMyString::CMyString(CMyString && other)
 {
 	*this = move(other);
+	
+	other.m_chars.reset(new char[1]);
+	other.m_chars.get()[0] = '\0';
 }
 
 CMyString::CMyString(std::string const& stlString)
@@ -73,7 +76,7 @@ const char* CMyString::GetStringData() const
 	return m_size ? m_chars.get() : "";
 }
 
-CMyString CMyString::SubString(size_t start, size_t length /*= UINT_MAX*/) const
+CMyString CMyString::SubString(size_t start, size_t length /*= SIZE_MAX*/) const
 {
 	if (start >= m_size)
 	{
@@ -118,12 +121,20 @@ const char& CMyString::operator[](size_t index) const
 
 CMyString& CMyString::operator+=(const CMyString &other)
 {
-	if (!other.GetLength())
+	if (other.Empty())
 	{
 		return *this;
 	}
 
-	*this = *this + other;
+	auto chars = move(m_chars);
+
+	size_t length = m_size + other.GetLength();
+	m_chars.reset(new char[length + 1]);
+
+	memcpy(m_chars.get(), chars.get(), m_size);
+	memcpy(m_chars.get() + m_size, other.GetStringData(), other.GetLength() + 1);
+
+	m_size = length;
 
 	return *this;
 }
@@ -153,11 +164,13 @@ CMyString& CMyString::operator=(CMyString &&other)
 
 	m_chars = move(other.m_chars);
 	m_size = other.m_size;
+	
 	other.m_size = 0;
+	other.m_chars.reset(new char[1]);
+	other.m_chars.get()[0] = '\0';
 
 	return *this;
 }
-
 
 bool CompareStrings(const CMyString &leftString, const CMyString &rightString)
 {
@@ -186,14 +199,8 @@ CMyString operator +(const CMyString &leftString, const CMyString &rightString)
 		return "";
 	}
 
-	size_t sizeOfLeftString = leftString.GetLength();
-	size_t sizeOfRightString = rightString.GetLength();
-
-	size_t length = sizeOfLeftString + sizeOfRightString;
-
-	CMyString str(leftString.GetStringData(), length);
-	memcpy((char*)str.GetStringData(), leftString.GetStringData(), sizeOfLeftString);
-	memcpy((char*)str.GetStringData() + sizeOfLeftString, rightString.GetStringData(), sizeOfRightString);
+	CMyString str(leftString);
+	str += rightString;
 
 	return str;
 }
