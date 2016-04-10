@@ -3,15 +3,15 @@
 
 using namespace std;
 
-void CStringList::AddString(const std::string& newString)
+void CStringList::AddString( const std::string& newString )
 {
 	NodePtr node = make_shared<Node>();
 	node->m_string = newString;
-	
+
 	AddNode(node);
 }
 
-void CStringList::AddNode(NodePtr& node)
+void CStringList::AddNode( NodePtr& node )
 {
 	if (m_head)
 	{
@@ -27,38 +27,15 @@ void CStringList::AddNode(NodePtr& node)
 	}
 }
 
-void CStringList::Insert(const std::string& newString, size_t index)
+void CStringList::Insert( const std::string& newString, size_t posOfPlacing )
 {
-	if (!m_head
-		||((index > m_tail->m_index) && ((index - m_tail->m_index) >= 1)))
-	{
-		AddString(newString);
-	}
-	else
-	{
-		NodePtr temp = make_shared<Node>();
-		temp->m_string = newString;
+	NodePtr newNode = make_shared<Node>();
+	newNode->m_string = newString;
 
-		auto node = GetNodeByIndex(index);
-
-		if (index > 0)
-		{
-			temp->m_prev = node->m_prev;
-			node->m_prev->m_next = temp;
-		}
-		else
-		{
-			m_head = temp;
-		}
-
-		temp->m_next = node;
-		node->m_prev = temp;
-
-		RecalculateIndexes();
-	}
+	PasteNode(newNode, posOfPlacing);
 }
 
-void CStringList::PasteNode(NodePtr& newNode, size_t newPos)
+void CStringList::PasteNode( NodePtr& newNode, size_t newPos )
 {
 	if (newNode->m_prev)
 	{
@@ -71,7 +48,7 @@ void CStringList::PasteNode(NodePtr& newNode, size_t newPos)
 	}
 	
 	if (!m_head.get()
-		|| ((newPos > m_tail->m_index) && ((newPos - m_tail->m_index) >= 1)))
+		|| (newPos > m_tail->m_index))
 	{
 		AddNode(newNode);
 	}
@@ -108,7 +85,7 @@ void CStringList::RecalculateIndexes()
 	node->m_index = counter;
 	while (node)
 	{
-		if (node->m_prev.get())
+		if (node->m_prev)
 		{
 			node->m_index = counter;
 		}
@@ -118,13 +95,18 @@ void CStringList::RecalculateIndexes()
 	}
 }
 
-const NodePtr CStringList::NodeAtIndex(size_t index) const
+const NodePtr CStringList::NodeAtIndex( size_t index ) const
 {
 	return GetNodeByIndex(index);
 }
 
-NodePtr CStringList::GetNodeByIndex(size_t index) const
+NodePtr CStringList::GetNodeByIndex( size_t index ) const
 {
+	if (index >= GetSize())
+	{
+		return nullptr;
+	}
+
 	auto node = m_head;
 	while (node && (node->m_index != index))
 	{
@@ -134,9 +116,9 @@ NodePtr CStringList::GetNodeByIndex(size_t index) const
 	return node;
 }
 
-void CStringList::Delete(size_t index)
+void CStringList::Delete( size_t index )
 {
-	if (index > (GetSize() - 1))
+	if (index >= GetSize())
 	{
 		return;
 	}
@@ -150,7 +132,7 @@ void CStringList::Delete(size_t index)
 	RecalculateIndexes();
 }
 
-void CStringList::RemoveNode(NodePtr& node)
+void CStringList::RemoveNode( NodePtr& node )
 {
 	if (!node)
 	{
@@ -174,7 +156,7 @@ void CStringList::RemoveNode(NodePtr& node)
 	}
 }
 
-void CStringList::MoveString(size_t index, size_t newPos)
+void CStringList::MoveStringFromPosToNewPos( size_t index, size_t newPos )
 {
 	if (index > (GetSize() - 1))
 	{
@@ -193,7 +175,7 @@ void CStringList::MoveString(size_t index, size_t newPos)
 	}
 }
 
-void CStringList::ShowList(std::ostream& output) const
+void CStringList::ShowList( std::ostream& output ) const
 {
 	auto node = m_head;
 	while (node)

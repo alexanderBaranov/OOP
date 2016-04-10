@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #define BOOST_TEST_MODULE TestOfStringList
 #include "../CStringList/StringList.h"
-
+#include <stdlib.h>
 #include <boost\test\included\unit_test.hpp>
 
 using namespace std;
@@ -13,190 +13,137 @@ struct StringListFixture
 
 BOOST_FIXTURE_TEST_SUITE(TestOfStringList, StringListFixture)
 
-void AddNewStringAndCheckChain(CStringList& stringList, const string& newString)
+void CheckContentOfStringList(const CStringList& stringList, const vector<string> & list)
 {
-	stringList.AddString(newString);
 	auto node = stringList.GetFirstNode();
-	while (node.get())
+	for (const auto& str : list)
 	{
-		BOOST_CHECK(!node->m_string.empty());
+		BOOST_CHECK(node);
+		BOOST_CHECK_EQUAL(node->m_string, str);
+
 		node = node->m_next.lock();
 	}
+}
 
-	node = stringList.GetLastNode();
-	while (node.get())
+void AddToStringListFromArray(CStringList& stringList, const vector<string>& list)
+{
+	auto node = stringList.GetFirstNode();
+	for (const auto& str : list)
 	{
-		BOOST_CHECK(!node->m_string.empty());
-		node = node->m_prev;
+		stringList.AddString(str);
 	}
 }
 
 BOOST_AUTO_TEST_CASE(testAddStringToList)
 {
-	AddNewStringAndCheckChain(stringList, "cat");
-	AddNewStringAndCheckChain(stringList, "dog");
-	AddNewStringAndCheckChain(stringList, "catdog");
-	AddNewStringAndCheckChain(stringList, "cow");
-}
+	vector<string> list = { "cat", "dog", "catdog", "cow"};
 
-void InsertNewString(CStringList& stringList, const string& newString, size_t index, const string& beforeString, const string& afterString)
-{
-	NodePtr node;
-
-	if (index > stringList.GetSize() - 1)
-	{
-		node = stringList.GetLastNode();
-	}
-	else
-	{
-		node = stringList.NodeAtIndex(index);
-	}
-	
-	stringList.Insert(newString, index);
-	auto newNode = stringList.NodeAtIndex(index);
-
-	BOOST_CHECK_EQUAL(newNode->m_string, newString);
-
-	if (index > 0)
-	{
-		auto beforNode = stringList.NodeAtIndex(index - 1);
-		BOOST_CHECK(beforNode->m_next.lock().get() == newNode.get());
-		BOOST_CHECK_EQUAL(beforNode->m_string, beforeString);
-	}
-
-	size_t afterIndex = index + 1;
-	if ((afterIndex > 0) && (afterIndex < stringList.GetSize()))
-	{
-		auto afterNode = stringList.NodeAtIndex(afterIndex);
-		BOOST_CHECK(afterNode->m_prev.get() == newNode.get());
-		BOOST_CHECK_EQUAL(afterNode->m_string, afterString);
-	}
+	AddToStringListFromArray(stringList, list);
+	CheckContentOfStringList(stringList, list);
 }
 
 BOOST_AUTO_TEST_CASE(testInsertNewStringToList)
 {
-	AddNewStringAndCheckChain(stringList, "cat");
-	AddNewStringAndCheckChain(stringList, "dog");
-	AddNewStringAndCheckChain(stringList, "catdog");
-	AddNewStringAndCheckChain(stringList, "cow");
+	vector<string> list = { "cat", "dog", "catdog", "cow" };
 
-	InsertNewString(stringList, "horse1", 0, "", "cat");
-	InsertNewString(stringList, "horse2", 1, "horse1", "cat");
-	InsertNewString(stringList, "horse3", 2, "horse2", "cat");
-	InsertNewString(stringList, "horse4", 3, "horse3", "cat");
-	InsertNewString(stringList, "horse5", 4, "horse4", "cat");
+	AddToStringListFromArray(stringList, list);
+	CheckContentOfStringList(stringList, list);
 
-	AddNewStringAndCheckChain(stringList, "horse6");
+	auto InsertProperty = [&](const string& value, size_t pos){
+		stringList.Insert(value, pos);
+
+		auto it = (pos < list.size()) ? list.begin() + pos : list.end();
+		list.insert(it, value);
+		CheckContentOfStringList(stringList, list);
+	};
+
+	InsertProperty("horse1", 0);
+
+	InsertProperty("horse2", 1);
+	InsertProperty("horse3", 2);
+	InsertProperty("horse4", 3);
+	InsertProperty("horse5", 4);
+	InsertProperty("horse6", 20);
 }
 
 BOOST_AUTO_TEST_CASE(testInsertNewStringToEmptyList)
 {
-	InsertNewString(stringList, "horse1", 0, "", "");
-	InsertNewString(stringList, "horse2", 1, "horse1", "");
-	InsertNewString(stringList, "horse3", 2, "horse2", "");
-	InsertNewString(stringList, "horse4", 3, "horse3", "");
-	InsertNewString(stringList, "horse5", 4, "horse4", "");
+	stringList.Insert("horse1", 0);
 
-	AddNewStringAndCheckChain(stringList, "horse6");
+	vector<string> list = { "horse1" };
+	CheckContentOfStringList(stringList, list);
 }
 
 BOOST_AUTO_TEST_CASE(testDeleteFirstNode)
 {
-	AddNewStringAndCheckChain(stringList, "cat");
-	AddNewStringAndCheckChain(stringList, "dog");
-	AddNewStringAndCheckChain(stringList, "catdog");
-	AddNewStringAndCheckChain(stringList, "cow");
+	vector<string> list = { "cat", "dog", "catdog", "cow" };
 
-	auto node = stringList.NodeAtIndex(0);
+	AddToStringListFromArray(stringList, list);
 
 	stringList.Delete(0);
+	list.erase(list.begin());
 
-	BOOST_CHECK(stringList.GetSize() == 3);
-	BOOST_CHECK(stringList.NodeAtIndex(0)->m_string == "dog");
+	CheckContentOfStringList(stringList, list);
 }
 
 BOOST_AUTO_TEST_CASE(testDeleteCenterNode)
 {
-	AddNewStringAndCheckChain(stringList, "cat");
-	AddNewStringAndCheckChain(stringList, "dog");
-	AddNewStringAndCheckChain(stringList, "catdog");
-	AddNewStringAndCheckChain(stringList, "cow");
+	vector<string> list = { "cat", "dog", "catdog", "cow" };
 
-	auto node = stringList.NodeAtIndex(0);
+	AddToStringListFromArray(stringList, list);
 
 	stringList.Delete(2);
+	list.erase(list.begin() + 2);
 
-	BOOST_CHECK(stringList.GetSize() == 3);
-	BOOST_CHECK(stringList.NodeAtIndex(2)->m_string == "cow");
+	CheckContentOfStringList(stringList, list);
 }
 
 BOOST_AUTO_TEST_CASE(testDeleteLastNode)
 {
-	AddNewStringAndCheckChain(stringList, "cat");
-	AddNewStringAndCheckChain(stringList, "dog");
-	AddNewStringAndCheckChain(stringList, "catdog");
-	AddNewStringAndCheckChain(stringList, "cow");
+	vector<string> list = { "cat", "dog", "catdog", "cow" };
 
-	auto node = stringList.NodeAtIndex(0);
+	AddToStringListFromArray(stringList, list);
 
 	stringList.Delete(3);
+	list.erase(list.begin() + 3);
 
-	BOOST_CHECK(stringList.GetSize() == 3);
-	BOOST_CHECK(stringList.NodeAtIndex(2)->m_string == "catdog");
+	CheckContentOfStringList(stringList, list);
 
-	stringList.Delete(4);
-}
+	stringList.Delete(30);
 
-void Move(CStringList& stringList, size_t fromPos, size_t toPos, const string& prevNodeString, const string& nextNodeString)
-{
-	stringList.MoveString(fromPos, toPos);
-
-	auto node = stringList.NodeAtIndex(toPos);
-
-	if (toPos >= stringList.GetSize())
-	{
-		toPos = stringList.GetSize() - 1;
-	}
-
-	if (toPos > 0)
-	{
-		auto beforNode = stringList.NodeAtIndex(toPos - 1);
-		if (node)
-		{
-			BOOST_CHECK(beforNode->m_next.lock().get() == node.get());
-		}
-
-		if (beforNode)
-		{
-			BOOST_CHECK_EQUAL(beforNode->m_string, prevNodeString);
-		}
-	}
-
-	size_t afterIndex = toPos + 1;
-	if ((afterIndex > 0) && (afterIndex < stringList.GetSize()))
-	{
-		auto afterNode = stringList.NodeAtIndex(afterIndex);
-		BOOST_CHECK(afterNode->m_prev.get() == node.get());
-		BOOST_CHECK_EQUAL(afterNode->m_string, nextNodeString);
-	}
+	CheckContentOfStringList(stringList, list);
 }
 
 BOOST_AUTO_TEST_CASE(testMoveNode)
 {
-	AddNewStringAndCheckChain(stringList, "cat");
-	AddNewStringAndCheckChain(stringList, "dog");
-	AddNewStringAndCheckChain(stringList, "catdog");
-	AddNewStringAndCheckChain(stringList, "cow");
+	vector<string> list = { "cat", "dog", "catdog", "cow" };
 
-	Move(stringList, 0, 1, "dog", "catdog");
-	Move(stringList, 1, 2, "catdog", "cow");
-	Move(stringList, 2, 3, "cow", "");
-	Move(stringList, 3, 4, "cow", "");
+	AddToStringListFromArray(stringList, list);
+
+	auto MoveProperty = [&](size_t fromPos, size_t toPos){
+		stringList.MoveStringFromPosToNewPos(fromPos, toPos);
+
+		if (fromPos < list.size())
+		{
+			string strOfList = list[fromPos];
+			list.erase(list.begin() + fromPos);
+			auto it = (toPos < list.size()) ? list.begin() + toPos : list.end();
+			list.insert(it, strOfList);
+		}
+
+		CheckContentOfStringList(stringList, list);
+	};
+
+	MoveProperty(0, 1);
+
+	MoveProperty(1, 2);
+	MoveProperty(2, 3);
+	MoveProperty(3, 4);
 }
 
 BOOST_AUTO_TEST_CASE(testMoveEmptyNode)
 {
-	Move(stringList, 0, 1, "dog", "catdog");
+	stringList.MoveStringFromPosToNewPos(0, 1);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
