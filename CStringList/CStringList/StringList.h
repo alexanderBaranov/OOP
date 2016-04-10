@@ -19,18 +19,17 @@ public:
 class CStringList
 {
 public:
-
 	void AddString(const std::string& newString);
 	void Insert(const std::string& newString, size_t posOfPlacing);
 	void Delete(size_t index);
 
 	void MoveStringFromPosToNewPos(size_t index, size_t newPos);
 	void ShowList(std::ostream& output) const;
-	
-	const NodePtr GetFirstNode() const;
-	const NodePtr GetLastNode() const;
 
-	const NodePtr NodeAtIndex(size_t index) const;
+	NodePtr GetFirstNode() const;
+	NodePtr GetLastNode() const;
+
+	NodePtr NodeAtIndex(size_t index) const;
 
 	size_t GetSize() const;
 

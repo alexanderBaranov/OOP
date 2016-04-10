@@ -95,7 +95,7 @@ void CStringList::RecalculateIndexes()
 	}
 }
 
-const NodePtr CStringList::NodeAtIndex( size_t index ) const
+NodePtr CStringList::NodeAtIndex( size_t index ) const
 {
 	return GetNodeByIndex(index);
 }
@@ -185,12 +185,12 @@ void CStringList::ShowList( std::ostream& output ) const
 	}
 }
 
-const NodePtr CStringList::GetFirstNode() const
+NodePtr CStringList::GetFirstNode() const
 {
 	return m_head;
 }
 
-const NodePtr CStringList::GetLastNode() const
+NodePtr CStringList::GetLastNode() const
 {
 	return m_tail;
 }
