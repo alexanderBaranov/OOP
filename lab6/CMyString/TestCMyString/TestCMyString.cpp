@@ -73,9 +73,22 @@ BOOST_AUTO_TEST_CASE(testOperatorEquality)
 
 BOOST_AUTO_TEST_CASE(testOperatorPlusEqual)
 {
-	CMyString str1("cat");
-	CMyString str2("dog");
-	ExpectZeroTerminatedStringData(str1 += str2, "catdog");
+	{
+		CMyString str1("cat");
+		CMyString str2("dog");
+		ExpectZeroTerminatedStringData(str1 += str2, "catdog");
+	}
+	{
+		CMyString str1("cat");
+		CMyString str2;
+		ExpectZeroTerminatedStringData(str1 += str2, "cat");
+		ExpectZeroTerminatedStringData(str2 += str1, "cat");
+	}
+	{
+		CMyString str1;
+		CMyString str2;
+		ExpectZeroTerminatedStringData(str1 += str2, "");
+	}
 }
 
 BOOST_AUTO_TEST_CASE(testStringComparison)
