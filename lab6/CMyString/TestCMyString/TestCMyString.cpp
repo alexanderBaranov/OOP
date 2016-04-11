@@ -186,4 +186,13 @@ BOOST_AUTO_TEST_CASE(after_moving_the_object_must_be_in_a_valid_state)
 
 }
 
+BOOST_AUTO_TEST_CASE(MalovsTest)
+{
+	CMyString donor("Hello");
+	CMyString acceptor(donor);
+	CMyString result = "1234";
+	result += acceptor;
+	ExpectZeroTerminatedStringData(result, "1234Hello");
+}
+
 BOOST_AUTO_TEST_SUITE_END()
