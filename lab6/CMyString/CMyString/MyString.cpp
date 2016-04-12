@@ -14,7 +14,7 @@ CMyString::CMyString(const char * pString)
 	assert(pString);
 
 	size_t size = strlen(pString);
-	m_chars.reset(new char[size + 1]);
+	m_chars = make_unique<char[]>(size + 1);
 	memcpy(m_chars.get(), pString, size + 1);
 
 	m_size = size;
@@ -24,7 +24,7 @@ CMyString::CMyString(const char * pString, size_t length)
 {
 	assert(pString);
 
-	m_chars.reset(new char[length + 1]);
+	m_chars = make_unique<char[]>(length + 1);
 	memcpy(m_chars.get(), pString, length);
 	m_chars.get()[length] = '\0';
 
@@ -40,15 +40,16 @@ CMyString::CMyString(CMyString && other)
 {
 	*this = move(other);
 	
-	other.m_chars.reset(new char[1]);
+	other.m_chars = make_unique<char[]>(1);
 	other.m_chars.get()[0] = '\0';
+	other.m_size = 0;
 }
 
 CMyString::CMyString(std::string const& stlString)
 {
 	size_t size = stlString.length();
 
-	m_chars.reset(new char[size + 1]);
+	m_chars = make_unique<char[]>(size + 1);
 	memcpy(m_chars.get(), stlString.c_str(), size + 1);
 
 	m_size = size;
@@ -56,7 +57,7 @@ CMyString::CMyString(std::string const& stlString)
 
 void CMyString::SetEmptyString()
 {
-	m_chars.reset(new char[1]);
+	m_chars = make_unique<char[]>(1);
 	m_chars.get()[0] = '\0';
 	m_size = 0;
 }
@@ -129,7 +130,7 @@ CMyString& CMyString::operator+=(const CMyString &other)
 	auto chars = move(m_chars);
 
 	size_t length = m_size + other.GetLength();
-	m_chars.reset(new char[length + 1]);
+	m_chars = make_unique<char[]>(length + 1);
 
 	memcpy(m_chars.get(), chars.get(), m_size);
 	memcpy(m_chars.get() + m_size, other.GetStringData(), other.GetLength() + 1);
@@ -148,7 +149,7 @@ CMyString& CMyString::operator=(const CMyString &other)
 
 	size_t length = other.GetLength();
 
-	m_chars.reset(new char[length + 1]);
+	m_chars = make_unique<char[]>(length + 1);
 	memcpy(m_chars.get(), other.GetStringData(), length + 1);
 	m_size = length;
 
@@ -165,9 +166,9 @@ CMyString& CMyString::operator=(CMyString &&other)
 	m_chars = move(other.m_chars);
 	m_size = other.m_size;
 	
-	other.m_size = 0;
-	other.m_chars.reset(new char[1]);
+	other.m_chars = make_unique<char[]>(1);
 	other.m_chars.get()[0] = '\0';
+	other.m_size = 0;
 
 	return *this;
 }

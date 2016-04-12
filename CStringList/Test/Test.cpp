@@ -18,7 +18,7 @@ void CheckContentOfStringList(const CStringList& stringList, const vector<string
 	auto node = stringList.GetFirstNode();
 	for (const auto& str : list)
 	{
-		BOOST_CHECK(node);
+		BOOST_REQUIRE(node);
 		BOOST_CHECK_EQUAL(node->m_string, str);
 
 		node = node->m_next.lock();
@@ -49,8 +49,9 @@ BOOST_AUTO_TEST_CASE(testInsertNewStringToList)
 	AddToStringListFromArray(stringList, list);
 	CheckContentOfStringList(stringList, list);
 
-	auto InsertProperty = [&](const string& value, size_t pos){
-		stringList.Insert(value, pos);
+	auto InsertProperty = [&](const string& value, size_t pos)
+	{
+		stringList.Insert(stringList.Begin() + pos, value);
 
 		auto it = (pos < list.size()) ? list.begin() + pos : list.end();
 		list.insert(it, value);
@@ -68,7 +69,7 @@ BOOST_AUTO_TEST_CASE(testInsertNewStringToList)
 
 BOOST_AUTO_TEST_CASE(testInsertNewStringToEmptyList)
 {
-	stringList.Insert("horse1", 0);
+	stringList.Insert(stringList.Begin(), "horse1");
 
 	vector<string> list = { "horse1" };
 	CheckContentOfStringList(stringList, list);
@@ -80,7 +81,7 @@ BOOST_AUTO_TEST_CASE(testDeleteFirstNode)
 
 	AddToStringListFromArray(stringList, list);
 
-	stringList.Delete(0);
+	stringList.Delete(stringList.Begin());
 	list.erase(list.begin());
 
 	CheckContentOfStringList(stringList, list);
@@ -92,7 +93,7 @@ BOOST_AUTO_TEST_CASE(testDeleteCenterNode)
 
 	AddToStringListFromArray(stringList, list);
 
-	stringList.Delete(2);
+	stringList.Delete(stringList.Begin() + 2);
 	list.erase(list.begin() + 2);
 
 	CheckContentOfStringList(stringList, list);
@@ -104,12 +105,8 @@ BOOST_AUTO_TEST_CASE(testDeleteLastNode)
 
 	AddToStringListFromArray(stringList, list);
 
-	stringList.Delete(3);
+	stringList.Delete(stringList.Begin() + 3);
 	list.erase(list.begin() + 3);
-
-	CheckContentOfStringList(stringList, list);
-
-	stringList.Delete(30);
 
 	CheckContentOfStringList(stringList, list);
 }
@@ -120,30 +117,56 @@ BOOST_AUTO_TEST_CASE(testMoveNode)
 
 	AddToStringListFromArray(stringList, list);
 
-	auto MoveProperty = [&](size_t fromPos, size_t toPos){
-		stringList.MoveStringFromPosToNewPos(fromPos, toPos);
+	stringList.MoveStringFromPosToNewPos(stringList.Begin(), 1);
+	CheckContentOfStringList(stringList, { "dog", "cat", "catdog", "cow" });
 
-		if (fromPos < list.size())
-		{
-			string strOfList = list[fromPos];
-			list.erase(list.begin() + fromPos);
-			auto it = (toPos < list.size()) ? list.begin() + toPos : list.end();
-			list.insert(it, strOfList);
-		}
+	stringList.MoveStringFromPosToNewPos(stringList.Begin() + 1, 2);
+	CheckContentOfStringList(stringList, { "dog", "catdog", "cat", "cow" });
+	
+	stringList.MoveStringFromPosToNewPos(stringList.Begin() + 2, 3);
+	CheckContentOfStringList(stringList, { "dog", "catdog", "cow", "cat" });
 
-		CheckContentOfStringList(stringList, list);
-	};
+	stringList.MoveStringFromPosToNewPos(stringList.Begin() + 3, 4);
+	CheckContentOfStringList(stringList, { "dog", "catdog", "cow", "cat" });
 
-	MoveProperty(0, 1);
+	stringList.MoveStringFromPosToNewPos(stringList.Begin() + 3, 1);
+	CheckContentOfStringList(stringList, { "dog", "cat", "catdog", "cow" });
 
-	MoveProperty(1, 2);
-	MoveProperty(2, 3);
-	MoveProperty(3, 4);
+	stringList.MoveStringFromPosToNewPos(stringList.Begin() + 3, 0);
+	CheckContentOfStringList(stringList, { "cow", "dog", "cat", "catdog" });
 }
 
 BOOST_AUTO_TEST_CASE(testMoveEmptyNode)
 {
-	stringList.MoveStringFromPosToNewPos(0, 1);
+	stringList.MoveStringFromPosToNewPos(stringList.Begin(), 1);
+	CheckContentOfStringList(stringList, { });
 }
+
+//BOOST_AUTO_TEST_CASE(test_large_std_list)
+//{
+//	std::list<string> lst;
+//	for (size_t i = 0; i < 100000; i++)
+//	{
+//		lst.emplace_back(std::to_string(i));
+//	}
+//}
+//
+//
+//BOOST_AUTO_TEST_CASE(test_large_list)
+//{
+//	CStringList lst;
+//	for (size_t i = 0; i < 100000; i++)
+//	{
+//		if (i == 10000)
+//		{
+//			int g = 0;
+//			g++;
+//		}
+//		lst.AddString(std::to_string(i));
+//	}
+//
+//	BOOST_CHECK(lst.GetSize() == 100000);
+//}
+//
 
 BOOST_AUTO_TEST_SUITE_END()
