@@ -18,24 +18,22 @@ void CStringList::AddNode( NodePtr& node )
 		node->m_prev = m_tail;
 		m_tail->m_next = node;
 		m_tail = node;
-		m_tail->m_index = m_tail->m_prev->m_index + 1;
 	}
 	else
 	{
 		m_head = m_tail = node;
-		m_tail->m_index = 0;
 	}
 }
 
-void CStringList::Insert( const std::string& newString, size_t posOfPlacing )
+void CStringList::Insert(CStringListIterator& iterator, const std::string& newString)
 {
 	NodePtr newNode = make_shared<Node>();
 	newNode->m_string = newString;
 
-	PasteNode(newNode, posOfPlacing);
+	PasteNode(iterator, newNode);
 }
 
-void CStringList::PasteNode( NodePtr& newNode, size_t newPos )
+void CStringList::PasteNode(CStringListIterator& iterator, NodePtr& newNode)
 {
 	if (newNode->m_prev)
 	{
@@ -47,89 +45,51 @@ void CStringList::PasteNode( NodePtr& newNode, size_t newPos )
 		newNode->m_next.reset();
 	}
 	
-	if (!m_head.get()
-		|| (newPos > m_tail->m_index))
+	if (!m_head.get() || !iterator->m_next.lock())
 	{
 		AddNode(newNode);
 	}
 	else
 	{
-		auto node = GetNodeByIndex(newPos);
-
-		if (newPos > 0)
+		if (iterator->m_next.lock() && iterator->m_prev)
 		{
-			newNode->m_prev = node->m_prev;
-			node->m_prev->m_next = newNode;
+			newNode->m_prev = iterator->m_prev;
+			iterator->m_prev->m_next = newNode;
 		}
-		else
+		else if(iterator->m_next.lock())
 		{
 			m_head = newNode;
 		}
 
-		newNode->m_next = node;
-		node->m_prev = newNode;
-
-		RecalculateIndexes();
+		newNode->m_next = *iterator;
+		iterator->m_prev = newNode;
 	}
 }
 
 size_t CStringList::GetSize() const
 {
-	return m_tail ? m_tail->m_index + 1 : 0;
-}
+	size_t size = 0;
 
-void CStringList::RecalculateIndexes()
-{
 	auto node = m_head;
-	size_t counter = 0;
-	node->m_index = counter;
 	while (node)
 	{
-		if (node->m_prev)
-		{
-			node->m_index = counter;
-		}
 		node = node->m_next.lock();
-
-		counter++;
-	}
-}
-
-NodePtr CStringList::NodeAtIndex( size_t index ) const
-{
-	return GetNodeByIndex(index);
-}
-
-NodePtr CStringList::GetNodeByIndex( size_t index ) const
-{
-	if (index >= GetSize())
-	{
-		return nullptr;
+		size++;
 	}
 
-	auto node = m_head;
-	while (node && (node->m_index != index))
-	{
-		node = node->m_next.lock();
-	}
-
-	return node;
+	return size;
 }
 
-void CStringList::Delete( size_t index )
+void CStringList::Delete(CStringListIterator& iterator)
 {
-	if (index >= GetSize())
+	if (!iterator)
 	{
 		return;
 	}
 
-	NodePtr node = GetNodeByIndex(index);
+	RemoveNode(*iterator);
 
-	RemoveNode(node);
-
-	node.reset();
-
-	RecalculateIndexes();
+	(*iterator).reset();
 }
 
 void CStringList::RemoveNode( NodePtr& node )
@@ -156,33 +116,90 @@ void CStringList::RemoveNode( NodePtr& node )
 	}
 }
 
-void CStringList::MoveStringFromPosToNewPos( size_t index, size_t newPos )
+void CStringList::MoveStringFromPosToNewPos(CStringListIterator& iterator, size_t newPos)
 {
-	if (index > (GetSize() - 1))
+	CStringListIterator posIterator(m_head);
+	posIterator = posIterator + newPos;
+
+	size_t curPos = GetIndexForIterator(iterator);
+	newPos = GetIndexForIterator(posIterator);
+
+	if (*iterator == *posIterator)
 	{
 		return;
 	}
 
-	NodePtr node = GetNodeByIndex(index);
-
-	if (node)
+	if (iterator->m_prev && iterator->m_next.lock())
 	{
-		RemoveNode(node);
+		iterator->m_prev->m_next = iterator->m_next;
+		iterator->m_next.lock()->m_prev = iterator->m_prev;
+	}
+	else if (*iterator == m_head)
+	{
+		m_head = iterator->m_next.lock();
+		m_head->m_prev.reset();
+	}
+	else if (*iterator == m_tail)
+	{
+		iterator->m_prev->m_next.reset();
+		m_tail = iterator->m_prev;
+	}
 
-		PasteNode(node, newPos + 1);
+	if (curPos < newPos)
+	{
+		iterator->m_next = posIterator->m_next;
 
-		RecalculateIndexes();
+		if (iterator->m_next.lock())
+		{
+			iterator->m_next.lock()->m_prev = *iterator;
+		}
+		else
+		{
+			m_tail = *iterator;
+		}
+
+		iterator->m_prev = *posIterator;
+		posIterator->m_next = *iterator;
+	}
+	else
+	{
+		if (*posIterator == m_head)
+		{
+			iterator->m_prev.reset();
+			m_head = *iterator;
+		}
+		else
+		{
+			iterator->m_prev = posIterator->m_prev;
+			iterator->m_prev->m_next = *iterator;
+		}
+
+		iterator->m_next = *posIterator;
+		posIterator->m_prev = *iterator;
 	}
 }
 
-void CStringList::ShowList( std::ostream& output ) const
+size_t CStringList::GetIndexForIterator(CStringListIterator& iterator) const 
 {
+	if (!iterator)
+	{
+		return 0;
+	}
+
+	size_t pos = 0;
 	auto node = m_head;
 	while (node)
 	{
-		output << node->m_string << endl;
+		if (node == *iterator)
+		{
+			break;
+		}
+
 		node = node->m_next.lock();
+		pos++;
 	}
+
+	return pos;
 }
 
 NodePtr CStringList::GetFirstNode() const
@@ -193,4 +210,103 @@ NodePtr CStringList::GetFirstNode() const
 NodePtr CStringList::GetLastNode() const
 {
 	return m_tail;
+}
+
+CStringListIterator CStringList::Begin() const
+{
+	return CStringListIterator(m_head);
+}
+
+CStringListIterator CStringList::End() const
+{
+	return CStringListIterator(m_tail);
+}
+
+
+CStringListIterator::CStringListIterator(NodePtr node)
+:m_node(node)
+{
+}
+
+CStringListIterator& CStringListIterator::operator++()
+{
+	if (m_node && m_node->m_next.lock())
+	{
+		m_node = m_node->m_next.lock();
+	}
+
+	return *this;
+}
+
+CStringListIterator& CStringListIterator::operator--()
+{
+	if (m_node && m_node->m_prev)
+	{
+		m_node = m_node->m_prev;
+	}
+
+	return *this;
+}
+
+NodePtr CStringListIterator::operator*() const
+{
+	return m_node ? m_node : nullptr;
+}
+
+Node* CStringListIterator::operator->() const
+{
+	return m_node.get();
+}
+
+CStringListIterator CStringListIterator::operator + (size_t pos) const
+{
+	if (!m_node)
+	{
+		return nullptr;
+	}
+
+	NodePtr node = m_node;
+
+	for (int i = 0; i != pos; ++i)
+	{
+		if (node->m_next.lock())
+		{
+			node = node->m_next.lock();
+		}
+		else
+		{
+			break;
+		}
+	}
+
+	return CStringListIterator(node);
+}
+
+CStringListIterator CStringListIterator::operator - (size_t pos) const
+{
+	if (!m_node)
+	{
+		return nullptr;
+	}
+
+	NodePtr node = m_node;
+
+	for (int i = 0; i != pos; ++i)
+	{
+		if (node->m_prev)
+		{
+			node = node->m_prev;
+		}
+		else
+		{
+			break;
+		}
+	}
+
+	return CStringListIterator(node);
+}
+
+bool CStringListIterator::operator!() const
+{
+	return m_node ? false : true;
 }

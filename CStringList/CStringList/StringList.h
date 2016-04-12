@@ -3,7 +3,9 @@
 #include <string>
 #include <iostream>
 
+class CStringListIterator;
 class Node;
+
 typedef std::shared_ptr<Node> NodePtr;
 typedef std::weak_ptr<Node> WeakNodePtr;
 
@@ -13,32 +15,51 @@ public:
 	NodePtr m_prev; 
 	WeakNodePtr m_next;
 	std::string m_string;
-	size_t m_index;
 };
 
 class CStringList
 {
 public:
-	void AddString(const std::string& newString);
-	void Insert(const std::string& newString, size_t posOfPlacing);
-	void Delete(size_t index);
 
-	void MoveStringFromPosToNewPos(size_t index, size_t newPos);
-	void ShowList(std::ostream& output) const;
+	void AddString(const std::string& newString);
+	void Insert(CStringListIterator& iterator, const std::string& newString);
+	void Delete(CStringListIterator& iterator);
+
+	void MoveStringFromPosToNewPos(CStringListIterator& iterator, size_t newPos);
 
 	NodePtr GetFirstNode() const;
 	NodePtr GetLastNode() const;
 
-	NodePtr NodeAtIndex(size_t index) const;
-
 	size_t GetSize() const;
 
+	CStringListIterator Begin() const;
+	CStringListIterator End() const;
+
 private:
-	NodePtr GetNodeByIndex(size_t index) const;
-	void RecalculateIndexes();
 	void RemoveNode(NodePtr& node);
-	void PasteNode(NodePtr& newNode, size_t newPos);
+	void PasteNode(CStringListIterator& iterator, NodePtr& newNode);
 	void AddNode(NodePtr& node);
+	size_t GetIndexForIterator(CStringListIterator& iterator) const;
 
 	NodePtr m_head, m_tail;
+};
+
+class CStringListIterator
+{
+public:
+	CStringListIterator(NodePtr node);
+
+	CStringListIterator& operator++();
+	CStringListIterator& operator--();
+
+	NodePtr operator*() const;
+	Node* operator->() const;
+
+	CStringListIterator operator + (size_t pos) const;
+	CStringListIterator operator - (size_t pos) const ;
+
+	bool operator!() const;
+
+private:
+	NodePtr m_node;
 };
