@@ -38,11 +38,7 @@ CMyString::CMyString(CMyString const& other)
 
 CMyString::CMyString(CMyString && other)
 {
-	*this = move(other);
-	
-	other.m_chars = make_unique<char[]>(1);
-	other.m_chars.get()[0] = '\0';
-	other.m_size = 0;
+	*this = move(other);	
 }
 
 CMyString::CMyString(std::string const& stlString)
@@ -163,12 +159,13 @@ CMyString& CMyString::operator=(CMyString &&other)
 		return *this;
 	}
 
+	CMyString temp;
+
 	m_chars = move(other.m_chars);
 	m_size = other.m_size;
-	
-	other.m_chars = make_unique<char[]>(1);
-	other.m_chars.get()[0] = '\0';
+
 	other.m_size = 0;
+	other.m_chars = move(temp.m_chars);
 
 	return *this;
 }
