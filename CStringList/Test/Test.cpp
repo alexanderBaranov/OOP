@@ -153,11 +153,4 @@ BOOST_AUTO_TEST_CASE(test_large_list)
 	BOOST_CHECK(lst.GetSize() == 100000);
 }
 
-//BOOST_AUTO_TEST_CASE(test_check_end_iterator)
-//{
-//	vector<string> list = { "cat", "dog", "catdog", "cow" };
-//	AddToStringListFromArray(stringList, list);
-//}
-
-
 BOOST_AUTO_TEST_SUITE_END()

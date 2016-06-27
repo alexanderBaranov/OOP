@@ -158,35 +158,15 @@ size_t CStringList::GetIndexForIterator(CStringListIterator& iterator) const
 	return pos;
 }
 
-//const NodePtr CStringList::GetFirstNode() const
-//{
-//	return m_head;
-//}
-//
-//const NodePtr CStringList::GetLastNode() const
-//{
-//	return m_tail;
-//}
-
 CStringListIterator CStringList::begin() const
 {
 	return CStringListIterator(m_head);
 }
 
-//const CStringListIterator CStringList::begin()
-//{
-//	return CStringListIterator(m_head);
-//}
-
 CStringListIterator CStringList::end() const
 {
 	return CStringListIterator(m_tail->m_next.lock());
 }
-
-//const CStringListIterator CStringList::end()
-//{
-//	return CStringListIterator(m_tail);
-//}
 
 CStringListIterator::CStringListIterator(NodePtr node)
 :m_node(node)

@@ -30,16 +30,11 @@ public:
 	void Insert(CStringListIterator& iterator, const std::string& newString);
 	void Delete(CStringListIterator& iterator);
 
-	//const NodePtr GetFirstNode() const;
-	//const NodePtr GetLastNode() const;
-
 	size_t GetSize() const;
 
 	CStringListIterator begin() const;
-	//const CStringListIterator begin();
 
 	CStringListIterator end() const;
-	//const CStringListIterator end();
 
 private:
 	void RemoveNode(NodePtr& node);
@@ -68,9 +63,6 @@ public:
 
 	bool operator==(CStringListIterator& node);
 	bool operator!=(CStringListIterator& node);
-
-	//CStringListIterator operator + (size_t pos) const;
-	//CStringListIterator operator - (size_t pos) const ;
 
 	bool operator!() const;
 private:
