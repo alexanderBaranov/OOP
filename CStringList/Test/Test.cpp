@@ -34,7 +34,7 @@ void AddToStringListFromArray(CStringList& stringList, const vector<string>& lis
 	}
 }
 
-CStringListIterator GetStringListIteratorFromPos(const CStringList& stringList, size_t pos)
+CStringListIterator<std::string> GetStringListIteratorFromPos(const CStringList& stringList, size_t pos)
 {
 	auto begIterator = stringList.begin();
 	for (int i = 0; begIterator != stringList.end(); begIterator++)
@@ -151,6 +151,53 @@ BOOST_AUTO_TEST_CASE(test_large_list)
 	}
 
 	BOOST_CHECK(lst.GetSize() == 100000);
+}
+
+BOOST_AUTO_TEST_CASE(test_RBF)
+{
+	vector<string> list = { "cat", "dog", "catdog", "cow" };
+
+	AddToStringListFromArray(stringList, list);
+
+	auto templateIterator = list.begin();
+
+	int i = 0;
+	for (auto it : stringList)
+	{
+		BOOST_CHECK_EQUAL(templateIterator->c_str(), it);
+
+		templateIterator++;
+	}
+
+	BOOST_CHECK(templateIterator == list.end());
+}
+
+BOOST_AUTO_TEST_CASE(test_end_iterator)
+{
+	vector<string> list = { "cat", "dog", "catdog", "cow" };
+
+	AddToStringListFromArray(stringList, list);
+
+	auto it = stringList.end();
+	it--;
+
+	auto templateIterator = list.end();
+	templateIterator--;
+
+	BOOST_CHECK(*it == *templateIterator);
+}
+
+BOOST_AUTO_TEST_CASE(test_change_content_list_through_iterator)
+{
+	vector<string> list = { "cat", "dog", "catdog", "cow" };
+
+	AddToStringListFromArray(stringList, list);
+
+	auto it = stringList.begin();
+	it++;
+	*it = "worm";
+
+	CheckContentOfStringList(stringList, { "cat", "worm", "catdog", "cow" });
 }
 
 BOOST_AUTO_TEST_SUITE_END()

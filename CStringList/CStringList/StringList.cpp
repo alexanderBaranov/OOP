@@ -44,7 +44,7 @@ void CStringList::AddNode( NodePtr& node )
 	m_emptyNode->m_prev = m_tail;
 }
 
-void CStringList::Insert(CStringListIterator& iterator, const std::string& newString)
+void CStringList::Insert(CStringListIterator<std::string>& iterator, const std::string& newString)
 {
 	NodePtr newNode = make_shared<Node>();
 	newNode->m_string = newString;
@@ -52,7 +52,7 @@ void CStringList::Insert(CStringListIterator& iterator, const std::string& newSt
 	PasteNode(iterator, newNode);
 }
 
-void CStringList::PasteNode(CStringListIterator& iterator, NodePtr& newNode)
+void CStringList::PasteNode(CStringListIterator<std::string>& iterator, NodePtr& newNode)
 {
 	if (newNode->m_prev)
 	{
@@ -99,7 +99,7 @@ size_t CStringList::GetSize() const
 	return size;
 }
 
-void CStringList::Delete(CStringListIterator& iterator)
+void CStringList::Delete(CStringListIterator<std::string>& iterator)
 {
 	if (!iterator)
 	{
@@ -135,7 +135,7 @@ void CStringList::RemoveNode( NodePtr& node )
 	}
 }
 
-size_t CStringList::GetIndexForIterator(CStringListIterator& iterator) const 
+size_t CStringList::GetIndexForIterator(CStringListIterator<std::string>& iterator) const
 {
 	if (!iterator)
 	{
@@ -158,62 +158,22 @@ size_t CStringList::GetIndexForIterator(CStringListIterator& iterator) const
 	return pos;
 }
 
-CStringListIterator CStringList::begin() const
+CStringListIterator<std::string> CStringList::begin() const
 {
-	return CStringListIterator(m_head);
+	return CStringListIterator<std::string>(m_head);
 }
 
-CStringListIterator CStringList::end() const
+CStringListIterator<const std::string> CStringList::cbegin() const
 {
-	return CStringListIterator(m_tail->m_next.lock());
+	return CStringListIterator<const std::string>(m_head);
 }
 
-CStringListIterator::CStringListIterator(NodePtr node)
-:m_node(node)
+CStringListIterator<std::string> CStringList::end() const
 {
+	return CStringListIterator<std::string>(m_tail->m_next.lock());
 }
 
-void CStringListIterator::operator++()
+CStringListIterator<const std::string> CStringList::cend() const
 {
-	m_node = m_node->m_next.lock();
-}
-
-void CStringListIterator::operator++(int)
-{
-	++*this;
-}
-
-void CStringListIterator::operator--()
-{
-	m_node = m_node->m_prev;
-}
-
-void CStringListIterator::operator--(int)
-{
-	--*this;
-}
-
-string& CStringListIterator::operator*() const
-{
-	return m_node->m_string;
-}
-
-std::string* CStringListIterator::operator->() const
-{
-	return &m_node->m_string;
-}
-
-bool CStringListIterator::operator!() const
-{
-	return m_node ? false : true;
-}
-
-bool CStringListIterator::operator == (CStringListIterator& node)
-{
-	return m_node == node.m_node;
-}
-
-bool CStringListIterator::operator != (CStringListIterator& node)
-{
-	return m_node != node.m_node;
+	return CStringListIterator<const std::string>(m_tail->m_next.lock());
 }

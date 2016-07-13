@@ -2,18 +2,92 @@
 #include <memory>
 #include <string>
 #include <iostream>
+#include <assert.h>
+#include <iterator>
 
-class CStringListIterator;
 class Node;
+class CStringList;
 
 typedef std::shared_ptr<Node> NodePtr;
 typedef std::weak_ptr<Node> WeakNodePtr;
+
+template<typename T>
+class CStringListIterator:public std::iterator<std::input_iterator_tag, T>
+{
+	friend class CStringList;
+
+public:
+	CStringListIterator(NodePtr node)
+		:m_node(node)
+	{
+	};
+
+	CStringListIterator operator++()
+	{
+		assert(m_node);
+		m_node = m_node->m_next.lock();
+
+		return m_node;
+	};
+
+	CStringListIterator operator++(int)
+	{
+		CStringListIterator temp(*this);
+		++*this;
+		return temp;
+	};
+
+	CStringListIterator operator--()
+	{
+		assert(m_node);
+		m_node = m_node->m_prev;
+
+		return m_node;
+	};
+
+	CStringListIterator operator--(int)
+	{
+		CStringListIterator temp(*this);
+		--*this;
+		return temp;
+	};
+
+	reference& operator*() const
+	{
+		assert(m_node);
+		return m_node->m_string;
+	};
+
+	pointer* operator->() const
+	{
+		assert(m_node);
+		return &m_node->m_string;
+	};
+
+	bool operator==(CStringListIterator& node)
+	{
+		return m_node == node.m_node;
+	};
+
+	bool operator!=(CStringListIterator& node)
+	{
+		return m_node != node.m_node;
+	};
+
+	bool operator!() const
+	{
+		return m_node ? false : true;
+	};
+
+private:
+	NodePtr m_node;
+};
 
 class Node
 {
 private:
 	friend class CStringList;
-	friend class CStringListIterator;
+	template<typename T> friend class CStringListIterator;
 
 	NodePtr m_prev; 
 	WeakNodePtr m_next;
@@ -27,45 +101,23 @@ public:
 	~CStringList();
 
 	void AddString(const std::string& newString);
-	void Insert(CStringListIterator& iterator, const std::string& newString);
-	void Delete(CStringListIterator& iterator);
+	void Insert(CStringListIterator<std::string>& iterator, const std::string& newString);
+	void Delete(CStringListIterator<std::string>& iterator);
 
 	size_t GetSize() const;
 
-	CStringListIterator begin() const;
-
-	CStringListIterator end() const;
+	CStringListIterator<std::string> begin() const;
+	CStringListIterator<const std::string> cbegin() const;
+	
+	CStringListIterator<std::string> end() const;
+	CStringListIterator<const std::string> cend() const;
 
 private:
 	void RemoveNode(NodePtr& node);
-	void PasteNode(CStringListIterator& iterator, NodePtr& newNode);
+	void PasteNode(CStringListIterator<std::string>& iterator, NodePtr& newNode);
 	void AddNode(NodePtr& node);
-	size_t GetIndexForIterator(CStringListIterator& iterator) const;
+	size_t GetIndexForIterator(CStringListIterator<std::string>& iterator) const;
 
 	NodePtr m_head, m_tail, m_emptyNode;;
-};
-
-class CStringListIterator
-{
-	friend class CStringList;
-
-public:
-	CStringListIterator(NodePtr node);
-
-	void operator++();
-	void operator++(int);
-
-	void operator--();
-	void operator--(int);
-
-	std::string& operator*() const;
-	std::string* operator->() const;
-
-	bool operator==(CStringListIterator& node);
-	bool operator!=(CStringListIterator& node);
-
-	bool operator!() const;
-private:
-	NodePtr m_node;
 };
 
