@@ -200,4 +200,24 @@ BOOST_AUTO_TEST_CASE(test_change_content_list_through_iterator)
 	CheckContentOfStringList(stringList, { "cat", "worm", "catdog", "cow" });
 }
 
+BOOST_AUTO_TEST_CASE(all_end_iterators_must_be_identical)
+{
+	CStringList lst;
+	auto end0 = lst.end();
+	lst.AddString("one");
+	auto end1 = lst.end();
+	lst.AddString("two");
+	auto end2 = lst.end();
+
+	BOOST_REQUIRE(end0 == end1);
+	BOOST_REQUIRE(end1 == end2);
+
+	--end0;
+	--end1;
+	--end2;
+	BOOST_REQUIRE(end0 == end1);
+	BOOST_REQUIRE(end1 == end2);
+	BOOST_REQUIRE_EQUAL(*end1, "two");
+}
+
 BOOST_AUTO_TEST_SUITE_END()
