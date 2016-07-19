@@ -104,9 +104,8 @@ BOOST_AUTO_TEST_CASE(testStringConcatenation)
 	BOOST_CHECK("hello " + std::string("world") == std::string("hello world"));
 	BOOST_CHECK(CMyString("hello ") + std::string("world") == CMyString("hello world"));
 	BOOST_CHECK(CMyString("hello ") + "world" == CMyString("hello world"));
-	BOOST_CHECK(std::string("hello ") + CMyString("world") == CMyString("hello world"));
-
 	BOOST_CHECK(CMyString() + CMyString("1") == CMyString("1"));
+	BOOST_CHECK(std::string("hello ") + CMyString("world") == CMyString("hello world"));
 }
 
 BOOST_AUTO_TEST_CASE(testSubstring)

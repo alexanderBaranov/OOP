@@ -6,7 +6,6 @@ using namespace std;
 
 CMyString::CMyString()
 {
-	SetEmptyString();
 }
 
 CMyString::CMyString(const char * pString)
@@ -26,7 +25,6 @@ CMyString::CMyString(const char * pString, size_t length)
 
 	m_chars = make_unique<char[]>(length + 1);
 	memcpy(m_chars.get(), pString, length);
-	m_chars.get()[length] = '\0';
 
 	m_size = length;
 }
@@ -57,13 +55,6 @@ CMyString::CMyString(std::unique_ptr<char[]> &&pString, size_t length)
 	m_size = length;
 }
 
-void CMyString::SetEmptyString()
-{
-	m_chars = make_unique<char[]>(1);
-	m_chars.get()[0] = '\0';
-	m_size = 0;
-}
-
 bool CMyString::Empty() const
 {
 	return !m_size;
@@ -71,7 +62,7 @@ bool CMyString::Empty() const
 
 size_t CMyString::GetLength() const
 {
-	return m_size;
+	return m_chars ? m_size : 0;
 }
 
 char* CMyString::GetStringDataImpl() const
@@ -86,14 +77,14 @@ const char* CMyString::GetStringData() const
 
 CMyString CMyString::SubString(size_t start, size_t length /*= SIZE_MAX*/) const
 {
-	if (start >= m_size)
+	if (start >= GetLength())
 	{
 		return CMyString();
 	}
 
-	if (start + length > m_size)
+	if (start + length > GetLength())
 	{
-		return CMyString(m_chars.get() + start, m_size - start);
+		return CMyString(m_chars.get() + start, GetLength() - start);
 	}
 	
 	return CMyString(m_chars.get() + start, length);
@@ -101,10 +92,8 @@ CMyString CMyString::SubString(size_t start, size_t length /*= SIZE_MAX*/) const
 
 void CMyString::Clear()
 {
-	if (m_size)
-	{
-		SetEmptyString();
-	}
+	m_size = 0;
+	m_chars.reset();
 }
 
 char& CMyString::operator[](size_t index)
@@ -134,11 +123,11 @@ CMyString& CMyString::operator+=(const CMyString &other)
 		return *this;
 	}
 
-	size_t length = m_size + other.GetLength();
+	size_t length = GetLength() + other.GetLength();
 	auto chars = make_unique<char[]>(length + 1);
 
-	memcpy(chars.get(), GetStringData(), m_size);
-	memcpy(chars.get() + m_size, other.GetStringData(), other.GetLength() + 1);
+	memcpy(chars.get(), GetStringData(), GetLength());
+	memcpy(chars.get() + GetLength(), other.GetStringData(), other.GetLength() + 1);
 
 	m_chars = move(chars);
 	m_size = length;
@@ -204,9 +193,17 @@ CMyString operator +(const CMyString &leftString, const CMyString &rightString)
 		return "";
 	}
 
-	auto temp = std::make_unique<char[]>(leftString.m_size + rightString.m_size + 1);
-	memcpy(temp.get(), leftString.GetStringData(), leftString.m_size);
-	memcpy(temp.get() + leftString.m_size, rightString.GetStringData(), rightString.m_size + 1);
+	auto temp = std::make_unique<char[]>(leftString.GetLength() + rightString.GetLength() + 1);
+	
+	if (leftString.GetLength())
+	{
+		memcpy(temp.get(), leftString.GetStringData(), leftString.m_size);
+	}
 
-	return CMyString(std::move(temp), leftString.m_size + rightString.m_size);
+	if (rightString.GetLength())
+	{
+		memcpy(temp.get() + leftString.GetLength(), rightString.GetStringData(), rightString.GetLength() + 1);
+	}
+
+	return CMyString(std::move(temp), leftString.GetLength() + rightString.GetLength());
 }

@@ -41,8 +41,6 @@ public:
 private:
 	char* GetStringDataImpl()const;
 
-	void SetEmptyString();
-
 	std::unique_ptr<char[]> m_chars;
 	size_t m_size;
 };
