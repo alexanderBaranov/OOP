@@ -56,13 +56,13 @@ public:
 		return temp;
 	};
 
-	reference& operator*() const
+	reference operator*() const
 	{
 		assert(m_node);
 		return m_node->m_string;
 	};
 
-	pointer* operator->() const
+	pointer operator->() const
 	{
 		assert(m_node);
 		return &m_node->m_string;
