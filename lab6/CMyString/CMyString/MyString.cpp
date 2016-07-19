@@ -137,7 +137,7 @@ CMyString& CMyString::operator+=(const CMyString &other)
 	size_t length = m_size + other.GetLength();
 	auto chars = make_unique<char[]>(length + 1);
 
-	memcpy(chars.get(), m_chars.get(), m_size);
+	memcpy(chars.get(), GetStringData(), m_size);
 	memcpy(chars.get() + m_size, other.GetStringData(), other.GetLength() + 1);
 
 	m_chars = move(chars);
@@ -173,8 +173,6 @@ CMyString& CMyString::operator=(CMyString &&other)
 	m_size = other.m_size;
 
 	other.m_size = 0;
-	//other.m_chars = make_unique<char[]>(1);
-	//other.m_chars.get()[0] = '\0';
 
 	return *this;
 }
