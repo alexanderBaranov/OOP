@@ -7,9 +7,13 @@
 
 class Node;
 class CStringList;
+template<typename T> class CStringListIterator;
 
 typedef std::shared_ptr<Node> NodePtr;
 typedef std::weak_ptr<Node> WeakNodePtr;
+
+typedef CStringListIterator<std::string> list_iterator;
+typedef CStringListIterator<const std::string> const_list_iterator;
 
 template<typename T>
 class CStringListIterator:public std::iterator<std::input_iterator_tag, T>
@@ -85,6 +89,10 @@ private:
 
 class Node
 {
+public:
+	Node() = default;
+	Node(const std::string& newString);
+
 private:
 	friend class CStringList;
 	template<typename T> friend class CStringListIterator;
@@ -101,22 +109,21 @@ public:
 	~CStringList();
 
 	void AddString(const std::string& newString);
-	void Insert(CStringListIterator<std::string>& iterator, const std::string& newString);
-	void Delete(CStringListIterator<std::string>& iterator);
+	void Insert(list_iterator it, const std::string& newString);
+	void Delete(list_iterator it);
 
 	size_t GetSize() const;
 
-	CStringListIterator<std::string> begin() const;
-	CStringListIterator<const std::string> cbegin() const;
+	list_iterator begin() const;
+	const_list_iterator cbegin() const;
 	
-	CStringListIterator<std::string> end() const;
-	CStringListIterator<const std::string> cend() const;
+	list_iterator end() const;
+	const_list_iterator cend() const;
 
 private:
 	void RemoveNode(NodePtr& node);
-	void PasteNode(CStringListIterator<std::string>& iterator, NodePtr& newNode);
-	void AddNode(NodePtr& node);
-	size_t GetIndexForIterator(CStringListIterator<std::string>& iterator) const;
+	void AddNode(const NodePtr& node);
+	size_t GetIndexForIterator(list_iterator& iterator) const;
 
 	NodePtr m_head, m_tail, m_emptyNode;;
 };

@@ -51,6 +51,12 @@ CMyString::CMyString(std::string const& stlString)
 	m_size = size;
 }
 
+CMyString::CMyString(std::unique_ptr<char[]> &&pString, size_t length)
+{
+	m_chars = move(pString);
+	m_size = length;
+}
+
 void CMyString::SetEmptyString()
 {
 	m_chars = make_unique<char[]>(1);
@@ -70,7 +76,7 @@ size_t CMyString::GetLength() const
 
 const char* CMyString::GetStringData() const
 {
-	return m_size ? m_chars.get() : "";
+	return (m_chars != nullptr) ? m_chars.get() : "";
 }
 
 CMyString CMyString::SubString(size_t start, size_t length /*= SIZE_MAX*/) const
@@ -123,14 +129,13 @@ CMyString& CMyString::operator+=(const CMyString &other)
 		return *this;
 	}
 
-	auto chars = move(m_chars);
-
 	size_t length = m_size + other.GetLength();
-	m_chars = make_unique<char[]>(length + 1);
+	auto chars = make_unique<char[]>(length + 1);
 
-	memcpy(m_chars.get(), chars.get(), m_size);
-	memcpy(m_chars.get() + m_size, other.GetStringData(), other.GetLength() + 1);
+	memcpy(chars.get(), m_chars.get(), m_size);
+	memcpy(chars.get() + m_size, other.GetStringData(), other.GetLength() + 1);
 
+	m_chars = move(chars);
 	m_size = length;
 
 	return *this;
@@ -159,18 +164,17 @@ CMyString& CMyString::operator=(CMyString &&other)
 		return *this;
 	}
 
-	CMyString temp;
-
 	m_chars = move(other.m_chars);
 	m_size = other.m_size;
 
 	other.m_size = 0;
-	other.m_chars = move(temp.m_chars);
+	other.m_chars = make_unique<char[]>(1);
+	other.m_chars.get()[0] = '\0';
 
 	return *this;
 }
 
-bool CompareStrings(const CMyString &leftString, const CMyString &rightString)
+bool StringsAreEqual(const CMyString &leftString, const CMyString &rightString)
 {
 	size_t sizeOfLeftString = leftString.GetLength();
 	size_t sizeOfRightString = rightString.GetLength();
@@ -182,12 +186,12 @@ bool CompareStrings(const CMyString &leftString, const CMyString &rightString)
 
 bool operator ==(const CMyString &leftString, const CMyString &rightString)
 {
-	return CompareStrings(leftString, rightString);
+	return StringsAreEqual(leftString, rightString);
 }
 
 bool operator !=(const CMyString &leftString, const CMyString &rightString)
 {
-	return !CompareStrings(leftString, rightString);
+	return !StringsAreEqual(leftString, rightString);
 }
 
 CMyString operator +(const CMyString &leftString, const CMyString &rightString)
@@ -197,8 +201,9 @@ CMyString operator +(const CMyString &leftString, const CMyString &rightString)
 		return "";
 	}
 
-	CMyString str(leftString);
-	str += rightString;
+	auto temp = std::make_unique<char[]>(leftString.m_size + rightString.m_size + 1);
+	memcpy(temp.get(), leftString.m_chars.get(), leftString.m_size);
+	memcpy(temp.get() + leftString.m_size, rightString.m_chars.get(), rightString.m_size + 1);
 
-	return str;
+	return CMyString(std::move(temp), leftString.m_size + rightString.m_size);
 }

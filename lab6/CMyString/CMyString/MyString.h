@@ -4,6 +4,9 @@
 
 class CMyString
 {
+private:
+	CMyString(std::unique_ptr<char[]> &&pString, size_t length);
+
 public:
 	CMyString();
 
@@ -34,6 +37,7 @@ public:
 	char& operator [](size_t index);
 	const char& operator [](size_t index)const;
 
+	friend CMyString operator +(const CMyString &leftString, const CMyString &rightString);
 private:
 
 	void SetEmptyString();
