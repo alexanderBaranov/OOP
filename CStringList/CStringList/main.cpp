@@ -7,5 +7,8 @@
 
 int _tmain(int argc, _TCHAR* argv[])
 {
+	std::list<std::string> lst;
+	auto b = lst.begin();
+	lst.push_back("hello");
 	return 0;
 }

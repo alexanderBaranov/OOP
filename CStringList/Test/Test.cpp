@@ -220,4 +220,24 @@ BOOST_AUTO_TEST_CASE(all_end_iterators_must_be_identical)
 	BOOST_REQUIRE_EQUAL(*end1, "two");
 }
 
+/*
+BOOST_AUTO_TEST_CASE(deletion_of_end_node_should_be_forbidden)
+{
+	CStringList lst;
+	lst.Delete(lst.end());
+	lst.AddString("Hello");
+}
+*/
+
+/*
+BOOST_AUTO_TEST_CASE(deletion_of_begin_node_on_empty_list_should_be_forbidden)
+{
+	CStringList lst;
+	lst.Delete(lst.begin());
+	lst.AddString("Hello");
+}
+*/
+
+
+
 BOOST_AUTO_TEST_SUITE_END()
