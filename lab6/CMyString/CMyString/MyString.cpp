@@ -205,8 +205,8 @@ CMyString operator +(const CMyString &leftString, const CMyString &rightString)
 	}
 
 	auto temp = std::make_unique<char[]>(leftString.m_size + rightString.m_size + 1);
-	memcpy(temp.get(), leftString.m_chars.get(), leftString.m_size);
-	memcpy(temp.get() + leftString.m_size, rightString.m_chars.get(), rightString.m_size + 1);
+	memcpy(temp.get(), leftString.GetStringData(), leftString.m_size);
+	memcpy(temp.get() + leftString.m_size, rightString.GetStringData(), rightString.m_size + 1);
 
 	return CMyString(std::move(temp), leftString.m_size + rightString.m_size);
 }
