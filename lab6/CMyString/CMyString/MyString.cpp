@@ -74,9 +74,14 @@ size_t CMyString::GetLength() const
 	return m_size;
 }
 
-const char* CMyString::GetStringData() const
+char* CMyString::GetStringDataImpl() const
 {
 	return (m_chars != nullptr) ? m_chars.get() : "";
+}
+
+const char* CMyString::GetStringData() const
+{
+	return GetStringDataImpl();
 }
 
 CMyString CMyString::SubString(size_t start, size_t length /*= SIZE_MAX*/) const
@@ -109,7 +114,7 @@ char& CMyString::operator[](size_t index)
 		throw out_of_range("string subscript out of range");
 	}
 
-	return m_chars.get()[index];
+	return GetStringDataImpl()[index];
 }
 
 const char& CMyString::operator[](size_t index) const
@@ -119,7 +124,7 @@ const char& CMyString::operator[](size_t index) const
 		throw out_of_range("string subscript out of range");
 	}
 
-	return m_chars.get()[index];
+	return GetStringDataImpl()[index];
 }
 
 CMyString& CMyString::operator+=(const CMyString &other)
@@ -168,8 +173,8 @@ CMyString& CMyString::operator=(CMyString &&other)
 	m_size = other.m_size;
 
 	other.m_size = 0;
-	other.m_chars = make_unique<char[]>(1);
-	other.m_chars.get()[0] = '\0';
+	//other.m_chars = make_unique<char[]>(1);
+	//other.m_chars.get()[0] = '\0';
 
 	return *this;
 }

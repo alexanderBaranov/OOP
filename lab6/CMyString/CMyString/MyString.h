@@ -39,6 +39,7 @@ public:
 
 	friend CMyString operator +(const CMyString &leftString, const CMyString &rightString);
 private:
+	char* GetStringDataImpl()const;
 
 	void SetEmptyString();
 

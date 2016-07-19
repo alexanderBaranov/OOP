@@ -16,7 +16,7 @@ void ExpectZeroTerminatedStringData(CMyString const& s, const char(&data)[N])
 	static_assert(N > 0, "Non-zero array is expected");
 	BOOST_REQUIRE_EQUAL(s[N - 1], '\0');
 	BOOST_REQUIRE_EQUAL(s.GetLength(), N - 1);
-	BOOST_REQUIRE_EQUAL(memcmp(s.GetStringData(), data, N), 0u);
+	BOOST_REQUIRE_EQUAL(memcmp(s.GetStringData(), data, N), 0);
 	BOOST_REQUIRE_EQUAL(s.GetStringData()[s.GetLength()], '\0');
 }
 
@@ -33,7 +33,7 @@ BOOST_AUTO_TEST_CASE(testConstructors)
 
 	CMyString str("", 30);
 	BOOST_CHECK_EQUAL(str.GetStringData(), "");
-	BOOST_CHECK_EQUAL(str.GetLength(), 30);
+	BOOST_CHECK_EQUAL(str.GetLength(), 30u);
 }
 
 BOOST_AUTO_TEST_CASE(testOperatorPlus)
