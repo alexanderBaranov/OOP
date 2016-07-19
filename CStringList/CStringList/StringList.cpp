@@ -52,7 +52,7 @@ void CStringList::AddNode(const NodePtr& node )
 	}
 }
 
-void CStringList::Insert(list_iterator it, const std::string& newString)
+void CStringList::Insert(const list_iterator & it, const std::string& newString)
 {
 	NodePtr newNode = make_shared<Node>();
 	newNode->m_string = newString;
@@ -99,7 +99,7 @@ size_t CStringList::GetSize() const
 	return size;
 }
 
-void CStringList::Delete(list_iterator it)
+void CStringList::Delete(const list_iterator & it)
 {
 	if (!it)
 	{
@@ -109,7 +109,7 @@ void CStringList::Delete(list_iterator it)
 	RemoveNode(it.m_node);
 }
 
-void CStringList::RemoveNode( NodePtr& node )
+void CStringList::RemoveNode(const NodePtr& node )
 {
 	if (!node)
 	{

@@ -109,8 +109,8 @@ public:
 	~CStringList();
 
 	void AddString(const std::string& newString);
-	void Insert(list_iterator it, const std::string& newString);
-	void Delete(list_iterator it);
+	void Insert(const list_iterator & it, const std::string& newString);
+	void Delete(const list_iterator & it);
 
 	size_t GetSize() const;
 
@@ -121,9 +121,8 @@ public:
 	const_list_iterator cend() const;
 
 private:
-	void RemoveNode(NodePtr& node);
+	void RemoveNode(const NodePtr& node);
 	void AddNode(const NodePtr& node);
-	size_t GetIndexForIterator(list_iterator& iterator) const;
 
 	NodePtr m_head, m_tail, m_emptyNode;;
 };
