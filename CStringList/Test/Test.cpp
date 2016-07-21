@@ -17,12 +17,14 @@ void CheckContentOfStringList(const CStringList& stringList, const vector<string
 {
 	BOOST_CHECK(list.size() == stringList.GetSize());
 	auto node = stringList.begin();
-	for (const auto& str : list)
+	for (size_t i = 0; i < list.size(); i++)
 	{
-		BOOST_REQUIRE(node);
-		BOOST_CHECK_EQUAL(*node, str);
+		BOOST_CHECK_EQUAL(*node, list[i]);
 
-		node++;
+		if ((i + 1) < list.size())
+		{
+			node++;
+		}
 	}
 }
 
@@ -151,6 +153,8 @@ BOOST_AUTO_TEST_CASE(test_large_list)
 	}
 
 	BOOST_CHECK(lst.GetSize() == 100000);
+
+	lst.Clear();
 }
 
 BOOST_AUTO_TEST_CASE(test_RBF)
@@ -220,24 +224,91 @@ BOOST_AUTO_TEST_CASE(all_end_iterators_must_be_identical)
 	BOOST_REQUIRE_EQUAL(*end1, "two");
 }
 
-/*
+BOOST_AUTO_TEST_CASE(test_smart_pointer)
+{
+	CStringList lst;
+	
+	auto it = lst.begin();
+	BOOST_REQUIRE(it->empty());
+	
+	lst.AddString("one");
+
+	it = lst.begin();
+	BOOST_REQUIRE_EQUAL(it->c_str(), "one");
+}
+
+
 BOOST_AUTO_TEST_CASE(deletion_of_end_node_should_be_forbidden)
 {
 	CStringList lst;
 	lst.Delete(lst.end());
 	lst.AddString("Hello");
 }
-*/
 
-/*
 BOOST_AUTO_TEST_CASE(deletion_of_begin_node_on_empty_list_should_be_forbidden)
 {
 	CStringList lst;
 	lst.Delete(lst.begin());
 	lst.AddString("Hello");
 }
-*/
 
+BOOST_AUTO_TEST_CASE(test_clear_function)
+{
+	CStringList lst;
+	lst.Clear();
+	BOOST_REQUIRE(lst.GetSize() == 0);
 
+	vector<string> list = { "cat", "dog", "catdog", "cow" };
+	AddToStringListFromArray(lst, list);
+	CheckContentOfStringList(lst, { "cat", "dog", "catdog", "cow" });
+
+	lst.Clear();
+	BOOST_REQUIRE(lst.GetSize() == 0);
+}
+
+BOOST_AUTO_TEST_CASE(test_assign_constructor_and_operator)
+{
+	CStringList lst;
+	lst.AddString("one");
+	CStringList lstSecond(lst);
+
+	CheckContentOfStringList(lstSecond, { "one" });
+
+	CStringList lstThird;
+	CStringList lstFour;
+	
+	BOOST_CHECK_EQUAL(&(lstThird = lstFour), &lstThird);
+}
+
+BOOST_AUTO_TEST_CASE(test_move_operator_and_constructor)
+{
+	CStringList lstSecond;
+	lstSecond.AddString("one");
+
+	CStringList lst;
+	lst = CStringList();
+	BOOST_REQUIRE(lst.GetSize() == 0);
+
+	lst = CStringList(lstSecond);
+	BOOST_REQUIRE(lst.GetSize() == 1);
+	BOOST_REQUIRE_EQUAL(*lst.begin(), "one");
+
+	CStringList lstThird(move(lst));
+
+	BOOST_REQUIRE(lst.GetSize() == 0);
+	BOOST_REQUIRE(lstThird.GetSize() == 1);
+	BOOST_REQUIRE_EQUAL(*lstThird.begin(), "one");
+
+	CStringList lstFour;
+	BOOST_CHECK_EQUAL(&(lstFour = move(lstThird)), &lstFour);
+}
+
+BOOST_AUTO_TEST_CASE(test_move_empty_list)
+{
+	CStringList lst;
+	CStringList lstTwo;
+
+	BOOST_CHECK_EQUAL(&(lst = move(lstTwo)), &lst);
+}
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -10,10 +10,7 @@ Node::Node(const std::string& newString)
 
 CStringList::CStringList()
 {
-	m_head = make_shared<Node>();
-	m_tail = make_shared<Node>();
-	m_head->m_next = m_tail;
-	m_tail->m_prev = m_head;
+	Init();
 }
 
 CStringList::~CStringList()
@@ -25,6 +22,26 @@ CStringList::~CStringList()
 		m_head.reset();
 		m_head = tail;
 	}
+}
+
+CStringList::CStringList(const CStringList& otherList)
+{
+	Init();
+
+	*this = otherList;
+}
+
+CStringList::CStringList(CStringList&& otherList)
+{
+	*this = move(otherList);
+}
+
+void CStringList::Init()
+{
+	m_head = make_shared<Node>();
+	m_tail = make_shared<Node>();
+	m_head->m_next = m_tail;
+	m_tail->m_prev = m_head;
 }
 
 void CStringList::AddString( const std::string& newString )
@@ -42,13 +59,6 @@ void CStringList::AddNode(const NodePtr& node )
 		m_tail->m_prev->m_next = node;
 		node->m_next = m_tail;
 		m_tail->m_prev = node;
-	}
-	else
-	{
-		
-		m_head->m_next = m_tail->m_prev = node;
-		node->m_prev = m_head;
-		node->m_next = m_tail;
 	}
 }
 
@@ -87,6 +97,11 @@ void CStringList::Insert(const list_iterator & it, const std::string& newString)
 
 size_t CStringList::GetSize() const
 {
+	if (!m_head)
+	{
+		return 0;
+	}
+
 	size_t size = 0;
 
 	auto node = m_head->m_next.lock();
@@ -101,31 +116,28 @@ size_t CStringList::GetSize() const
 
 void CStringList::Delete(const list_iterator & it)
 {
-	if (!it)
+	bool shouldBeRemoveEndIterator = (it.m_node == m_tail);
+	bool shouldBeRemoveBeginIterator = (it.m_node == m_head);
+	if (!it.m_node || shouldBeRemoveEndIterator || shouldBeRemoveBeginIterator)
 	{
 		return;
 	}
 
-	RemoveNode(it.m_node);
-}
-
-void CStringList::RemoveNode(const NodePtr& node )
-{
-	if (!node)
+	if (!it.m_node)
 	{
 		return;
 	}
 
-	NodePtr nextNode = node->m_next.lock();
-	NodePtr prevNode = node->m_prev;
+	NodePtr nextNode = it.m_node->m_next.lock();
+	NodePtr prevNode = it.m_node->m_prev;
 
-	bool averageNode = (node->m_prev != m_head) && (nextNode != m_tail);
-	if( averageNode )
+	bool middleNode = (prevNode != m_head) && (nextNode != m_tail);
+	if (middleNode)
 	{
 		prevNode->m_next = nextNode;
 		nextNode->m_prev = prevNode;
 	}
-	else if (node->m_prev == m_head)
+	else if (prevNode == m_head)
 	{
 		m_head->m_next = nextNode;
 		nextNode->m_prev = m_head;
@@ -135,6 +147,65 @@ void CStringList::RemoveNode(const NodePtr& node )
 		m_tail->m_prev = prevNode;
 		prevNode->m_next = m_tail;
 	}
+}
+
+CStringList& CStringList::operator = (const CStringList &otherList)
+{
+	if (this == &otherList)
+	{
+		return *this;
+	}
+
+	Clear();
+
+	for (const auto str : otherList)
+	{
+		AddString(str);
+	}
+
+	return *this;
+
+}
+
+CStringList& CStringList::operator = (CStringList &&otherList)
+{
+	if (this == &otherList)
+	{
+		return *this;
+	}
+
+	Clear();
+
+	m_head = move(otherList.m_head);
+	m_tail = move(otherList.m_tail);
+
+	otherList.Init();
+
+	return *this;
+}
+
+void CStringList::Clear()
+{
+	if (!GetSize())
+	{
+		return;
+	}
+
+	auto currentNode = m_head->m_next.lock();
+	m_head->m_next.reset();
+
+	while (currentNode != m_tail)
+	{
+		NodePtr nextReadNode = currentNode->m_next.lock();
+		currentNode->m_prev.reset();
+		currentNode.reset();
+		currentNode = nextReadNode;
+	}
+
+	m_tail->m_prev.reset();
+
+	m_head->m_next = m_tail;
+	m_tail->m_prev = m_head;
 }
 
 list_iterator CStringList::begin() const
