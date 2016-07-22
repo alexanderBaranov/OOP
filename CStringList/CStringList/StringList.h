@@ -125,7 +125,6 @@ public:
 	void Clear() _NOEXCEPT;
 
 private:
-	void AddNode(const NodePtr& node);
 
 	NodePtr m_head, m_tail;
 	size_t m_size;

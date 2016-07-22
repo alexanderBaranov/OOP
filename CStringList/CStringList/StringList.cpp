@@ -43,19 +43,7 @@ CStringList::CStringList(CStringList&& otherList)
 
 void CStringList::AddString( const std::string& newString )
 {
-	NodePtr node = make_shared<Node>(Node(newString));
-
-	AddNode(node);
-}
-
-void CStringList::AddNode(const NodePtr& node )
-{
-	node->m_prev = m_tail->m_prev;
-	m_tail->m_prev->m_next = node;
-	node->m_next = m_tail;
-	m_tail->m_prev = node;
-
-	m_size++;
+	Insert(end(), newString);
 }
 
 void CStringList::Insert(const list_iterator & it, const std::string& newString)
@@ -66,33 +54,24 @@ void CStringList::Insert(const list_iterator & it, const std::string& newString)
 	auto & insertNode = it.m_node;
 
 	NodePtr nextNode = insertNode->m_next.lock();
+	NodePtr prevNode = insertNode->m_prev;
 
-	bool listEmpty = !m_head.get() || !nextNode;
-	if (listEmpty)
+	bool isMiddleNode = (nextNode != m_head) && (prevNode != m_tail);
+	if (isMiddleNode)
 	{
-		AddNode(newNode);
+		newNode->m_prev = prevNode;
+		prevNode->m_next = newNode;
 	}
-	else
+	else if (nextNode != m_tail)
 	{
-		NodePtr prevNode = insertNode->m_prev;
-
-		bool isMiddleNode = (nextNode != m_head) && (prevNode != m_tail);
-		if( isMiddleNode )
-		{
-			newNode->m_prev = prevNode;
-			prevNode->m_next = newNode;
-		}
-		else if (nextNode != m_tail)
-		{
-			m_head->m_next = newNode;
-			newNode->m_prev = m_head;
-		}
-
-		newNode->m_next = insertNode;
-		insertNode->m_prev = newNode;
-
-		m_size++;
+		m_head->m_next = newNode;
+		newNode->m_prev = m_head;
 	}
+
+	newNode->m_next = insertNode;
+	insertNode->m_prev = newNode;
+
+	m_size++;
 }
 
 size_t CStringList::GetSize() const
@@ -102,14 +81,8 @@ size_t CStringList::GetSize() const
 
 void CStringList::Delete(const list_iterator & it)
 {
-	bool shouldBeRemoveEndIterator = (it.m_node == m_tail);
-	bool shouldBeRemoveBeginIterator = (it.m_node == m_head);
-	if (!it.m_node || shouldBeRemoveEndIterator || shouldBeRemoveBeginIterator)
-	{
-		return;
-	}
-
-	if (!it.m_node)
+	bool isBoundaryIterator = (it.m_node == m_head) || (it.m_node == m_tail);
+	if (!it.m_node || isBoundaryIterator)
 	{
 		return;
 	}
@@ -117,13 +90,7 @@ void CStringList::Delete(const list_iterator & it)
 	NodePtr nextNode = it.m_node->m_next.lock();
 	NodePtr prevNode = it.m_node->m_prev;
 
-	bool middleNode = (prevNode != m_head) && (nextNode != m_tail);
-	if (middleNode)
-	{
-		prevNode->m_next = nextNode;
-		nextNode->m_prev = prevNode;
-	}
-	else if (prevNode == m_head)
+	if (prevNode == m_head)
 	{
 		m_head->m_next = nextNode;
 		nextNode->m_prev = m_head;
@@ -132,6 +99,11 @@ void CStringList::Delete(const list_iterator & it)
 	{
 		m_tail->m_prev = prevNode;
 		prevNode->m_next = m_tail;
+	}
+	else
+	{
+		prevNode->m_next = nextNode;
+		nextNode->m_prev = prevNode;
 	}
 
 	m_size--;
@@ -157,6 +129,12 @@ CStringList& CStringList::operator = (const CStringList &otherList)
 
 CStringList& CStringList::operator = (CStringList &&otherList)
 {
+	if (!otherList.m_size)
+	{
+		Clear();
+		return *this;
+	}
+
 	if (this == &otherList)
 	{
 		return *this;

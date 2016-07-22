@@ -326,4 +326,24 @@ BOOST_AUTO_TEST_CASE(test_insertion_in_the_beginning)
 	BOOST_CHECK_EQUAL(*(it++), "one");
 }
 
+BOOST_AUTO_TEST_CASE(test_moving_empty_list_to_non_empty_list)
+{
+	CStringList acceptor;
+	acceptor.AddString("Hello");
+
+	CStringList donor;
+	acceptor = move(donor);
+	CheckContentOfStringList(acceptor, {});
+	CheckContentOfStringList(donor, {});
+}
+
+BOOST_AUTO_TEST_CASE(test_insertion_in_the_end)
+{
+	CStringList lst;
+	lst.Insert(lst.end(), "one");
+	lst.Insert(lst.end(), "two");
+	lst.Insert(lst.end(), "three");
+	CheckContentOfStringList(lst, { "one", "two", "three" });
+}
+
 BOOST_AUTO_TEST_SUITE_END()
