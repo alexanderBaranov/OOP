@@ -42,7 +42,7 @@ private:
 	char* GetStringDataImpl()const;
 
 	std::unique_ptr<char[]> m_chars;
-	size_t m_size;
+	size_t m_size = 0;
 };
 
 bool operator ==(const CMyString &leftString, const CMyString &rightString);

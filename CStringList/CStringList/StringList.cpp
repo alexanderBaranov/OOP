@@ -63,7 +63,9 @@ void CStringList::Insert(const list_iterator & it, const std::string& newString)
 	NodePtr newNode = make_shared<Node>();
 	newNode->m_string = newString;
 
-	NodePtr nextNode = it.m_node->m_next.lock();
+	auto & insertNode = it.m_node;
+
+	NodePtr nextNode = insertNode->m_next.lock();
 
 	bool listEmpty = !m_head.get() || !nextNode;
 	if (listEmpty)
@@ -72,10 +74,10 @@ void CStringList::Insert(const list_iterator & it, const std::string& newString)
 	}
 	else
 	{
-		NodePtr prevNode = it.m_node->m_prev;
+		NodePtr prevNode = insertNode->m_prev;
 
-		bool averageNode = (nextNode != m_head) && (prevNode != m_tail);
-		if( averageNode )
+		bool isMiddleNode = (nextNode != m_head) && (prevNode != m_tail);
+		if( isMiddleNode )
 		{
 			newNode->m_prev = prevNode;
 			prevNode->m_next = newNode;
@@ -86,8 +88,8 @@ void CStringList::Insert(const list_iterator & it, const std::string& newString)
 			newNode->m_prev = m_head;
 		}
 
-		newNode->m_next = it.m_node;
-		it.m_node->m_prev = newNode;
+		newNode->m_next = insertNode;
+		insertNode->m_prev = newNode;
 
 		m_size++;
 	}
@@ -143,7 +145,7 @@ CStringList& CStringList::operator = (const CStringList &otherList)
 	}
 
 	CStringList tempList;
-	for (const auto str : otherList)
+	for (const auto & str : otherList)
 	{
 		tempList.AddString(str);
 	}
@@ -162,17 +164,20 @@ CStringList& CStringList::operator = (CStringList &&otherList)
 
 	Clear();
 
-	auto otherNextElem = otherList.m_head->m_next.lock();
-	auto otherPrevElem = otherList.m_tail->m_prev;
+	auto & otherHead = otherList.m_head;
+	auto & otherTail = otherList.m_tail;
 
-	otherNextElem->m_prev = m_head;
-	m_head->m_next = otherNextElem;
+	auto otherFirst = otherHead->m_next.lock();
+	auto otherLast = otherTail->m_prev;
+
+	otherFirst->m_prev = m_head;
+	m_head->m_next = otherFirst;
 	
-	otherPrevElem->m_next = m_tail;
-	m_tail->m_prev = otherPrevElem;
+	otherLast->m_next = m_tail;
+	m_tail->m_prev = otherLast;
 
-	otherList.m_head->m_next = otherList.m_tail;
-	otherList.m_tail->m_prev = otherList.m_head;
+	otherHead->m_next = otherTail;
+	otherTail->m_prev = otherHead;
 
 	m_size = otherList.m_size;
 	otherList.m_size = 0;

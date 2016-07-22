@@ -6,7 +6,6 @@ using namespace std;
 
 CMyString::CMyString()
 {
-	m_size = 0;
 }
 
 CMyString::CMyString(const char * pString)

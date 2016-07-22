@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE(testOperatorSquareBrackets)
 
 BOOST_AUTO_TEST_CASE(testOperatorEquality)
 {
-	BOOST_CHECK(CMyString("cat") == CMyString("cat"));
+	BOOST_CHECK(CMyString("cat") == CMyString("cat")); //-V501
 	BOOST_CHECK(CMyString("cat") != CMyString("dog"));
 }
 
@@ -123,12 +123,12 @@ BOOST_AUTO_TEST_CASE(testIndexedAccess)
 {
 	CMyString str;
 	BOOST_CHECK(str[0] == '\0');
-	BOOST_CHECK_THROW(str[1], std::out_of_range);
+	BOOST_CHECK_THROW((void)&str[1], std::out_of_range);
 
 	CMyString hello("Hello");
 	BOOST_CHECK(hello[0] == 'H');
 	BOOST_CHECK_EQUAL(hello[5], '\0');
-	BOOST_CHECK_THROW(hello[6], std::out_of_range);
+	BOOST_CHECK_THROW((void)&hello[6], std::out_of_range);
 }
 
 BOOST_AUTO_TEST_CASE(testStringComparison1)
@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE(testStringComparison1)
 	std::string stdstr("Hello\0World", 11);
 	std::string hello("Hello");
 	CMyString mystr(stdstr);
-	BOOST_CHECK(stdstr == stdstr);
+	BOOST_CHECK(stdstr == stdstr); //-V501
 	BOOST_CHECK(mystr == stdstr);
 	BOOST_CHECK(!(stdstr == hello));
 	BOOST_CHECK(!(mystr == hello));
