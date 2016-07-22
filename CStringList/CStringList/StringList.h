@@ -120,15 +120,14 @@ public:
 	const_list_iterator cend() const _NOEXCEPT;
 
 	CStringList& operator =(const CStringList &otherList);
-	CStringList& operator =(CStringList &&otherList);
+	CStringList& operator =(CStringList &&otherList) _NOEXCEPT;
 
 	void Clear() _NOEXCEPT;
 
 private:
 	void AddNode(const NodePtr& node);
 
-	void Init();
-
 	NodePtr m_head, m_tail;
+	size_t m_size;
 };
 

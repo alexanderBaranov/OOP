@@ -39,7 +39,7 @@ void AddToStringListFromArray(CStringList& stringList, const vector<string>& lis
 CStringListIterator<std::string> GetStringListIteratorFromPos(const CStringList& stringList, size_t pos)
 {
 	auto begIterator = stringList.begin();
-	for (int i = 0; begIterator != stringList.end(); begIterator++)
+	for (size_t i = 0; begIterator != stringList.end(); begIterator++)
 	{
 		if (i == pos)
 		{
@@ -69,8 +69,6 @@ BOOST_AUTO_TEST_CASE(testInsertNewStringToList)
 
 	auto InsertProperty = [&](const string& value, size_t pos)
 	{
-		int position = 0;
-
 		auto begIterator = GetStringListIteratorFromPos(stringList, pos);
 
 		stringList.Insert(begIterator, value);
@@ -165,7 +163,6 @@ BOOST_AUTO_TEST_CASE(test_RBF)
 
 	auto templateIterator = list.begin();
 
-	int i = 0;
 	for (auto it : stringList)
 	{
 		BOOST_CHECK_EQUAL(templateIterator->c_str(), it);
