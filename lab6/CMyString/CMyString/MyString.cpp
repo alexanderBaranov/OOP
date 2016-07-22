@@ -6,6 +6,7 @@ using namespace std;
 
 CMyString::CMyString()
 {
+	m_size = 0;
 }
 
 CMyString::CMyString(const char * pString)
@@ -25,6 +26,7 @@ CMyString::CMyString(const char * pString, size_t length)
 
 	m_chars = make_unique<char[]>(length + 1);
 	memcpy(m_chars.get(), pString, length);
+	m_chars.get()[length] = '\0';
 
 	m_size = length;
 }
@@ -62,7 +64,7 @@ bool CMyString::Empty() const
 
 size_t CMyString::GetLength() const
 {
-	return m_chars ? m_size : 0;
+	return m_size;
 }
 
 char* CMyString::GetStringDataImpl() const
